@@ -2,7 +2,7 @@
 	<section class="login-page">
 		<div class="auth">
 			<h2 class="title">Авторизация</h2>
-			<form class="form" @keyup.enter="logIn" @submit.prevent="logIn">
+			<form class="form" @keyup.enter="signIn" @submit.prevent="signIn">
 				<div class="logo">
 					<svg height="70" viewBox="0 0 251 124" style="padding: 10px;" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<path d="M68.6999 22.3C66.0999 10.9 59.6 1.59998 58.7 0.0999756C57.2999 2.19998 52.1 10.4 49.4 19.5C46.5 29.6 46.0999 38.6 47.0999 47.5C48.0999 56.4 51.7999 65.5 51.7999 65.5C53.7999 70.3 56.7999 75.4 58.7 77.9C61.5 74.2 68.0999 63.2 70.0999 48.8C71.2999 40.7 71.2999 33.7 68.6999 22.3ZM58.5999 75C57.2999 72.6 55.2999 68 55.0999 60.9C55.0999 54 57.7999 48.2 58.5999 46.9C59.2999 48.1 61.6999 53.2 61.9999 60.3C62.2999 67.2 59.9999 72.6 58.5999 75ZM67.8999 41.7C67.7999 46.1 67.2999 50.7 66.5999 53.4C66.7999 48.7 66.2999 42 65.1999 36.8C64.0999 31.6 60.9999 22.9 58.5999 18.8C56.2999 22.6 53.5 30.2 52.0999 36.7C50.5999 43.2 50.5999 51.2 50.5999 53.5C50.1999 51.5 49.2 44.4 49.5 37.2C49.7 31.3 51.1 25.2 51.9 22.4C54.8 13.1 58.1 7.09998 58.7 6.09998C59.2999 6.99998 63.3999 14.4 65.5999 22.1C67.5999 29.9 67.9999 37.3 67.8999 41.7Z" fill="#0079C1"></path>
@@ -23,7 +23,8 @@
 				</div>
 				<BaseTextBox v-model="login" appendIcon="mdi-account" placeholder="Логин" autofocus/>
 				<BaseTextBox v-model="password" type="password" appendIcon="mdi-lock" placeholder="Пароль"/>
-				<BaseButton @click="logIn" style="line-height:2em; text-align:center;">Войти</BaseButton>
+				<div v-if="error" style="color:red; text-align:center; font-size:.9em">{{ error }}</div>
+				<BaseButton @click="signIn" style="line-height:2em; text-align:center;">Войти</BaseButton>
 			</form>
 		</div>
 	</section>
@@ -31,6 +32,7 @@
 
 <script lang="ts" setup>
 const { $api } = useNuxtApp();
+import type { FetchError } from 'ofetch';
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
 import { useUserStore } from '~/stores/UserStore';
@@ -38,26 +40,32 @@ import { type UserData } from '~/types/UserData';
 
 const login = ref('');
 const password = ref('');
+const error = ref('');
 
 
-async function logIn() {
-	const data: UserData = await $api('contractors/auth', {
+async function signIn() {
+	$api<UserData>('contractors/auth', {
 		method: 'POST',
 		body: { login: login.value, password: password.value },
-	});
+	})
+		.then((data) => {
+			if(data.success) {
+				useUserStore().setData(data);
 
-	if(data.success) {
-		useUserStore().setData(data.userData);
+				switch( String(data.userData.role).toUpperCase() ) {
+					case 'CONTRACTOR':
+						navigateTo('/issues');
+						break;
+					case 'ADMIN':
+						navigateTo('/issues');
+						break;
+				}
+			}
+		})
+		.catch((err: FetchError) => {
+			error.value = err.data.message;
+		});
 
-		switch( String(data.userData.role).toUpperCase() ) {
-			case 'CONTRACTOR':
-				navigateTo('/issues');
-				break;
-			case 'ADMIN':
-				navigateTo('/issues');
-				break;
-		}
-	}
 }
 
 

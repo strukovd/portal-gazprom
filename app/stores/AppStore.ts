@@ -1,7 +1,9 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
 export const useAppStore = defineStore('app', {
-	state: () => ({}),
+	state: () => ({
+		issues: [] as unknown[],
+	}),
 	actions: {}
 });
 

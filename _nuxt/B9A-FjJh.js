@@ -1,1 +1,0 @@
-import{O as t}from"#entry";const s=t("user",{state:()=>({token:localStorage.getItem("token"),userData:null}),actions:{setData(e){(!e||!e.token)&&console.error("Token не получен!"),this.userData=e,this.token=e.token,localStorage.setItem("token",e.token)}}});export{s as u};

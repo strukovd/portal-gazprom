@@ -9,6 +9,11 @@
 </template>
 
 <script lang="ts" setup>
+definePageMeta({
+	auth: true,
+	roles: ['ADMIN', 'MANAGER']
+});
+
 import BaseButton from '~/components/common/BaseButton.vue';
 
 

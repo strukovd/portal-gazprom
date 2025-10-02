@@ -1,13 +1,15 @@
 <template>
-  <div>
+  <section class="default-layout">
     <slot />
-  </div>
+  </section>
 </template>
 
 <script lang="ts" setup>
 
 </script>
 
-<style>
+<style lang="scss">
+.default-layout {
 
+}
 </style>

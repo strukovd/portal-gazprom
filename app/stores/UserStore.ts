@@ -10,9 +10,30 @@ export const useUserStore = defineStore('user', {
 			if(!data || !data.token) {
 				console.error('Token не получен!');
 			}
-			this.userData = data;
 			this.token = data.token;
+			this.userData = data.userData;
 			localStorage.setItem('token', data.token);
+			localStorage.setItem('user', JSON.stringify(data.userData));
+		},
+
+		loadFromStorage() {
+			const token = localStorage.getItem('token');
+			const userStr = localStorage.getItem('user');
+			if (token) this.token = token;
+			if (userStr) {
+				try {
+					const u = JSON.parse(userStr);
+					this.userData = u;
+				}
+				catch {}
+			}
+		},
+
+		clear() {
+			this.token = null;
+			this.userData = null;
+			localStorage.removeItem('token');
+			localStorage.removeItem('user');
 		}
 	}
 });

@@ -7,7 +7,7 @@
 				<div class="title">{{ issue.summary }}</div>
 				<div class="flex-line">
 					<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
-					<div class="status" :style="{ background: issue.color }">Согласование ЭЧ</div>
+					<div class="status" :style="{ background: issue.color }">{{ issue.issueStatus }}</div>
 				</div>
 				<BaseButton @click="navigateTo('/construct-pass')" prependIcon="mdi-plus">Добавить строй паспорт</BaseButton>
 			</div>
@@ -20,6 +20,12 @@
 </template>
 
 <script lang="ts" setup>
+definePageMeta({
+	auth: true,
+	roles: ['ADMIN', 'CONTRACTOR'],
+	layout: 'authorized'
+});
+
 const { $api } = useNuxtApp();
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseIcon from '~/components/common/BaseIcon.vue';

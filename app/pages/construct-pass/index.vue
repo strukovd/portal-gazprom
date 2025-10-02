@@ -128,6 +128,11 @@
 </template>
 
 <script lang="ts" setup>
+definePageMeta({
+	auth: true,
+	roles: ['ADMIN', 'CONTRACTOR']
+});
+
 import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseMemo from '~/components/common/BaseMemo.vue';

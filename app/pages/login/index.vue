@@ -44,7 +44,7 @@ const error = ref('');
 
 
 async function signIn() {
-	$api<UserData>('contractors/auth', {
+	$api<UserData>('portal/auth', {
 		method: 'POST',
 		body: { login: login.value, password: password.value },
 	})

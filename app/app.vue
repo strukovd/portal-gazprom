@@ -14,4 +14,8 @@
 body {
 	margin:0;
 }
+
+h1 {
+	font-size:36px;
+}
 </style>

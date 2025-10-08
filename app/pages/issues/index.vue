@@ -52,7 +52,7 @@ async function fetchIssues() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: IssueList = await $api('contractors/notes', {
+	const data: IssueList = await $api('portal/notes', {
 		query: queryParams,
 		method: 'GET',
 		headers: {

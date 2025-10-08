@@ -6,7 +6,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 	const apiFetch = $fetch.create({
 		baseURL: config.public.apiURL,
 		onRequest({ options }) {
-			const token = useCookie('token').value
+			options.headers.set('api-token', config.public.apiToken);
+
+			const token = useCookie('token').value;
 			if (token) {
 				options.headers = {
 					...options.headers,

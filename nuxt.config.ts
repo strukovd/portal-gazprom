@@ -17,7 +17,8 @@ export default defineNuxtConfig({
 	],
 	runtimeConfig: {
 		public: {
-			apiURL: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.gazprom.kg/api/v1',
+			apiURL: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.gazprom.kg/api',
+			apiToken: process.env.NUXT_PUBLIC_API_TOKEN
 		},
 	}
 })

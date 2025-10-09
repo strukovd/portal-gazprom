@@ -11,10 +11,11 @@
 						<span class="error-message">{{ error }}</span>
 					</div>
 				</header>
+
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
-					<input :type="type" :placeholder="placeholder" :autofocus="autofocus" :value="modelValue" @input="onInput"/>
-					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked?'mdi-eye':'mdi-eye-off'"/>
+					<input :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
+					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
 					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
 					<BaseButton v-if="button" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
 				</div>
@@ -35,8 +36,7 @@ export default defineComponent({
 	emits: ['update:modelValue', 'submit'],
 	props: {
 		modelValue: {
-			type: [String, Number, null] as PropType<string | number | null>,
-			default: null
+			type: [String, Number] as PropType<string | number | undefined>,
 		},
 		label: String,
 		prependIcon: String,
@@ -55,21 +55,46 @@ export default defineComponent({
 	},
 	data() {
 		return {
+			innerValue: (this.modelValue ?? '') as string | number,
 			masked: false
 		};
 	},
+	computed: {
+		// Универсальный прокси: если передан v-model — читаем/пишем через проп/эмит,
+		// иначе — работаем с внутренним состоянием.
+		valueProxy: {
+			get(): string | number {
+				return this.modelValue !== undefined ? this.modelValue : this.innerValue;
+			},
+			set(v: string | number) {
+				if (this.modelValue !== undefined) {
+					this.$emit('update:modelValue', v);
+				} else {
+					this.innerValue = v;
+				}
+			}
+		}
+	},
 	methods: {
 		onSubmit(event: KeyboardEvent) {
-			this.$emit('submit', event);
+			const valueCopy = this.modelValue !== undefined ? this.modelValue : this.innerValue;
+			this.$emit('submit', valueCopy, event);
 		},
 		onInput(event: Event) {
-			this.$emit('update:modelValue', (event.target as any)?.value ?? '');
+			const val = (event.target as HTMLInputElement)?.value ?? '';
+			this.valueProxy = this.type === 'number' ? Number(val) : val;
 		}
 	},
 	created() {
 		this.masked = this.type === 'password';
 	},
-});
+	watch: {
+		// Если родитель всё же начал менять modelValue — синхронизируем стартовое внутреннее значение
+		modelValue(newVal) {
+			if (newVal !== undefined) this.innerValue = newVal as string | number;
+		}
+	}
+	});
 </script>
 
 <style lang="scss">

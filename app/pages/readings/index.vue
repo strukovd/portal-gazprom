@@ -2,19 +2,50 @@
 	<section class="readings-page">
 		<div class="readings-container">
 			<h1>Показания</h1>
-			<BaseTextBox v-model="search" @submit="fetchReadings" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
+			<BaseTextBox v-model="search" autofocus @submit="fetchReadings" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
 
 			<div class="readings">
-				<div class="reading" v-for="reading of readingList" :key="String(reading.name).slice(0, 4)">
+				<div class="reading" v-for="sub of subscribers" :key="String(sub.name).slice(0, 4)">
 					<label>
-						<div class="name">{{ reading.name }}</div>
-						<div class="address">{{ reading.address }}</div>
-						<div class="reading-date"><span>Создан: </span><span class="date">{{ reading.created }}</span></div>
-						<!-- <div class="flex-line">
-							<div class="account">{{ reading.account }}</div>
-						</div> -->
-						<!-- <BaseButton @click="navigateTo('/construct-pass')" prependIcon="mdi-plus">Добавить строй паспорт</BaseButton> -->
-						<BaseTextBox prepend-icon="mdi-counter" button="Отправить" placeholder="Введите показание" />
+						<div class="name">{{ sub.name }}</div>
+						<div class="account"><span>{{ sub.account }}</span></div>
+						<div class="address">{{ sub.address }}</div>
+						<div class="reading-date"><span>Создан: </span><span class="date">{{ sub.created }}</span></div>
+
+						<div style="margin:.6em 0 0 0; display:flex; align-items:center; gap:.6em;">
+							<BaseTextBox
+								@submit="(value: string)=>{ sendReading(sub, value) }"
+								style="flex:auto 1 0;"
+								prepend-icon="mdi-counter"
+								button="Отправить"
+								placeholder="Введите показание"
+							/>
+							<BaseButton v-if="!sub.accountInfo" @click="fetchAccount(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
+						</div>
+
+						<section v-if="sub.accountInfo" class="account-info">
+							<div class="account-info-balance"><span>Баланс: </span><span>{{ sub.accountInfo.balance }}</span></div>
+							<div class="account-info-district"><span>Район: </span><span>{{ sub.accountInfo.district }}</span></div>
+
+							<table v-if="Array.isArray(sub.accountInfo?.readings) && sub.accountInfo.readings.length" class="readings-table">
+								<thead>
+									<tr>
+										<th>Показание</th>
+										<th>Потребление</th>
+										<th>Дата</th>
+										<th>Отправитель</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="(reading, index) of sub.accountInfo.readings" :key="index">
+										<td>{{ reading.reading }}</td>
+										<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
+										<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
+										<td>{{ reading.sender }}</td>
+									</tr>
+								</tbody>
+							</table>
+						</section>
 					</label>
 				</div>
 			</div>
@@ -38,18 +69,20 @@ type Reading = {
 	account: string;
 	address: string;
 	created: string;
+	accountInfo?: AccountInfo;
 };
 
 const { $api } = useNuxtApp();
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseIcon from '~/components/common/BaseIcon.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
-import type { IssueList } from '~/types/IssueList';
+import type { AccountInfo } from '~/types/AccountInfo';
+import type { FoundedUsers } from '~/types/FoundedUsers';
 
 
-const search = ref('');
+const search = ref('40000099');
 const loading = ref(false);
-const readingList = ref([]) as Ref<Reading[]>;
+const subscribers = ref([]) as Ref<Reading[]>;
 
 
 async function fetchReadings() {
@@ -61,16 +94,41 @@ async function fetchReadings() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: IssueList = await $api('v2/facility/find', {
-		query: queryParams,
+	const data: FoundedUsers = await $api('v2/facility/find', {
 		method: 'GET',
+		query: queryParams,
 	});
 
 	if(true || data.success) {
-		readingList.value = data.data as any;
+		subscribers.value = data.data as any;
 	}
 
 	loading.value = false;
+}
+
+async function fetchAccount(reading: Reading) {
+	const data: AccountInfo = await $api('v2/facility/account', {
+		method: 'GET',
+		query: { account: reading.account },
+	});
+
+	reading['accountInfo'] = data;
+}
+
+function sendReading(sub: Reading, reading: string) {
+	$api('v1/portal/readings', {
+		method: 'POST',
+		body: {
+			account: sub.account,
+			reading
+		},
+	})
+		.then((data) => {
+			fetchAccount(sub);
+		})
+		.catch((err: any) => {
+			console.error(err);
+		});
 }
 </script>
 
@@ -92,12 +150,13 @@ body:has(.readings-page) {
 			.reading {
 				background-color: #fff;
 				position: relative;
-				margin:.4em 0;
+				margin:.8em 0;
 				padding: .6em 1em;
 				// max-width: 600px;
 				border-radius: 6px;
 				box-shadow: 0 6px 40px rgba(0,0,0,.05);
 				// box-shadow: 0 0 8px 0px #0079C1aa;
+				transition:all 500ms ease 0s;
 
 				.name {
 					font-size: 1.2em;
@@ -121,28 +180,48 @@ body:has(.readings-page) {
 					}
 				}
 
-				// .flex-line {
-				// 	display:flex;
-				// 	align-items:center;
-				// 	gap:1em;
-				// 	justify-content: space-between;
-				// 	align-items: center;
-
-				// 	// &>* {
-				// 	// 	flex:auto 1 1;
-				// 	// }
+				// .status {
+				// 	// position: absolute;
+				// 	// top: 0;
+				// 	// right: 0;
+				// 	display: inline-block;
+				// 	background-color: #0079C1;
+				// 	color: #fff;
+				// 	padding:.4em .9em;
+				// 	font-size: 14px;
+				// 	border-radius:6px;
 				// }
 
-				.status {
-					// position: absolute;
-					// top: 0;
-					// right: 0;
-					display: inline-block;
-					background-color: #0079C1;
-					color: #fff;
-					padding:.4em .9em;
-					font-size: 14px;
-					border-radius:6px;
+				.account-info {
+					margin:.4em 0;
+
+					.readings-table {
+						border-collapse: collapse;
+						width: 100%;
+						margin-top: .8em;
+
+						thead {
+							tr {
+								th {
+									border:1px solid #e0e2e791;
+									padding:.4em .6em;
+
+									&:first-child {
+										border-radius: 6px 0 0 6px;
+									}
+								}
+							}
+						}
+
+						tbody {
+							tr {
+								td {
+									border:1px solid #e0e2e791;
+									padding:.4em .6em;
+								}
+							}
+						}
+					}
 				}
 			}
 		}

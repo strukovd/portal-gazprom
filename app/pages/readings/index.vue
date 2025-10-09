@@ -27,6 +27,9 @@
 							<div class="account-info-balance"><span>Баланс: </span><span>{{ sub.accountInfo.balance }}</span></div>
 							<div class="account-info-district"><span>Район: </span><span>{{ sub.accountInfo.district }}</span></div>
 
+							<div v-if="visibleMessage === 'success'" class="account-success-message" style="font-size:2em; color:forestgreen; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-checkbox-marked-circle" size="1.2em"/></span><span> Показания приняты</span></div>
+							<div v-if="visibleMessage ===   'error'" class="account-error-message" style="font-size:2em; color:#c8290f; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-alert-decagram" size="1.2em"/></span><span> Ошибка при отправке</span></div>
+
 							<table v-if="Array.isArray(sub.accountInfo?.readings) && sub.accountInfo.readings.length" class="readings-table">
 								<thead>
 									<tr>
@@ -80,9 +83,10 @@ import type { AccountInfo } from '~/types/AccountInfo';
 import type { FoundedUsers } from '~/types/FoundedUsers';
 
 
-const search = ref('40000099');
+const search = ref('');
 const loading = ref(false);
 const subscribers = ref([]) as Ref<Reading[]>;
+const visibleMessage = ref('') as Ref<string>;
 
 
 async function fetchReadings() {
@@ -125,10 +129,21 @@ function sendReading(sub: Reading, reading: string) {
 	})
 		.then((data) => {
 			fetchAccount(sub);
+			setTimeout(() => {
+				visibleMessage.value = 'success';
+			});
 		})
 		.catch((err: any) => {
 			console.error(err);
-		});
+			setTimeout(() => {
+				visibleMessage.value = 'error';
+			});
+		})
+		.finally(() => {
+			setTimeout(() => {
+				visibleMessage.value = '';
+			}, 5000);
+		})
 }
 </script>
 

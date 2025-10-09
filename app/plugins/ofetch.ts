@@ -8,11 +8,11 @@ export default defineNuxtPlugin((nuxtApp) => {
 		onRequest({ options }) {
 			options.headers.set('api-token', config.public.apiToken);
 
-			const token = useCookie('token').value;
-			if (token) {
-				options.headers = {
-					...options.headers,
-					Authorization: `Bearer ${token}`
+			if(import.meta.server) return;
+			else {
+				const token = localStorage.token;
+				if (token) {
+					options.headers.set('Authorization', `Bearer ${token}`);
 				}
 			}
 		},

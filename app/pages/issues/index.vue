@@ -38,8 +38,6 @@ const search = ref('');
 
 
 async function fetchIssues() {
-	console.log(`fetchIssues`);
-
 	const queryParams = {} as Record<string, string | number>;
 	queryParams.page = 1;
 	queryParams.size = 10;
@@ -52,7 +50,7 @@ async function fetchIssues() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: IssueList = await $api('portal/notes', {
+	const data: IssueList = await $api('v1/portal/notes', {
 		query: queryParams,
 		method: 'GET',
 		headers: {

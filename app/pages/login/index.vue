@@ -44,7 +44,7 @@ const error = ref('');
 
 
 async function signIn() {
-	$api<UserData>('portal/auth', {
+	$api<UserData>('v1/portal/auth', {
 		method: 'POST',
 		body: { login: login.value, password: password.value },
 	})
@@ -58,6 +58,9 @@ async function signIn() {
 						break;
 					case 'ADMIN':
 						navigateTo('/issues');
+						break;
+					case 'CALLCENTER':
+						navigateTo('/readings');
 						break;
 				}
 			}

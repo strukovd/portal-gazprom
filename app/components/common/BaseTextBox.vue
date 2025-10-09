@@ -14,7 +14,8 @@
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
 					<input :type="type" :placeholder="placeholder" :autofocus="autofocus" :value="modelValue" @input="onInput"/>
-					<BaseIcon v-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
+					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked?'mdi-eye':'mdi-eye-off'"/>
+					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
 					<BaseButton v-if="button" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
 				</div>
 			</div>
@@ -54,7 +55,7 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			hideValue: false
+			masked: false
 		};
 	},
 	methods: {
@@ -66,7 +67,7 @@ export default defineComponent({
 		}
 	},
 	created() {
-		this.hideValue = this.type === 'password';
+		this.masked = this.type === 'password';
 	},
 });
 </script>

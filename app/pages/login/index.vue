@@ -1,7 +1,7 @@
 <template>
 	<section class="login-page">
 		<div class="auth">
-			<h2 class="title">Авторизация</h2>
+			<!-- <h2 class="title">Авторизация</h2> -->
 			<form class="form" @keyup.enter="signIn" @submit.prevent="signIn">
 				<div class="logo">
 					<svg height="70" viewBox="0 0 251 124" style="padding: 10px;" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,6 +61,10 @@ async function signIn() {
 						break;
 					case 'CALLCENTER':
 						navigateTo('/readings');
+						break;
+
+					default:
+						navigateTo('/');
 						break;
 				}
 			}

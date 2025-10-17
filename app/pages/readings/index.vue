@@ -1,55 +1,114 @@
 <template>
 	<section class="readings-page">
 		<div class="readings-container">
-			<h1>Показания</h1>
-			<BaseTextBox v-model="search" autofocus @submit="fetchReadings" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
+			<h1 style="text-align:center;">Абоненты</h1>
+			<BaseTextBox v-model="search" autofocus @submit="fetchSubscribers" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
 
 			<div class="readings">
-				<div class="reading" v-for="sub of subscribers" :key="String(sub.name).slice(0, 4)">
-					<label>
-						<div class="name">{{ sub.name }}</div>
-						<div class="account"><span>{{ sub.account }}</span></div>
-						<div class="address">{{ sub.address }}</div>
-						<div class="reading-date"><span>Создан: </span><span class="date">{{ sub.created }}</span></div>
+				<div class="reading" v-for="sub in subscriberIndex" :key="String(sub.name).slice(0, 4)">
+					<div class="bold-title">{{ sub.name }}</div>
+					<div class="account"><span>{{ sub.account }}</span></div>
+					<div class="small-text">{{ sub.address }}</div>
+					<div class="reading-date"><span>Создан: </span><span class="date">{{ sub.created }}</span></div>
 
-						<div style="margin:.6em 0 0 0; display:flex; align-items:center; gap:.6em;">
-							<BaseTextBox
-								@submit="(value: string)=>{ sendReading(sub, value) }"
-								style="flex:auto 1 0;"
-								prepend-icon="mdi-counter"
-								button="Отправить"
-								placeholder="Введите показание"
-							/>
-							<BaseButton v-if="!sub.accountInfo" @click="fetchAccount(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
-						</div>
+					<section v-if="sub.district" class="account-info">
+						<section class="account-info-container">
+							<div class="account-info-balance"><span class="small-text">Баланс: </span><span class="amount">{{ sub.balance }}</span></div>
+							<div class="account-info-district"><span class="small-text">Район: </span><span class="small-text">{{ sub.district }}</span></div>
+						</section>
 
-						<section v-if="sub.accountInfo" class="account-info">
-							<div class="account-info-balance"><span>Баланс: </span><span>{{ sub.accountInfo.balance }}</span></div>
-							<div class="account-info-district"><span>Район: </span><span>{{ sub.accountInfo.district }}</span></div>
-
+						<section class="message">
 							<div v-if="visibleMessage === 'success'" class="account-success-message" style="font-size:2em; color:forestgreen; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-checkbox-marked-circle" size="1.2em"/></span><span> Показания приняты</span></div>
 							<div v-if="visibleMessage ===   'error'" class="account-error-message" style="font-size:2em; color:#c8290f; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-alert-decagram" size="1.2em"/></span><span> Ошибка при отправке</span></div>
-
-							<table v-if="Array.isArray(sub.accountInfo?.readings) && sub.accountInfo.readings.length" class="readings-table">
-								<thead>
-									<tr>
-										<th>Показание</th>
-										<th>Потребление</th>
-										<th>Дата</th>
-										<th>Отправитель</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="(reading, index) of sub.accountInfo.readings" :key="index">
-										<td>{{ reading.reading }}</td>
-										<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
-										<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
-										<td>{{ reading.sender }}</td>
-									</tr>
-								</tbody>
-							</table>
 						</section>
-					</label>
+
+						<section class="card-section" v-if="Array.isArray(sub?.applications) && sub.applications.length">
+							<h2>Заявки</h2>
+							<div class="table-wrapper">
+								<table class="issues-table">
+									<thead>
+										<tr>
+											<th>Ключ</th>
+											<th>Название</th>
+											<th>Исполнитель</th>
+											<th>Статус</th>
+											<th>Дата</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="(issue, index) of sub.applications" :key="index">
+											<td class="small-text">{{ issue.issueKey }}</td>
+											<td class="small-text">{{ issue.summary }}</td>
+											<td class="small-text">{{ issue.assignee }}</td>
+											<td class="small-text">{{ issue.status.name }}</td>
+											<td class="small-text date">{{ new Date(issue.created).toLocaleDateString('RU-ru') }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+
+						<section class="card-section" v-if="Array.isArray(sub?.readings) && sub.readings.length">
+							<h2>История показаний</h2>
+							<div class="table-wrapper">
+								<table class="readings-table">
+									<thead>
+										<tr>
+											<th>Показание</th>
+											<th>Потребление</th>
+											<th>Дата</th>
+											<th>Отправитель</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="(reading, index) of sub.readings" :key="index">
+											<td>{{ reading.reading }}</td>
+											<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
+											<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
+											<td>{{ reading.sender }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+
+						<section class="card-section" v-if="Array.isArray(sub?.payments) && sub.payments.length">
+							<h2>История платежей</h2>
+							<div class="table-wrapper">
+								<table class="payments-table">
+									<thead>
+										<tr>
+											<th>Транзакция</th>
+											<th>Сумма</th>
+											<th>Дата</th>
+											<th>Услуга</th>
+											<!-- <th>Отправитель</th> -->
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="(payment, index) of sub.payments" :key="index">
+											<td class="small-text">{{ payment.txnId }}</td>
+											<td class="small-text amount">{{ payment.amount }}</td>
+											<td class="small-text date">{{ new Date(payment.created).toLocaleDateString('RU-ru') }}</td>
+											<td class="small-text">[{{ payment.service.id }}] {{ payment.service.name }}</td>
+											<!-- <td class="small-text">{{ payment }}</td> -->
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</section>
+
+					<div style="margin:.6em 0 0 0; display:flex; align-items:center; gap:.6em;">
+						<BaseTextBox
+							@submit="(value: string)=>{ sendReading(sub, value) }"
+							style="flex:auto 1 0;"
+							prepend-icon="mdi-counter"
+							button="Отправить"
+							placeholder="Отправить показание"
+						/>
+						<BaseButton v-if="!sub.district" @click="fetchSubscriberDetails(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
+					</div>
 				</div>
 			</div>
 			<!-- <div v-if="search && !readingList.length && !loading">
@@ -67,29 +126,22 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-type Reading = {
-	name: string;
-	account: string;
-	address: string;
-	created: string;
-	accountInfo?: AccountInfo;
-};
 
 const { $api } = useNuxtApp();
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseIcon from '~/components/common/BaseIcon.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
-import type { AccountInfo } from '~/types/AccountInfo';
-import type { FoundedUsers } from '~/types/FoundedUsers';
+import type { SubscribersResponse, SubscriberDetails, Subscriber, SubscriberLite, PaymentsResponse } from '~/types/AccountsPage';
 
 
 const search = ref('');
 const loading = ref(false);
-const subscribers = ref([]) as Ref<Reading[]>;
+
+const subscriberIndex = reactive<{ [key: string]: Subscriber }>({});
 const visibleMessage = ref('') as Ref<string>;
 
 
-async function fetchReadings() {
+async function fetchSubscribers() {
 	loading.value = true;
 
 	const queryParams = {} as Record<string, string | number>;
@@ -98,28 +150,43 @@ async function fetchReadings() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: FoundedUsers = await $api('v2/facility/find', {
+	const data: SubscribersResponse = await $api('v2/facility/find', {
 		method: 'GET',
 		query: queryParams,
 	});
 
 	if(true || data.success) {
-		subscribers.value = data.data as any;
+		for (const key in subscriberIndex) {
+			delete subscriberIndex[key];
+		}
+
+		for (const sub of data.data) {
+			subscriberIndex[sub.account] = sub;
+		}
 	}
 
 	loading.value = false;
 }
 
-async function fetchAccount(reading: Reading) {
-	const data: AccountInfo = await $api('v2/facility/account', {
+async function fetchSubscriberDetails(sub: SubscriberLite) {
+	const details: SubscriberDetails = await $api('v2/facility/account', {
 		method: 'GET',
-		query: { account: reading.account },
+		query: { account: sub.account },
 	});
 
-	reading['accountInfo'] = data;
+	const paymentsResponse: PaymentsResponse = await $api('v1/payments/history', {
+		method: 'GET',
+		query: { account: sub.account },
+		headers: []
+	});
+
+	const payments = paymentsResponse.data;
+	const account = sub.account;
+	const pSub = subscriberIndex[account]!;
+	subscriberIndex[account] = { ...details, ...pSub, payments };
 }
 
-function sendReading(sub: Reading, reading: string) {
+function sendReading(sub: SubscriberLite, reading: string) {
 	$api('v1/portal/readings', {
 		method: 'POST',
 		body: {
@@ -128,7 +195,7 @@ function sendReading(sub: Reading, reading: string) {
 		},
 	})
 		.then((data) => {
-			fetchAccount(sub);
+			fetchSubscriberDetails(sub);
 			setTimeout(() => {
 				visibleMessage.value = 'success';
 			});
@@ -155,6 +222,56 @@ body:has(.readings-page) {
 }
 
 .readings-page {
+	.card-section {
+		background: #ebf1ff;
+		padding: 1em;
+		border-radius: 10px;
+		margin: 1em 0;
+
+		h2 {
+			margin-top:0;
+		}
+	}
+	.bold-title {
+		font-size: 1.2em;
+		font-weight: 600;
+		margin-bottom: .4em;
+	}
+	.small-text {
+		font-size: 14px;
+		opacity: .6;
+		margin:.4em 0;
+	}
+	.reading-date {
+		font-size: 14px;
+		opacity: .6;
+		margin:.4em 0;
+	}
+	.date {
+		color: #7e0606;
+		font-weight: 600;
+	}
+
+	.amount {
+		color: #0c6b2b;
+		font-weight: 600;
+	}
+
+	.table-wrapper {
+		max-height: 500px;
+		overflow: auto;
+
+		table {
+			// width: 100%;
+			// border-collapse: collapse;
+
+			th, td {
+				padding:.1em .6em;
+				// border:1px solid #c9d9ff55;
+			}
+		}
+	}
+
 	.readings-container {
 		max-width:650px;
 		margin:1em auto;
@@ -173,27 +290,6 @@ body:has(.readings-page) {
 				// box-shadow: 0 0 8px 0px #0079C1aa;
 				transition:all 500ms ease 0s;
 
-				.name {
-					font-size: 1.2em;
-					font-weight: 600;
-					margin-bottom: .4em;
-				}
-				.address {
-					font-size: 14px;
-					opacity: .6;
-					margin:.4em 0;
-				}
-
-				.reading-date {
-					font-size: 14px;
-					opacity: .6;
-					margin:.4em 0;
-
-					.date {
-						color: #7e0606;
-						font-weight: 600;
-					}
-				}
 
 				// .status {
 				// 	// position: absolute;

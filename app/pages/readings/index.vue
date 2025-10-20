@@ -18,8 +18,8 @@
 						</section>
 
 						<section class="message">
-							<div v-if="visibleMessage === 'success'" class="account-success-message" style="font-size:2em; color:forestgreen; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-checkbox-marked-circle" size="1.2em"/></span><span> Показания приняты</span></div>
-							<div v-if="visibleMessage ===   'error'" class="account-error-message" style="font-size:2em; color:#c8290f; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-alert-decagram" size="1.2em"/></span><span> Ошибка при отправке</span></div>
+							<div v-if="visibleMessage.type === 'success'" class="account-success-message" style="font-size:2em; color:forestgreen; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-checkbox-marked-circle" size="1.2em"/></span><span> {{ visibleMessage.message }}</span></div>
+							<div v-if="visibleMessage.type ===   'error'" class="account-error-message" style="font-size:2em; color:#c8290f; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-alert-decagram" size="1.2em"/></span><span> {{ visibleMessage.message || 'Ошибка при отправке' }}</span></div>
 						</section>
 
 						<section class="card-section" v-if="Array.isArray(sub?.applications) && sub.applications.length">
@@ -138,7 +138,7 @@ const search = ref('');
 const loading = ref(false);
 
 const subscriberIndex = reactive<{ [key: string]: Subscriber }>({});
-const visibleMessage = ref('') as Ref<string>;
+const visibleMessage = reactive<{ type: '' | 'success' | 'error', message: string }>({ type: '', message: '' });
 
 
 async function fetchSubscribers() {
@@ -197,19 +197,21 @@ function sendReading(sub: SubscriberLite, reading: string) {
 		.then((data) => {
 			fetchSubscriberDetails(sub);
 			setTimeout(() => {
-				visibleMessage.value = 'success';
+				visibleMessage.type = 'success';
+				visibleMessage.message = 'Показание принято';
 			});
 		})
 		.catch((err: any) => {
 			console.error(err);
 			setTimeout(() => {
-				visibleMessage.value = 'error';
+				visibleMessage.type = 'error';
+				visibleMessage.message = err.data.message;
 			});
 		})
 		.finally(() => {
 			setTimeout(() => {
-				visibleMessage.value = '';
-			}, 5000);
+				visibleMessage.type = '';
+			}, 10000);
 		})
 }
 </script>

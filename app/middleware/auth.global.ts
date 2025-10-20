@@ -8,26 +8,31 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 	// Если авторизация требуется
 	if(NEEDS_AUTH) {
-		if(!user.token) {
+		if(!user.token) { // Если нет токена
 			return navigateTo({
 				path: '/login',
-				query: { redirect: to.fullPath }
+				// query: { redirect: to.fullPath }
 			}, { replace: true })
 		}
-		else {
+		else { // Если есть токен 🪙
+			const role = user.userData?.role;
 			if(ALLOWED_ROLES && ALLOWED_ROLES.length > 0) {
-				if(!ALLOWED_ROLES.includes(user.userData?.role)) {
-					return navigateTo('/403', { replace: true })
+				if(!ALLOWED_ROLES.includes(role)) { // Если пользователь не иммет доступа (роли) к странице
+					const page = determinePageByRole(role);
+					return navigateTo(page, { replace: true });
 				}
 			}
+
 		}
 	}
-	else {
-		if (to.path === '/login' && user.token) {
-			const role = user.userData?.role;
-			return navigateTo('/', { replace: true });
-		}
+
+	// Если уже авторизован и пришёл на /login — перекинуть на главную
+	if (to.path === '/login' && user.token) {
+		const role = user.userData?.role;
+		const page = determinePageByRole(role);
+		return navigateTo(page, { replace: true });
 	}
+
 
 
 
@@ -55,3 +60,17 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	// 	return navigateTo('/', { replace: true });
 	// }
 })
+
+const determinePageByRole = (role: string): string => {
+	switch( role.toUpperCase() ) {
+		case 'CONTRACTOR':
+			return '/issues';
+		case 'ADMIN':
+			return '/issues';
+		case 'CALLCENTER':
+			return '/readings';
+
+		default:
+			return '/403';
+	}
+}

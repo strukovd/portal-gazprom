@@ -17,6 +17,7 @@
 import BaseButton from '~/components/common/BaseButton.vue';
 
 const userStore = useUserStore();
+if( !userStore.userData ) navigateTo('/login');
 
 function logout() {
 	userStore.clear();

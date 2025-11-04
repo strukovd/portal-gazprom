@@ -23,10 +23,15 @@ export type SubscriberDetails = {
 	district: string,
 	balance: number,
 	readings: Array<{
+		id: number;
 		reading: number,
 		created: string,
 		consumption: number,
-		sender: string
+		supplier: {
+			name: string;
+			iconLight: string;
+			iconDark: string;
+		}
 	}>,
 	applications: Array<{
 		id: number,

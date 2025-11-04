@@ -11,41 +11,26 @@
 					<div class="small-text">{{ sub.address }}</div>
 					<div class="reading-date"><span>Создан: </span><span class="date">{{ sub.created }}</span></div>
 
+					<div style="margin:1em 0; display:flex; align-items:center; gap:.6em;">
+						<BaseTextBox
+							@submit="(value: string)=>{ sendReading(sub, value) }"
+							style="flex:auto 1 0;"
+							prepend-icon="mdi-counter"
+							button="Отправить"
+							placeholder="Отправить показание"
+						/>
+						<BaseButton v-if="!sub.district" @click="fetchSubscriberDetails(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
+					</div>
+
 					<section v-if="sub.district" class="account-info">
 						<section class="account-info-container">
-							<div class="account-info-balance"><span class="small-text">Баланс: </span><span class="amount">{{ sub.balance }}</span></div>
+							<div class="account-info-balance"><span class="small-text">Задолженность: </span><span class="amount">{{ sub.balance }}</span></div>
 							<div class="account-info-district"><span class="small-text">Район: </span><span class="small-text">{{ sub.district }}</span></div>
 						</section>
 
 						<section class="message">
 							<div v-if="visibleMessage.type === 'success'" class="account-success-message" style="font-size:2em; color:forestgreen; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-checkbox-marked-circle" size="1.2em"/></span><span> {{ visibleMessage.message }}</span></div>
 							<div v-if="visibleMessage.type ===   'error'" class="account-error-message" style="font-size:2em; color:#c8290f; display:flex; justify-content:center; align-items: center; gap:.2em; margin:.4em 0 0 0;"><span><BaseIcon name="mdi-alert-decagram" size="1.2em"/></span><span> {{ visibleMessage.message || 'Ошибка при отправке' }}</span></div>
-						</section>
-
-						<section class="card-section" v-if="Array.isArray(sub?.applications) && sub.applications.length">
-							<h2>Заявки</h2>
-							<div class="table-wrapper">
-								<table class="issues-table">
-									<thead>
-										<tr>
-											<th>Ключ</th>
-											<th>Название</th>
-											<th>Исполнитель</th>
-											<th>Статус</th>
-											<th>Дата</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr v-for="(issue, index) of sub.applications" :key="index">
-											<td class="small-text">{{ issue.issueKey }}</td>
-											<td class="small-text">{{ issue.summary }}</td>
-											<td class="small-text">{{ issue.assignee }}</td>
-											<td class="small-text">{{ issue.status.name }}</td>
-											<td class="small-text date">{{ new Date(issue.created).toLocaleDateString('RU-ru') }}</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
 						</section>
 
 						<section class="card-section" v-if="Array.isArray(sub?.readings) && sub.readings.length">
@@ -58,6 +43,7 @@
 											<th>Потребление</th>
 											<th>Дата</th>
 											<th>Отправитель</th>
+											<th>...</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -65,7 +51,8 @@
 											<td>{{ reading.reading }}</td>
 											<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
 											<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
-											<td>{{ reading.sender }}</td>
+											<td>{{ reading.supplier.name }}</td>
+											<td><BaseButton @click="deleteReading(sub, reading.id, $event)" prepend-icon="mdi-delete" :disabled="hasDaysPassed(reading.created)" variant="secondary">Удалить</BaseButton></td>
 										</tr>
 									</tbody>
 								</table>
@@ -97,18 +84,33 @@
 								</table>
 							</div>
 						</section>
-					</section>
 
-					<div style="margin:.6em 0 0 0; display:flex; align-items:center; gap:.6em;">
-						<BaseTextBox
-							@submit="(value: string)=>{ sendReading(sub, value) }"
-							style="flex:auto 1 0;"
-							prepend-icon="mdi-counter"
-							button="Отправить"
-							placeholder="Отправить показание"
-						/>
-						<BaseButton v-if="!sub.district" @click="fetchSubscriberDetails(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
-					</div>
+						<section class="card-section" v-if="Array.isArray(sub?.applications) && sub.applications.length">
+							<h2>Заявки</h2>
+							<div class="table-wrapper">
+								<table class="issues-table">
+									<thead>
+										<tr>
+											<th>Ключ</th>
+											<th>Название</th>
+											<th>Исполнитель</th>
+											<th>Статус</th>
+											<th>Дата</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="(issue, index) of sub.applications" :key="index">
+											<td class="small-text">{{ issue.issueKey }}</td>
+											<td class="small-text">{{ issue.summary }}</td>
+											<td class="small-text">{{ issue.assignee }}</td>
+											<td class="small-text">{{ issue.status.name }}</td>
+											<td class="small-text date">{{ new Date(issue.created).toLocaleDateString('RU-ru') }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					</section>
 				</div>
 			</div>
 			<!-- <div v-if="search && !readingList.length && !loading">
@@ -213,6 +215,47 @@ function sendReading(sub: SubscriberLite, reading: string) {
 				visibleMessage.type = '';
 			}, 10000);
 		})
+}
+
+const hasDaysPassed = (date: string, days = 30) => {
+	const readingDate = new Date(date);
+	const currentDate = new Date();
+	readingDate.setDate(readingDate.getDate() + days);
+	return readingDate < currentDate;
+}
+
+function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
+	if (!confirm('Вы уверены, что хотите удалить показание?')) return;
+
+	const tr = event.target as HTMLTableRowElement;
+	tr?.closest('tr')?.remove();
+
+	$api('v1/portal/readings', {
+		method: 'DELETE',
+		body: {
+			account: sub.account,
+			id: readingId
+		},
+	})
+		.then((data) => {
+			fetchSubscriberDetails(sub);
+			setTimeout(() => {
+				visibleMessage.type = 'success';
+				visibleMessage.message = 'Показание удалено';
+			});
+		})
+		.catch((err: any) => {
+			console.error(err);
+			setTimeout(() => {
+				visibleMessage.type = 'error';
+				visibleMessage.message = err.data.message;
+			});
+		})
+		.finally(() => {
+			setTimeout(() => {
+				visibleMessage.type = '';
+			}, 10000);
+		});
 }
 </script>
 

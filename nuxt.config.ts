@@ -10,6 +10,16 @@ export default defineNuxtConfig({
 		preset: 'github-pages',
 	},
 	app: {
+		head: {
+			title: 'Portal',
+			meta: [
+				{ charset: 'utf-8' },
+				{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
+			],
+			link: [
+				{ rel: 'icon', type: 'image/x-icon', href: '/portal.svg' }
+			]
+		},
 		baseURL: process.env.BASE_URL ?? '/',
 	},
 	modules: [

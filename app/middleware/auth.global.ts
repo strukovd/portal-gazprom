@@ -27,7 +27,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	}
 
 	// Если уже авторизован и пришёл на /login — перекинуть на главную
-	if (to.path === '/login' && user.token) {
+	if (to.path.replace(/\/$/, '') === '/login' && user.token) {
 		const role = user.userData?.role;
 		const page = determinePageByRole(role);
 		return navigateTo(page, { replace: true });
@@ -62,7 +62,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 
 const determinePageByRole = (role: string): string => {
-	switch( role.toUpperCase() ) {
+	switch( String(role).toUpperCase() ) {
 		case 'CONTRACTOR':
 			return '/issues';
 		case 'ADMIN':
@@ -70,6 +70,7 @@ const determinePageByRole = (role: string): string => {
 		case 'CALLCENTER':
 			return '/readings';
 
+		// Если токен не ошибочный и role не определена, или role неизвестна и не соответствует никакой странице
 		default:
 			return '/403';
 	}

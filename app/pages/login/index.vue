@@ -57,7 +57,7 @@ async function signIn() {
 						navigateTo('/issues');
 						break;
 					case 'ADMIN':
-						navigateTo('/issues');
+						navigateTo('/');
 						break;
 					case 'CALLCENTER':
 						navigateTo('/readings');

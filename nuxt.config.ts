@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	css: [
 		'@mdi/font/css/materialdesignicons.min.css',
+		'~/assets/styles/global.scss'
 	],
 	nitro: { // Для генерации статических файлов
 		preset: 'github-pages',

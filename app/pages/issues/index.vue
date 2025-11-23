@@ -1,7 +1,8 @@
 <template>
 	<section class="issues-page">
 		<div class="issues">
-			<h1>Заявки сотрудника</h1>
+			<h1 style="margin:.4em 0;">Заявки сотрудника</h1>
+			<BaseButton @click="navigateTo('/issues/create')" prependIcon="mdi-file-document-plus-outline" style="font-size:1.4em; flex-basis:auto; flex-grow:1; margin-bottom:.4em;">Добавить заявку</BaseButton>
 			<BaseTextBox v-model="search" @submit="fetchIssues" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
 			<div class="issue" v-for="issue of appStore.issues" :key="String(issue.summary).slice(0, 4)">
 				<div class="title">{{ issue.summary }}</div>
@@ -9,7 +10,7 @@
 					<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
 					<div class="status" :style="{ background: issue.color }">{{ issue.issueStatus }}</div>
 				</div>
-				<BaseButton @click="navigateTo('/construct-pass')" prependIcon="mdi-plus">Добавить строй паспорт</BaseButton>
+				<BaseButton @click="navigateTo('/construct-pass')" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
 			</div>
 			<div v-if="!appStore.issues.length">
 				<BaseIcon name="mdi-magnify" size="1.2em" style="margin:0 .4em 0 0;"/>

@@ -52,7 +52,7 @@
 											<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
 											<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
 											<td>{{ reading.supplier.name }}</td>
-											<td><BaseButton @click="deleteReading(sub, reading.id, $event)" prepend-icon="mdi-delete" :disabled="hasDaysPassed(reading.created)" variant="secondary">Удалить</BaseButton></td>
+											<td><BaseButton @click="deleteReading(sub, reading.id, $event)" prepend-icon="mdi-delete" :disabled="isCurrentMonth(reading.created)" variant="secondary">Удалить</BaseButton></td>
 										</tr>
 									</tbody>
 								</table>
@@ -215,6 +215,12 @@ function sendReading(sub: SubscriberLite, reading: string) {
 				visibleMessage.type = '';
 			}, 10000);
 		})
+}
+
+const isCurrentMonth = (date: string) => {
+	const readingDate = new Date(date);
+	const currentDate = new Date();
+	return readingDate.getMonth() === currentDate.getMonth();
 }
 
 const hasDaysPassed = (date: string, days = 30) => {

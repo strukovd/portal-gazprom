@@ -52,7 +52,7 @@
 											<td :style="{ color: reading.consumption > 0 ? 'green' : 'inherit' }">{{ reading.consumption }}</td>
 											<td>{{ new Date(reading.created).toLocaleDateString('RU-ru') }}</td>
 											<td>{{ reading.supplier.name }}</td>
-											<td><BaseButton @click="deleteReading(sub, reading.id, $event)" prepend-icon="mdi-delete" :disabled="isCurrentMonth(reading.created)" variant="secondary">Удалить</BaseButton></td>
+											<td><BaseButton @click="deleteReading(sub, reading.id, $event)" prepend-icon="mdi-delete" :disabled="!isCurrentMonth(reading.created)" variant="secondary">Удалить</BaseButton></td>
 										</tr>
 									</tbody>
 								</table>

@@ -17,8 +17,10 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
+	emits: [ 'update:modelValue' ],
 	props: {
 		n: { required: true, type: Number },
+		modelValue: { required: true, type: Array },
 	},
 	data() {
 		return {
@@ -78,6 +80,7 @@ export default defineComponent({
 			const text = this.trim(el.textContent ?? el.innerText);
 			this.rows[rowIndex][colIndex] = text;
 
+			this.$emit('update:modelValue', this.rows);
 			this.ensureInvariants();
 		},
 

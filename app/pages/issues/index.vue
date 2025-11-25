@@ -10,7 +10,7 @@
 					<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
 					<div class="status" :style="{ background: issue.color }">{{ issue.issueStatus }}</div>
 				</div>
-				<BaseButton @click="navigateTo('/construct-pass')" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
+				<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
 			</div>
 			<div v-if="!appStore.issues.length">
 				<BaseIcon name="mdi-magnify" size="1.2em" style="margin:0 .4em 0 0;"/>

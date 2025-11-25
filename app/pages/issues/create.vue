@@ -2,64 +2,65 @@
 	<section class="create-issue-page">
 		<section class="forms">
 			<BaseTabs v-model="projectKey" autoselect :items="tabs"/>
-			<form v-if="projectKey === 'NGV4'">
+			<form @submit.prevent="sendForm" v-if="projectKey === 'NGV4'">
 				<h2><BaseIcon name="mdi-account-outline"/> Информация о владельце объекта</h2>
-				<BaseTextBox placeholder="Фамилия"/>
-				<BaseTextBox placeholder="Имя"/>
-				<BaseTextBox placeholder="Отчество"/>
-
-				<h2><BaseIcon name="mdi-card-account-details-outline"/> Паспортные данные</h2>
-				<BaseTextBox placeholder="ИНН"/>
-				<BaseAutocomplete :items="[{ key: 'male', value: 'Мужской' }, { key: 'female', value: 'Женский' }]" placeholder="Пол"/>
-				<BaseTextBox type="date" placeholder="Дата рождения"/>
-				<BaseTextBox placeholder="Номер паспорта"/>
-				<BaseTextBox type="date" placeholder="Дата выдачи"/>
-				<BaseTextBox placeholder="Орган выдачи"/>
-				<!-- Скан. паспорта -->
-
-				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
-				<BaseTextBox placeholder="Электронный адрес"/>
-				<BaseTextBox placeholder="Контактный номер"/>
-				<BaseTextBox placeholder="WhatsApp номер"/>
+				<BaseTextBox name="surname" v-model="form['surname']" placeholder="Фамилия"/>
+				<BaseTextBox name="name" v-model="form['name']" placeholder="Имя"/>
+				<BaseTextBox name="lname" v-model="form['lname']" placeholder="Отчество"/>
 
 				<h2><BaseIcon name="mdi-office-building-marker-outline"/> Информация об объекте газификации</h2>
-				<BaseTextBox placeholder="Адрес"/>
-				<!-- <BaseTextBox placeholder="Скан. тех. паспорта на дом"/> -->
-				<BaseAutocomplete :items="[{ key: '', value: 'Плита' }, { key: '', value: 'Колет' }, { key: '', value: 'Газовая колонка' }]" placeholder="Планируемые газоиспользующие приборы"/>
-				<BaseAutocomplete :items="[{ key: '', value: 'Отопление' }, { key: '', value: 'Горячее водоснабжение' }, { key: '', value: 'Пищеприготовление' }]" placeholder="Характер потребления газа"/>
-				<div><label><input type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
+				<BaseTextBox name="address" placeholder="Адрес"/>
+				<BaseFilePicker v-model="form['scanOfHousePassport']" label="Скан. тех. паспорта на дом"/>
+				<BaseAutocomplete multiple v-model="form['plannedGasUsingDevices']" :items="[{ key: 'плита', value: 'Плита' }, { key: 'колет', value: 'Колет' }, { key: 'газовая колонка', value: 'Газовая колонка' }]" placeholder="Планируемые газоиспользующие приборы"/>
+				<BaseAutocomplete multiple v-model="form['gasConsumptionPattern']" :items="[{ key: 'отопление', value: 'Отопление' }, { key: 'горячее водоснабжение', value: 'Горячее водоснабжение' }, { key: 'pis', value: 'Пищеприготовление' }]" placeholder="Характер потребления газа"/>
 
-				<BaseButton prependIcon="mdi-content-save">Сохранить</BaseButton>
+				<h2><BaseIcon name="mdi-card-account-details-outline"/> Паспортные данные</h2>
+				<BaseTextBox name="tin" v-model="form['inn']" placeholder="ИНН"/>
+				{{ form['inn'] }}
+				<BaseAutocomplete v-model="form['gender']" :items="[{ key: 'M', value: 'Мужской' }, { key: 'F', value: 'Женский' }]" placeholder="Пол"/>
+				<BaseTextBox name="birthdate" v-model="form['birthDate']" type="date" placeholder="Дата рождения"/>
+				<BaseTextBox name="passportNum" v-model="form['passportNum']" placeholder="Номер паспорта"/>
+				<BaseTextBox name="issueDate" v-model="form['passportIssuedDate']" type="date" placeholder="Дата выдачи"/>
+				<BaseTextBox name="issuedBy" v-model="form['passportIssuedBy']" placeholder="Орган выдачи"/>
+
+				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
+				<BaseTextBox name="email" v-model="form['email']" placeholder="Электронный адрес"/>
+				<BaseTextBox name="phone" v-model="form['contactNumber']" placeholder="Контактный номер"/>
+				<BaseTextBox name="whatsapp" v-model="form['whatsappNumber']" placeholder="WhatsApp номер"/>
+
+				<div><label><input v-model="form['agreement']" type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
+				<BaseButton @click="sendForm" prependIcon="mdi-content-save">Сохранить</BaseButton>
 			</form>
 			<form v-else-if="projectKey === 'PRV4'">
 				<h2><BaseIcon name="mdi-account-outline"/> Информация о владельце объекта</h2>
-				<BaseTextBox placeholder="Лицевой счет"/>
-				<BaseTextBox placeholder="Фамилия"/>
-				<BaseTextBox placeholder="Имя"/>
-				<BaseTextBox placeholder="Отчество"/>
-
-				<h2><BaseIcon name="mdi-card-account-details-outline"/> Паспортные данные</h2>
-				<BaseTextBox placeholder="ИНН"/>
-				<BaseAutocomplete :items="[{ key: 'male', value: 'Мужской' }, { key: 'female', value: 'Женский' }]" placeholder="Пол"/>
-				<BaseTextBox type="date" placeholder="Дата рождения"/>
-				<BaseTextBox placeholder="Номер паспорта"/>
-				<BaseTextBox type="date" placeholder="Дата выдачи"/>
-				<BaseTextBox placeholder="Орган выдачи"/>
-				<!-- Скан. паспорта -->
-
-				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
-				<BaseTextBox placeholder="Электронный адрес"/>
-				<BaseTextBox placeholder="Контактный номер"/>
-				<BaseTextBox placeholder="WhatsApp номер"/>
+				<BaseTextBox name="account" v-model="form['account']" placeholder="Лицевой счет"/>
+				<BaseTextBox name="surname" v-model="form['surname']" placeholder="Фамилия"/>
+				<BaseTextBox name="name" v-model="form['name']" placeholder="Имя"/>
+				<BaseTextBox name="lname" v-model="form['lname']" placeholder="Отчество"/>
 
 				<h2><BaseIcon name="mdi-office-building-marker-outline"/> Информация об объекте газификации</h2>
-				<!-- <BaseTextBox placeholder="Скан. тех. паспорта на дом"/> -->
+				<BaseFilePicker v-model="form['scanOfHousePassport']" label="Скан. тех. паспорта на дом"/>
 
-				<div><label><input type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
-				<div><label><input type="checkbox"> <span>Обновить данные абонента</span></label></div>
+				<h2><BaseIcon name="mdi-card-account-details-outline"/> Паспортные данные</h2>
+				<BaseTextBox name="tin" v-model="form['inn']" placeholder="ИНН"/>
+				<BaseAutocomplete v-model="form['gender']" :items="[{ key: 'M', value: 'Мужской' }, { key: 'F', value: 'Женский' }]" placeholder="Пол"/>
+				<BaseTextBox name="birthdate" v-model="form['birthDate']" type="date" placeholder="Дата рождения"/>
+				<BaseTextBox name="passportNum" v-model="form['passportNum']" placeholder="Номер паспорта"/>
+				<BaseTextBox name="issueDate" v-model="form['passportIssuedDate']" type="date" placeholder="Дата выдачи"/>
+				<BaseTextBox name="issuedBy" v-model="form['passportIssuedBy']" placeholder="Орган выдачи"/>
+
+				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
+				<BaseTextBox name="email" v-model="form['email']" placeholder="Электронный адрес"/>
+				<BaseTextBox name="phone" v-model="form['contactNumber']" placeholder="Контактный номер"/>
+				<BaseTextBox name="whatsapp" v-model="form['whatsappNumber']" placeholder="WhatsApp номер"/>
+
+				<div><label><input v-model="form['agreement']" type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
+				<div><label><input v-model="form['updateData']" type="checkbox"> <span>Обновить данные абонента</span></label></div>
 
 				<BaseButton prependIcon="mdi-content-save">Сохранить</BaseButton>
 			</form>
+
+			<div v-if="errorMessage" class="error" style="margin-top:1em; color:red;">{{ errorMessage }}</div>
 		</section>
 	</section>
 </template>
@@ -75,9 +76,10 @@ const { $api } = useNuxtApp();
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseIcon from '~/components/common/BaseIcon.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
-import type { IssueList } from '~/types/IssueList';
 import BaseTabs from '~/components/common/BaseTabs.vue';
 import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
+import BaseFilePicker from '~/components/common/BaseFilePicker.vue'
+import type { Reactive } from 'vue';
 
 const userStore = useUserStore();
 const appStore = useAppStore();
@@ -87,40 +89,57 @@ const tabs = [
 	{ key: 'PRV4', caption: 'Перемонтаж', icon: 'mdi-file-document-multiple-outline' }
 ];
 const projectKey = ref('');
+const form = reactive({}) as Reactive<Record<string, any>>;
+const errorMessage = ref('');
 
-
-async function fetchIssues() {
+async function sendForm() {
 	const queryParams = {} as Record<string, string | number>;
-	queryParams.page = 1;
-	queryParams.size = 10;
 	const token = userStore.token;
-
 	if(!token) {
 		console.error('No token');
 		return;
 	}
 
-	if(search.value) queryParams.search = search.value;
+	const formData = new FormData();
+	formData.append('key', projectKey.value);
+	const fileFields = ['scanOfHousePassport'];
+	const multiselectFields = ['plannedGasUsingDevices', 'gasConsumptionPattern'];
+	Object.keys(form).forEach(fieldKey => {
+		if(fileFields.includes(fieldKey) || multiselectFields.includes(fieldKey)) return;
+		formData.append(fieldKey, form[fieldKey]);
+	});
 
-	const data: IssueList = await $api('v1/portal/notes', {
+	multiselectFields.forEach(fieldKey => {
+		String(form[fieldKey]).split(',').forEach(value => {
+			formData.append(fieldKey, value);
+		});
+	});
+
+	fileFields.forEach(fieldKey => {
+		formData.append('files', form[fieldKey]);
+	});
+
+
+
+	// https://api.gazprom.kg/api/v1/applications
+	$api('v1/applications', {
 		query: queryParams,
-		method: 'GET',
+		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
-	});
-
-	if(data.success) {
-		const issues = data.data;
-		const colors = [ '#0079C1', '#14cf34', '#e3ce31', ];
-
-		issues.forEach((issue: any) => {
-			const color = colors[Math.floor(Math.random() * colors.length)];
-			issue.color = color;
+		body: formData
+	})
+		.then((res: any) => {
+			return res.json();
+		})
+		.then((data: any) => {
+			console.log(data);
+		})
+		.catch(err => {
+			errorMessage.value = err.data.message;
+			console.error(err);
 		});
-
-		appStore.issues = issues;
-	}
 }
 
 </script>

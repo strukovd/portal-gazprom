@@ -37,6 +37,7 @@ function logout() {
 		.userbox {
 			display: flex;
 			flex-direction: row;
+			align-items: center;
 			gap:1.2em;
 			font-size:12px;
 			padding:.6em;

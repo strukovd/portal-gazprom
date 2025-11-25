@@ -72,7 +72,7 @@ export default defineComponent({
 	emits: [ 'update:modelValue', 'change' ],
 	components: { BaseIcon },
 	props: {
-		modelValue: [String, Number] as any,
+		modelValue: [String, Number, Array] as any,
 		label: String,
 		placeholder: String,
 		appendIcon: String,
@@ -85,6 +85,7 @@ export default defineComponent({
 
 		fieldKey: { type: String, default: 'key' },
 		fieldValue: { type: String, default: 'value' },
+		emitValue: { type: Boolean, default: false } // если true, возвращаем value вместо key
 	},
 	data() {
 		return {
@@ -147,18 +148,24 @@ export default defineComponent({
 		}
 	},
 	methods: {
+		getEmitField() {
+			return this.emitValue ? this.fieldValue : this.fieldKey;
+		},
 		selectItem(item: any) {
 			if(item) {
 				let emitedValue;
+				const emitField = this.getEmitField();
 				if(this.multiple) { // режим мульти выбора
 					this.searchValue = '';
 					this.selectedItems.push(item);
-					emitedValue = this.selectedItems.map( item => String(item[this.fieldKey]) ); // $emit массив ключей
+					// $emit массив ключей/значений
+					emitedValue = this.selectedItems.map( selected => String(selected[emitField]) );
 				}
 				else {
 					this.searchValue = item[this.fieldValue];
 					this.selectedItems = [item];
-					emitedValue = item[this.fieldKey]; // $emit один ключ
+					// $emit один ключ/значение
+					emitedValue = item[emitField];
 				}
 
 				this.$emit('update:modelValue', emitedValue );
@@ -250,8 +257,23 @@ export default defineComponent({
 		init() {
 			// Если указано ранее выбранное значение, ищем его ключ в списке и отмечам выбранным
 			if( this.modelValue ) {
-				const selectedItem = this.items?.find( item => String(item[this.fieldKey]) === String(this.modelValue) );
-				this.selectItem(selectedItem);
+				const emitField = this.getEmitField();
+				if(this.multiple && Array.isArray(this.modelValue)) {
+					const matchingItems = this.modelValue
+						.map(val => this.items?.find(item => String(item[emitField]) === String(val)))
+						.filter(Boolean) as any[];
+
+					if(matchingItems.length) {
+						this.searchValue = '';
+						this.selectedItems = matchingItems;
+						const emitedValue = matchingItems.map(item => String(item[emitField]));
+						this.$emit('update:modelValue', emitedValue );
+					}
+				}
+				else {
+					const selectedItem = this.items?.find( item => String(item[emitField]) === String(this.modelValue) );
+					if(selectedItem) this.selectItem(selectedItem);
+				}
 			}
 			else {
 				// При autoselect, сразу выбираем первый элемент

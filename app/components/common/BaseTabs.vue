@@ -8,7 +8,6 @@
 			@click="onSelected(button.key)"
 		>
 			<BaseIcon v-if="button.icon" :name="button.icon" size="1.2em" style="margin-right:.2em; opacity:.8; vertical-align:baseline;"></BaseIcon>
-			<!-- <v-icon v-if="button.icon" :icon="button.icon" size="1.2em" style="margin-right:.2em; opacity:.8; vertical-align:baseline;"></v-icon> -->
 			<span style="font-weight:300;">{{ button.caption }}</span>
 			<div class="error-counter" v-if="button.badge">{{ button.badge }}</div>
 		</button>
@@ -91,6 +90,7 @@ export default defineComponent({
 		margin:0 .1em;
 		// background: #EBF1FF;
 		// color: #0079C1;
+		font-size: .9em;
 		font-weight: 500;
 		border-radius: 4px;
 		box-shadow: none;

@@ -14,7 +14,7 @@
 
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
-					<input :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
+					<input :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
 					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
 					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
 					<BaseButton v-if="button" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
@@ -38,6 +38,7 @@ export default defineComponent({
 		modelValue: {
 			type: [String, Number] as PropType<string | number | undefined>,
 		},
+		name: String,
 		label: String,
 		prependIcon: String,
 		appendIcon: String,
@@ -67,11 +68,9 @@ export default defineComponent({
 				return this.modelValue !== undefined ? this.modelValue : this.innerValue;
 			},
 			set(v: string | number) {
-				if (this.modelValue !== undefined) {
-					this.$emit('update:modelValue', v);
-				} else {
-					this.innerValue = v;
-				}
+				this.innerValue = v;
+				// Всегда эмитим обновление, чтобы родитель получил значение даже при стартовом undefined.
+				this.$emit('update:modelValue', v);
 			}
 		}
 	},

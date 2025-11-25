@@ -72,7 +72,7 @@ export default defineComponent({
 			// background: #0079C1;
 			// color: #fff;
 
-			background: #0052cc;
+			background: #0079C1;
 			color: #fff;
 			font-weight: 700;
 			// border: 1px solid rgba(224, 226, 231, 0.56);

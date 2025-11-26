@@ -1,6 +1,6 @@
 <template>
 	<div class="file-picker-box" :class="{ 'invalid': error }">
-		<header class="header" style="display:flex; align-items:center; padding-right:1em;">
+		<header class="header" style="display:flex; align-items:start; padding-right:1em;">
 			<div v-if="label" class="caption-container" style="flex:auto 1 1;">
 				<span class="caption">{{ label }}</span>
 			</div>

@@ -1,8 +1,25 @@
 <template>
+	<!-- FEATURES
+	- [+] label
+	- [+] placeholder
+	- [+] autofocus
+	- [+] error
+	- [+] disabled
+	- [+] readonly
+	- [+] button
+	- [+] appendIcon
+	- [+] prependIcon
+	- [+] type
+	- [+] value
+	- [+] name
+	- [+] mask
+
+		safari
+	-->
 	<div class="base-text-box" :class="{ 'invalid': error }" @keydown.enter="onSubmit" >
 		<label>
 			<div class="text-box-wrapper">
-				<header class="header" style="display:flex; align-items:center; padding-right:1em;">
+				<header class="header" style="display:flex; align-items:start; padding-right:1em;">
 					<div v-if="label" class="caption-container" style="flex:auto 1 1;">
 						<span class="caption">{{ label }}</span>
 					</div>
@@ -52,7 +69,8 @@ export default defineComponent({
 			default: 'text'
 		},
 		button: String,
-		error: String as () => string | null | undefined
+		error: String as () => string | null | undefined,
+		mask: String // пример: "+996 (###) ## ## ##" (# — цифра, A — буква, * — любой символ)
 	},
 	data() {
 		return {
@@ -75,13 +93,58 @@ export default defineComponent({
 		}
 	},
 	methods: {
+		applyMask(value: string) {
+			if (!this.mask) return value;
+
+			const mask = this.mask;
+			const input = value ?? '';
+			let maskedValue = '';
+			let maskIndex = 0;
+			let inputIndex = 0;
+
+			while (maskIndex < mask.length && inputIndex < input.length) {
+				const maskChar = mask[maskIndex];
+				const inputChar: string = input[inputIndex];
+
+				if (maskChar === '#') {
+					if (/\d/.test(inputChar)) {
+						maskedValue += inputChar;
+						maskIndex++;
+					}
+					inputIndex++;
+				} else if (maskChar === 'A') {
+					if (/[a-zA-Z]/.test(inputChar)) {
+						maskedValue += inputChar;
+						maskIndex++;
+					}
+					inputIndex++;
+				} else if (maskChar === '*') {
+					maskedValue += inputChar;
+					maskIndex++;
+					inputIndex++;
+				} else {
+					maskedValue += maskChar; // Статический символ маски (скобки, пробелы и т.п.)
+					if (inputChar === maskChar) {
+						inputIndex++;
+					}
+					maskIndex++;
+				}
+			}
+
+			return maskedValue;
+		},
 		onSubmit(event: KeyboardEvent) {
 			const valueCopy = this.modelValue !== undefined ? this.modelValue : this.innerValue;
 			this.$emit('submit', valueCopy, event);
 		},
 		onInput(event: Event) {
 			const val = (event.target as HTMLInputElement)?.value ?? '';
-			this.valueProxy = this.type === 'number' ? Number(val) : val;
+			const masked = this.mask ? this.applyMask(val) : val;
+			if (this.mask && event.target) {
+				(event.target as HTMLInputElement).value = masked;
+			}
+
+			this.valueProxy = this.type === 'number' && !this.mask ? Number(masked) : masked;
 		}
 	},
 	created() {
@@ -90,7 +153,10 @@ export default defineComponent({
 	watch: {
 		// Если родитель всё же начал менять modelValue — синхронизируем стартовое внутреннее значение
 		modelValue(newVal) {
-			if (newVal !== undefined) this.innerValue = newVal as string | number;
+			if (newVal !== undefined) {
+				const raw = typeof newVal === 'number' ? String(newVal) : (newVal as string);
+				this.innerValue = this.mask ? this.applyMask(raw) : (newVal as string | number);
+			}
 		}
 	}
 	});

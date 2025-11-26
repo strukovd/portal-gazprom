@@ -193,7 +193,7 @@ function sendDocument() {
 	fillEmptyFields(body.data);
 
 	console.log(`body`, body);
-	$api('v1/portal/generatePassport', {
+	$api('v1/portal/generate-passport', {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${token}`
@@ -391,12 +391,6 @@ form.tightnessPermissiblePressureDropCm2 = '-'; // presureDown4
 </script>
 
 <style lang="scss">
-body:has(.construct-pass-page) {
-	background-color: #e0f2fe;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: #183d6d;
-}
-
 .construct-pass-page {
 	.documents {
 		display: flex;

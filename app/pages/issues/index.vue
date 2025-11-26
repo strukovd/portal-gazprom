@@ -51,7 +51,7 @@ async function fetchIssues() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: IssueList = await $api('v1/portal/notes', {
+	const data: IssueList = await $api('v1/portal/issues', {
 		query: queryParams,
 		method: 'GET',
 		headers: {
@@ -78,12 +78,6 @@ onBeforeMount(() => {
 </script>
 
 <style lang="scss">
-body:has(.issues-page) {
-	background-color: #e0f2fe;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: #183d6d;
-}
-
 .issues-page {
 	.issues {
 		display: flex;

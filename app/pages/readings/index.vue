@@ -266,12 +266,6 @@ function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
 </script>
 
 <style lang="scss">
-body:has(.readings-page) {
-	background-color: #e0f2fe;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: #183d6d;
-}
-
 .readings-page {
 	.card-section {
 		background: #ebf1ff;

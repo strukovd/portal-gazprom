@@ -79,12 +79,6 @@ async function signIn() {
 </script>
 
 <style lang="scss">
-body:has(.login-page) {
-	background-color: #e0f2fe;
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: #183d6d;
-}
-
 .login-page {
 	display: flex;
 	justify-content: center;

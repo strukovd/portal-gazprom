@@ -24,12 +24,15 @@
 				<BaseTextBox name="passportNum" v-model="form['passportNum']" label="Номер паспорта"/>
 				<BaseTextBox name="issueDate" v-model="form['passportIssuedDate']" type="date" label="Дата выдачи"/>
 				<BaseTextBox name="issuedBy" v-model="form['passportIssuedBy']" label="Орган выдачи"/>
+				<BaseFilePicker v-model="form['scanOfPassport']" multiple label="Скан. паспорта с лицевой и обратной стороны"/>
+				<!-- <BaseFileMultiPicker v-model="form['scanOfPassport']" label="Скан. паспорта с лицевой и обратной стороны"/> -->
 
 				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
 				<BaseTextBox name="email" v-model="form['email']" label="Электронный адрес"/>
 				<BaseTextBox name="phone" mask="+996#########" v-model="form['contactNumber']" label="Контактный номер"/>
 				<BaseTextBox name="whatsapp" mask="+996#########" v-model="form['whatsappNumber']" label="WhatsApp номер"/>
 
+				<BaseFilePicker v-model="form['scanOfAgreement']" label="Скан. заявления о согласии на обработку ПД"/>
 				<div><label><input v-model="form['agreement']" type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
 				<div style="display:flex; justify-content:center; margin-top:1.4em;">
 					<BaseButton @click="sendForm" style="font-size:1.2em;" prependIcon="mdi-content-save">Сохранить</BaseButton>
@@ -52,12 +55,15 @@
 				<BaseTextBox name="passportNum" v-model="form['passportNum']" label="Номер паспорта"/>
 				<BaseTextBox name="issueDate" v-model="form['passportIssuedDate']" type="date" label="Дата выдачи"/>
 				<BaseTextBox name="issuedBy" v-model="form['passportIssuedBy']" label="Орган выдачи"/>
+				<BaseFilePicker v-model="form['scanOfPassport']" multiple label="Скан. паспорта с лицевой и обратной стороны"/>
+				<!-- <BaseFileMultiPicker v-model="form['scanOfPassport']" label="Скан. паспорта с лицевой и обратной стороны"/> -->
 
 				<h2><BaseIcon name="mdi-phone-outline"/> Контактные данные</h2>
 				<BaseTextBox name="email" v-model="form['email']" label="Электронный адрес"/>
 				<BaseTextBox name="phone" mask="+996(###)### ###" v-model="form['contactNumber']" label="Контактный номер"/>
 				<BaseTextBox name="whatsapp" mask="+996(###)### ###" v-model="form['whatsappNumber']" label="WhatsApp номер"/>
 
+				<BaseFilePicker v-model="form['scanOfAgreement']" label="Скан. заявления о согласии на обработку ПД"/>
 				<div><label><input v-model="form['agreement']" type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div>
 				<div><label><input v-model="form['updateData']" type="checkbox"> <span>Обновить данные абонента</span></label></div>
 
@@ -85,6 +91,7 @@ import BaseTextBox from '~/components/common/BaseTextBox.vue';
 import BaseTabs from '~/components/common/BaseTabs.vue';
 import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
 import BaseFilePicker from '~/components/common/BaseFilePicker.vue'
+// import BaseFileMultiPicker from '~/components/common/BaseFileMultiPicker.vue';
 import type { Reactive } from 'vue';
 
 const userStore = useUserStore();

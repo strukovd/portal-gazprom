@@ -9,20 +9,25 @@
 				<span class="error-message">{{ error }}</span>
 			</div>
 		</header>
-		<div :class="[`file-picker`, { unstored: selectedFileObject }]" @dragover.prevent @drop.prevent="onSelectFile">
+		<div :class="[`file-picker`, { unstored: selectedFiles.length > 0 }]" @dragover.prevent @drop.prevent="onSelectFile">
 			<div class="drop-zone">
-				<section v-if="!selectedFileObject" class="empty-section">
-					<BaseIcon class="icon" name="mdi-file-document-plus-outline"></BaseIcon>
+				<section v-if="!selectedFiles.length" class="empty-section">
+					<BaseIcon class="icon" :name="multiple ? 'mdi-file-document-multiple-outline' : 'mdi-file-document-plus-outline'"></BaseIcon>
 				</section>
 				<section v-else class="preview-section">
-					<div style="display:inline-block; font-size:1.6em; padding:.4em 1em;">{{ selectedFileObject?.name }}</div>
+					<div class="file-list">
+						<div style="font-size:1.2em;" class="file-pill" v-for="(file, index) of selectedFiles" :key="index">
+							<BaseIcon name="mdi-paperclip" size="1.1em"/>
+							<span class="file-name">{{ file.name }}</span>
+						</div>
+					</div>
 				</section>
 				<section class="label-section">
-					<span>Перетащите файл сюда или нажмите <br> «Выбрать файл».</span>
+					<span>Перетащите {{ multiple ? 'файлы' : 'файл' }} сюда или нажмите <br> «Выбрать файл».</span>
 				</section>
 				<BaseButton class="button" prependIcon="mdi-plus" @click="onClick" color="primary"><span>Выбрать файл</span></BaseButton>
 			</div>
-			<input type="file" ref="fileInput" style="display:none;" @change="onSelectFile">
+			<input type="file" :multiple="multiple" ref="fileInput" style="display:none;" @change="onSelectFile">
 		</div>
 	</div>
 </template>
@@ -40,8 +45,9 @@ export default defineComponent({
 	props: {
 		label: String,
 		src: String as () => string|null,
-		modelValue: Object as () => any,
-		error: String
+		modelValue: { type: [File, Array] as PropType<File | File[]>, default: null },
+		error: String,
+		multiple: Boolean
 	},
 
 	watch: {
@@ -50,14 +56,18 @@ export default defineComponent({
 		},
 		modelValue(newValue, oldValue) {
 			// сохраняем во внутреннюю переменную значение переданное в v-model
-			this.selectedFileObject = newValue;
+			if(this.multiple) {
+				this.selectedFiles = Array.isArray(newValue) ? newValue : (newValue ? [newValue] : []);
+			} else {
+				this.selectedFiles = newValue ? [newValue as File] : [];
+			}
 		},
 	},
 
 	data() {
 		return {
 			storedFile: null as string | null,
-			selectedFileObject: null as File | null,
+			selectedFiles: [] as File[],
 		};
 	},
 
@@ -67,22 +77,41 @@ export default defineComponent({
 		},
 
 		onSelectFile(event: any) {
-			const selectedFile = event?.dataTransfer?.files[0] || event.target.files[0];
+			const dt = event?.dataTransfer?.files;
+			const input = event?.target?.files;
+			const list = dt?.length ? dt : input;
 
-			// Загружаем содержимое файла
-			if( selectedFile ) {
-				this.selectedFileObject = selectedFile;
+			if (!list || !list.length) return;
 
-				// записываем во внутреннюю переменную выбранный файл
-				// далее watch-триггер выбросит ($emit) его наружу
-				this.$emit('update:modelValue', this.selectedFileObject);
+			const files = Array.from(list);
+
+			this.selectedFiles = this.multiple ? files : [files[0]];
+
+			this.$emit(
+				'update:modelValue',
+				this.multiple ? [...this.selectedFiles] : this.selectedFiles[0]
+			);
+
+			// важно!
+			if (event.target) {
+				event.target.value = '';
 			}
+		},
+
+		onSelectFileOld(event: any) {
+			const list = event?.dataTransfer?.files?.length ? event.dataTransfer.files : event?.target?.files;
+
+			const files = list ? Array.from(list) : [];
+			if(!files.length) return;
+
+			this.selectedFiles = this.multiple ? files : [files[0]];
+			this.$emit('update:modelValue', this.multiple ? this.selectedFiles : this.selectedFiles[0]);
 		},
 
 		getSelectedFile() {
 			// Этот метод нужен для получения объекта File, для отправки его на сервер,
 			// т.к. по умолчанию selectedFile хранит (и передает в v-model) URL для предпросмотра
-			return this.selectedFileObject;
+			return this.multiple ? this.selectedFiles : this.selectedFiles[0];
 		},
 	},
 

@@ -4,18 +4,24 @@
 			<h1 style="margin:.4em 0;">Заявки сотрудника</h1>
 			<BaseButton @click="navigateTo('/issues/create')" prependIcon="mdi-file-document-plus-outline" style="font-size:1.4em; flex-basis:auto; flex-grow:1; margin-bottom:.4em;">Добавить заявку</BaseButton>
 			<BaseTextBox v-model="search" @submit="fetchIssues" style="width:100%;" prepend-icon="mdi-magnify" button="Найти" placeholder="Поиск" />
-			<div class="issue" v-for="issue of appStore.issues" :key="String(issue.summary).slice(0, 4)">
-				<div class="title">{{ issue.summary }}</div>
-				<div class="flex-line">
-					<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
-					<div class="status" :style="{ background: issue.color }">{{ issue.issueStatus }}</div>
-				</div>
-				<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
-			</div>
 			<div v-if="errorMessage" class="error-message">
 				<BaseIcon name="mdi-alert-decagram" size="1.2em" style="margin:0 .4em 0 0;"/>
 				<span>{{ errorMessage }}</span>
 			</div>
+
+			<template v-if="loading">
+				<BaseSkeleton v-for="i of 5" :key="i" height="7em" style="margin:.2em 0;"/>
+			</template>
+			<BasePageable v-else-if="appStore.issues.length" :page="1" :limit="linitIssues" :total="totalIssues" @change="fetchIssues">
+				<div class="issue" v-for="issue of appStore.issues" :key="String(issue.summary).slice(0, 4)">
+					<div class="title">{{ issue.summary }}</div>
+					<div class="flex-line">
+						<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
+						<div class="status" :style="{ background: issue.color }">{{ issue.issueStatus }}</div>
+					</div>
+					<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
+				</div>
+			</BasePageable>
 			<div v-else-if="!appStore.issues.length">
 				<BaseIcon name="mdi-magnify" size="1.2em" style="margin:0 .4em 0 0;"/>
 				<span>Ничего не найдено</span>
@@ -34,19 +40,25 @@ definePageMeta({
 const { $api } = useNuxtApp();
 import BaseButton from '~/components/common/BaseButton.vue';
 import BaseIcon from '~/components/common/BaseIcon.vue';
+import BasePageable from '~/components/common/BasePageable.vue';
+import BaseSkeleton from '~/components/common/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
 import type { IssueList } from '~/types/IssueList';
 
 const userStore = useUserStore();
 const appStore = useAppStore();
 const search = ref('');
+const loading = ref(false);
+const totalIssues = ref(0) as Ref<number>;
+const linitIssues = ref(50);
 const errorMessage = ref('');
 
 
-async function fetchIssues() {
+async function fetchIssues(page: number = 1) {
+	loading.value = true;
 	const queryParams = {} as Record<string, string | number>;
-	queryParams.page = 1;
-	queryParams.size = 10;
+	queryParams.page = page;
+	queryParams.size = linitIssues.value;
 	const token = userStore.token;
 
 	if(!token) {
@@ -66,6 +78,7 @@ async function fetchIssues() {
 		.then( (data: IssueList) => {
 			if(data.success) {
 				const issues = data.data;
+				totalIssues.value = parseInt(data.pagination.total);
 				const colors = [ '#0079C1', '#14cf34', '#e3ce31', ];
 
 				issues.forEach((issue: any) => {
@@ -77,14 +90,13 @@ async function fetchIssues() {
 			}
 		})
 		.catch( (error: any) => {
-			// console.log(`error:`);
-			// console.error(error);
-			const code = error.response?.status;
+			// const code = error.response?.status;
 			const message = error.data?.message ?? error.response?.data?.message;
-			// console.log(`Error code: ${error.response?.status}`, error.response?.data?.message);
-			errorMessage.value = error.response;
+			errorMessage.value = message;
+		})
+		.finally(() => {
+			loading.value = false;
 		});
-
 }
 
 onBeforeMount(() => {
@@ -109,8 +121,8 @@ onBeforeMount(() => {
 			padding: .6em 1em;
 			// max-width: 600px;
 			border-radius: 6px;
-			box-shadow: 0 6px 40px rgba(0,0,0,.05);
-			// box-shadow: 0 0 8px 0px #0079C1aa;
+			box-shadow: 0 0 5px rgba(0,0,0,.08);
+			margin-bottom:.8em;
 
 			.title {
 				font-size: 1.2em;

@@ -13,8 +13,11 @@
 			<div class="input-container">
 				<span class="selected-items" v-if="multiple && selectedItems.length">
 					<span class="item-badge" v-for="selectedItem of selectedItems" :key="selectedItem[fieldKey]">
+						<!-- <BaseIcon class="append-icon" size="1.4em" :name="selectedItem.icon ?? 'mdi-menu-down'"/> -->
 						<!-- <v-icon v-if="selectedItem.icon" :icon="selectedItem.icon" size="1.2em" style="margin-right:.1em; opacity:.8;"></v-icon> -->
 						<span>{{ selectedItem[fieldValue] }}</span>
+						<!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x text-[#005FF2] dark:text-[#47A8FF]" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg> -->
+						<BaseIcon @click="removeItem(selectedItem[fieldKey])" class="remove-badge" name='mdi-close'/>
 					</span>
 				</span>
 
@@ -203,6 +206,10 @@ export default defineComponent({
 				this.hideDropdown();
 			}
 		},
+		removeItem(key: string) {
+			const index = this.selectedItems.findIndex(item => item[this.fieldKey] === key);
+			this.selectedItems.splice(index, 1);
+		},
 		resetItems() {
 			this.searchValue = '';
 			this.selectedItems = [];
@@ -376,15 +383,28 @@ export default defineComponent({
 
 				.item-badge {
 					display: inline-block;
-					background-color: #e6eef9;
-					color: #185ee0;
+					// background-color: #e6eef9;
 					text-wrap: nowrap;
 					padding:.2em .6em;
-					border-radius: 3px;
 					transition: 0.25s ease-out;
+					border-radius: 5px;
+					background-color: rgb(240 247 255);
+					font-weight: 300;
+					color: rgb(0 95 242 / .9);
+					border:1px solid rgb(203 231 255);
+					font-size: .85em;
 
-					background-color: #0079C1;
-					color: #ffffffdd;
+					// background-color: #0079C1;
+					// color: #ffffffdd;
+					.remove-badge {
+						cursor: pointer;
+						margin-left: .3em;
+						opacity: .6;
+						transition: 0.25s ease-out;
+						&:hover {
+							opacity: 1;
+						}
+					}
 				}
 			}
 
@@ -393,16 +413,11 @@ export default defineComponent({
 				box-shadow: 0 0 0 2px #0079C1aa;
 			}
 
-			.v-icon {
-				padding-top:.1em;
-				margin-right:.3em;
-				opacity:.8;
-			}
 			&:has(input.selected) {
-				color: #195274;
-				background-color: #f5f5f5;
-				border: 1px solid #fafaff;
-				font-weight: 900;
+				// color: #195274;
+				// background-color: #f5f5f5;
+				// border: 1px solid #fafaff;
+				// font-weight: 900;
 			}
 			&>input {
 				flex: auto 1 0;

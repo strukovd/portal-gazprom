@@ -69,13 +69,17 @@ export default defineComponent({
 		cursor: pointer;
 
 		&.primary {
-			// background: #0079C1;
-			// color: #fff;
-
 			background: #0079C1;
 			color: #fff;
 			font-weight: 700;
 			// border: 1px solid rgba(224, 226, 231, 0.56);
+
+			// border-radius: 5px;
+			// background-color: rgb(240 247 255);
+			// font-weight: 300;
+			// color: rgb(0 95 242 / .9);
+			// border:1px solid rgb(203 231 255);
+			// font-size: .85em;
 		}
 
 		&.secondary {

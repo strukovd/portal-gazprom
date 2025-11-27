@@ -19,7 +19,7 @@ definePageMeta({
 });
 
 function logout() {
-	useUserStore().clear();
+	useUserStore().reset();
 	navigateTo('/login');
 }
 </script>

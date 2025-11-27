@@ -12,7 +12,11 @@
 				</div>
 				<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
 			</div>
-			<div v-if="!appStore.issues.length">
+			<div v-if="errorMessage" class="error-message">
+				<BaseIcon name="mdi-alert-decagram" size="1.2em" style="margin:0 .4em 0 0;"/>
+				<span>{{ errorMessage }}</span>
+			</div>
+			<div v-else-if="!appStore.issues.length">
 				<BaseIcon name="mdi-magnify" size="1.2em" style="margin:0 .4em 0 0;"/>
 				<span>Ничего не найдено</span>
 			</div>
@@ -36,6 +40,7 @@ import type { IssueList } from '~/types/IssueList';
 const userStore = useUserStore();
 const appStore = useAppStore();
 const search = ref('');
+const errorMessage = ref('');
 
 
 async function fetchIssues() {
@@ -51,25 +56,35 @@ async function fetchIssues() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: IssueList = await $api('v1/portal/issues', {
+	$api<IssueList>('v1/portal/issues', {
 		query: queryParams,
 		method: 'GET',
 		headers: {
 			Authorization: `Bearer ${token}`
 		},
-	});
+	})
+		.then( (data: IssueList) => {
+			if(data.success) {
+				const issues = data.data;
+				const colors = [ '#0079C1', '#14cf34', '#e3ce31', ];
 
-	if(data.success) {
-		const issues = data.data;
-		const colors = [ '#0079C1', '#14cf34', '#e3ce31', ];
+				issues.forEach((issue: any) => {
+					const color = colors[Math.floor(Math.random() * colors.length)];
+					issue.color = color;
+				});
 
-		issues.forEach((issue: any) => {
-			const color = colors[Math.floor(Math.random() * colors.length)];
-			issue.color = color;
+				appStore.issues = issues;
+			}
+		})
+		.catch( (error: any) => {
+			// console.log(`error:`);
+			// console.error(error);
+			const code = error.response?.status;
+			const message = error.data?.message ?? error.response?.data?.message;
+			// console.log(`Error code: ${error.response?.status}`, error.response?.data?.message);
+			errorMessage.value = error.response;
 		});
 
-		appStore.issues = issues;
-	}
 }
 
 onBeforeMount(() => {

@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', {
 			}
 		},
 
-		clear() {
+		reset() {
 			this.token = null;
 			this.userData = null;
 			localStorage.removeItem('token');

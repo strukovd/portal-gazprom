@@ -21,6 +21,13 @@ export default defineNuxtPlugin((nuxtApp) => {
 		},
 		onResponseError({ response }) {
 			// логика на 401/403/500 и т.п.
+			switch (response.status) {
+				case 401:
+				case 403:
+					useUserStore().reset();
+					navigateTo('/login');
+					break;
+			}
 		},
 	});
 

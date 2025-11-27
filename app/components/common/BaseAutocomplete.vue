@@ -148,6 +148,36 @@ export default defineComponent({
 		}
 	},
 	methods: {
+		syncFromModel(val: any) {
+			const emitField = this.getEmitField();
+
+			if (this.multiple) {
+				const values = Array.isArray(val) ? val : (val !== undefined && val !== null ? [val] : []);
+				const matched = values
+					.map(v => this.items?.find(item => String(item[emitField]) === String(v)))
+					.filter(Boolean) as any[];
+
+				this.selectedItems = matched;
+				this.searchValue = '';
+				return;
+			}
+
+			if (val === undefined || val === null || val === '') {
+				this.selectedItems = [];
+				this.searchValue = '';
+				return;
+			}
+
+			const selectedItem = this.items?.find(item => String(item[emitField]) === String(val));
+			if (selectedItem) {
+				this.selectedItems = [selectedItem];
+				this.searchValue = selectedItem[this.fieldValue];
+			} else {
+				// значение есть, но в items его нет — отобразим как строку
+				this.selectedItems = [];
+				this.searchValue = String(val);
+			}
+		},
 		getEmitField() {
 			return this.emitValue ? this.fieldValue : this.fieldKey;
 		},
@@ -284,17 +314,18 @@ export default defineComponent({
 		}
 	},
 	watch: {
-		// modelValue(newvalue, oldvalue) {
-		// 	if( !newvalue ) return;
-		// 	// При внешнем обновлении v-model, ищем нужное значение в списке
-		// 	const selectedItem = this.items?.find( item => String(item[this.fieldKey]) === String(newvalue) );
-		// 	this.selectItem(selectedItem);
-		// },
+		modelValue: {
+			deep: true,
+			immediate: true,
+			handler(newValue) {
+				this.syncFromModel(newValue);
+			}
+		},
 		items( newValue, oldValue ) {
 			if( JSON.stringify(newValue) === JSON.stringify(oldValue) ) return;
 
 			// При обновлении списка
-			this.init();
+			this.syncFromModel(this.modelValue);
 		}
 	},
 	created() {

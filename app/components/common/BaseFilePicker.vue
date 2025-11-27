@@ -1,42 +1,59 @@
 <template>
-	<div class="file-picker-box" :class="{ 'invalid': error }">
+	<div class="file-picker-box" :class="{ invalid: error }">
 		<header class="header" style="display:flex; align-items:start; padding-right:1em;">
 			<div v-if="label" class="caption-container" style="flex:auto 1 1;">
 				<span class="caption">{{ label }}</span>
 			</div>
+
 			<div v-if="error" class="error-container" style="display:flex; gap:.2em; justify-content:flex-end; font-size:14px; color:red; opacity:.6; line-height:1.4em;">
-				<BaseIcon name="mdi-alert-decagram" size="1.2em"></BaseIcon>
+				<BaseIcon name="mdi-alert-decagram" size="1.2em" />
 				<span class="error-message">{{ error }}</span>
 			</div>
 		</header>
+
 		<div :class="[`file-picker`, { unstored: selectedFiles.length > 0 }]" @dragover.prevent @drop.prevent="onSelectFile">
 			<div class="drop-zone">
+
+				<!-- Пустая зона -->
 				<section v-if="!selectedFiles.length" class="empty-section">
-					<BaseIcon class="icon" :name="multiple ? 'mdi-file-document-multiple-outline' : 'mdi-file-document-plus-outline'"></BaseIcon>
+					<BaseIcon class="icon" :name="multiple ? 'mdi-file-document-multiple-outline' : 'mdi-file-document-plus-outline'"/>
 				</section>
+
+				<!-- Выбранные файлы -->
 				<section v-else class="preview-section">
 					<div class="file-list">
-						<div style="font-size:1.2em;" class="file-pill" v-for="(file, index) of selectedFiles" :key="index">
+						<div style="font-size:1.2em; display:flex; align-items:center; gap:0.3em;" class="file-pill" v-for="(file, index) of selectedFiles" :key="file.name + '-' + file.lastModified">
 							<BaseIcon name="mdi-paperclip" size="1.1em"/>
 							<span class="file-name">{{ file.name }}</span>
+
+							<!-- Кнопка удаления файла -->
+							<BaseIcon name="mdi-close-circle" size="1.1em" style="cursor:pointer; opacity:0.6;" @click="removeFile(index)"/>
 						</div>
 					</div>
 				</section>
+
 				<section class="label-section">
-					<span>Перетащите {{ multiple ? 'файлы' : 'файл' }} сюда или нажмите <br> «Выбрать файл».</span>
+					<span>Перетащите {{ multiple ? 'файлы' : 'файл' }} сюда или нажмите <br/> «Выбрать файл».</span>
 				</section>
-				<BaseButton class="button" prependIcon="mdi-plus" @click="onClick" color="primary"><span>Выбрать файл</span></BaseButton>
+
+				<BaseButton class="button" prependIcon="mdi-plus" @click="openFileDialog" color="primary"><span>Выбрать файл</span></BaseButton>
 			</div>
-			<input type="file" :multiple="multiple" ref="fileInput" style="display:none;" @change="onSelectFile">
+
+			<input
+				type="file"
+				:multiple="multiple"
+				ref="fileInput"
+				style="display:none;"
+				@change="onSelectFile"
+			/>
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import BaseIcon from './BaseIcon.vue';
 import BaseButton from './BaseButton.vue';
-
 
 export default defineComponent({
 	name: 'BaseFilePicker',
@@ -44,35 +61,32 @@ export default defineComponent({
 	emits: [ 'update:modelValue' ],
 	props: {
 		label: String,
-		src: String as () => string|null,
-		modelValue: { type: [File, Array] as PropType<File | File[]>, default: null },
+		modelValue: { type: [Object, Array] as PropType<File | File[] | null>, default: null },
 		error: String,
-		multiple: Boolean
-	},
-
-	watch: {
-		src(newValue, oldValue) {
-			this.storedFile = newValue;
-		},
-		modelValue(newValue, oldValue) {
-			// сохраняем во внутреннюю переменную значение переданное в v-model
-			if(this.multiple) {
-				this.selectedFiles = Array.isArray(newValue) ? newValue : (newValue ? [newValue] : []);
-			} else {
-				this.selectedFiles = newValue ? [newValue as File] : [];
-			}
-		},
+		multiple: Boolean,
 	},
 
 	data() {
 		return {
-			storedFile: null as string | null,
 			selectedFiles: [] as File[],
 		};
 	},
 
+	watch: {
+		modelValue: {
+			immediate: true,
+			handler(value) {
+				if (this.multiple) {
+					this.selectedFiles = Array.isArray(value) ? value : (value ? [value] : []);
+				} else {
+					this.selectedFiles = value ? [value as File] : [];
+				}
+			}
+		}
+	},
+
 	methods: {
-		onClick(e: any) {
+		openFileDialog() {
 			(this.$refs.fileInput as HTMLInputElement).click();
 		},
 
@@ -92,33 +106,27 @@ export default defineComponent({
 				this.multiple ? [...this.selectedFiles] : this.selectedFiles[0]
 			);
 
-			// важно!
+			// reset input (чтобы можно было выбрать тот же файл снова)
 			if (event.target) {
 				event.target.value = '';
 			}
 		},
 
-		onSelectFileOld(event: any) {
-			const list = event?.dataTransfer?.files?.length ? event.dataTransfer.files : event?.target?.files;
+		removeFile(index: number) {
+			// Удаляем файл
+			this.selectedFiles.splice(index, 1);
 
-			const files = list ? Array.from(list) : [];
-			if(!files.length) return;
-
-			this.selectedFiles = this.multiple ? files : [files[0]];
-			this.$emit('update:modelValue', this.multiple ? this.selectedFiles : this.selectedFiles[0]);
+			// Emit нового значения
+			if (this.multiple) {
+				this.$emit('update:modelValue', [...this.selectedFiles]);
+			} else {
+				this.$emit('update:modelValue', null);
+			}
 		},
 
-		getSelectedFile() {
-			// Этот метод нужен для получения объекта File, для отправки его на сервер,
-			// т.к. по умолчанию selectedFile хранит (и передает в v-model) URL для предпросмотра
-			return this.multiple ? this.selectedFiles : this.selectedFiles[0];
+		getSelectedFiles() {
+			return [...this.selectedFiles];
 		},
-	},
-
-	created() {
-		if( this.src ) {
-			this.storedFile = this.src;
-		}
 	},
 });
 </script>
@@ -162,6 +170,12 @@ export default defineComponent({
 			}
 
 			.preview-section {
+				.file-list {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: center;
+				}
 				.preview {
 					object-fit: contain;
 					border-radius: 8px;

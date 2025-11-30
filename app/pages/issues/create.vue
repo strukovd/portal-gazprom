@@ -35,7 +35,7 @@
 				<BaseFilePicker multiple v-model="form['scanOfAgreement']" label="Скан. заявления о согласии на обработку ПД"/>
 				<!-- <div><label><input v-model="form['agreement']" type="checkbox"> <span>Согласие на обработку персональных данных</span></label></div> -->
 				<div style="display:flex; justify-content:center; margin-top:1.4em;">
-					<BaseButton @click="sendForm" style="font-size:1.2em;" prependIcon="mdi-content-save">Сохранить</BaseButton>
+					<BaseButton @click="sendForm" style="font-size:1.2em; flex:auto 1 0;" prependIcon="mdi-content-save">Сохранить</BaseButton>
 				</div>
 			</form>
 			<form v-else-if="projectKey === 'PRV4'">
@@ -69,7 +69,7 @@
 				<!-- <div><label><input v-model="form['updateData']" type="checkbox"> <span>Обновить данные абонента</span></label></div> -->
 
 				<div style="display:flex; justify-content:center; margin-top:1.4em;">
-					<BaseButton @click="sendForm" style="font-size:1.2em;" prependIcon="mdi-content-save">Сохранить</BaseButton>
+					<BaseButton @click="sendForm" style="font-size:1.2em; flex:auto 1 0;" prependIcon="mdi-content-save">Сохранить</BaseButton>
 				</div>
 			</form>
 
@@ -181,7 +181,8 @@ async function sendForm() {
 
 
 	try {
-		const data = await $api('v1/portal/applications/ngv4', {
+		const key = String(projectKey.value).toLowerCase();
+		const data = await $api(`v1/portal/applications/${key}`, {
 			query: queryParams,
 			method: 'POST',
 			headers: {

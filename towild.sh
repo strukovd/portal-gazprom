@@ -1,6 +1,23 @@
 #!/bin/bash
 
+set -euo pipefail
+
+APP_NAME="portal"
+ARCHIVE_NAME="${APP_NAME}-build.tar.gz"
+REMOTE_TMP="/tmp/${ARCHIVE_NAME}"
+REMOTE_HOST="root@5.23.48.222"
+TARGET_DIR="/var/www/${APP_NAME}"
+
 npm run build
 
-ssh -t -i ~/.ssh/id_rsa root@5.23.48.222 "rm -rf /var/www/portal"
-scp -r .output/public/ root@5.23.48.222:/var/www/portal
+tar -czf "${ARCHIVE_NAME}" -C .output/public .
+
+scp "${ARCHIVE_NAME}" "${REMOTE_HOST}:${REMOTE_TMP}"
+
+ssh -t "${REMOTE_HOST}" "\
+	rm -rf ${TARGET_DIR} && \
+	mkdir -p ${TARGET_DIR} && \
+	tar -xzf ${REMOTE_TMP} -C ${TARGET_DIR} && \
+	rm -f ${REMOTE_TMP}"
+
+rm -f "${ARCHIVE_NAME}"

@@ -5,3 +5,74 @@ body {
 	margin: 0;
 	padding: 0;
 }
+
+.status {
+	background-color: #0079c1;
+	border-radius: 6px;
+    color: #fff;
+    display: inline-block;
+    font-size: 14px;
+    padding: .4em .9em;
+
+
+	&.red {
+		background-color: #fcdcdd;
+		color: #c40209;
+	}
+	&.orange {
+		background-color: #fde3d4;
+		color: #cf3201;
+	}
+	&.orange2 {
+		background-color: #fbebc9;
+		color: #c04b01;
+	}
+	&.orange3 {
+		background-color: #f8eeca;
+		color: #b5530a;
+	}
+	&.salad {
+		background-color: #e4f4cd;
+		color: #3b7d00;
+	}
+	&.qiwi {
+		background-color: #cff0e7;
+		color: #018135;
+	}
+	&.salad2 {
+		background-color: #e4f4cd;
+		color: #007a55;
+	}
+	&.salad3 {
+		background-color: #d0f0eb;
+		color: #02776d;
+	}
+	&.turquoise {
+		background-color: #c4f1f7;
+		color: #027591;
+	}
+	&.blue {
+		background-color: #d8e7fa;
+		color: #004fe0;
+	}
+	&.purple {
+		background-color:#e2e3f8;
+		color: #4538ce;
+	}
+	&.violet {
+		background-color: #e9e1f9;
+		color: #772adb;
+	}
+	&.violet2 {
+		background-color: #efdffa;
+		color: #8715d3;
+	}
+	&.pink {
+		background-color: #fae4f9;
+		color: #ae02b1;
+	}
+	&.pink2 {
+		background-color: #fde3f0;
+		color: #cd025b;
+	}
+}

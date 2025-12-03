@@ -1,5 +1,14 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
+type Invoice = {
+	amount: string;
+	created: string;
+	createdBy: string;
+	id: number,
+	payed: boolean;
+	service: string;
+};
+
 type Issue = {
 	address: string;
 	date: string;
@@ -7,6 +16,11 @@ type Issue = {
 	issueKey: string;
 	issueStatus: string;
 	summary: string;
+
+	payments?: Invoice[];
+
+	showInvoices?: boolean;
+	color?: string;
 };
 
 export const useAppStore = defineStore('app', {

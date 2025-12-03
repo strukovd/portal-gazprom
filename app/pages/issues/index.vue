@@ -42,7 +42,7 @@
 									</td>
 									<td>
 										<div class="invoice-date"><span class="date">{{ invoice.created ? new Date(invoice.created).toLocaleDateString('RU-ru') : `Не указано` }}</span></div>
-										<div class="invoice-status"><span>{{ invoice.payed ? 'Оплачен' : 'Не оплачен' }}</span></div>
+										<div :class="[`invoice-status`, {payed: invoice.payed}]"><span>{{ invoice.payed ? 'Оплачен' : 'Не оплачен' }}</span></div>
 										<div class="invoice-amount"><span>Сумма: </span><span class="amount-value">{{ invoice.amount }}</span></div>
 									</td>
 								</tr>
@@ -245,7 +245,14 @@ onBeforeMount(() => {
 							.invoice-status {
 								text-align:right;
 
-								>span {
+								&>span {
+									background-color: #f9ba1b;
+									color: #57410b;
+									font-weight:600;
+									padding:.2em .6em;
+									border-radius:4px;
+								}
+								&.payed>span {
 									background-color:forestgreen;
 									color:whitesmoke;
 									font-weight:600;

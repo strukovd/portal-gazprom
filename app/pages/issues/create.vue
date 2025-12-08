@@ -1,5 +1,11 @@
 <template>
 	<section class="create-issue-page">
+		<aside v-if="showMessage" class="msg">
+			<BaseIcon name="mdi-alert-decagram-outline"/>
+			<span> Созданная задача отобразится в списке <b>после обработки филиалов</b> (Примерно в течении двух дней)</span>
+			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Ладно <span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
+		</aside>
+
 		<section class="forms">
 			<BaseTabs v-model="projectKey" autoselect :items="tabs"/>
 			<section v-if="isCached" style="display:flex; justify-content:center; margin:1.4em;">
@@ -98,6 +104,9 @@ import type { Reactive } from 'vue';
 const userStore = useUserStore();
 const appStore = useAppStore();
 
+const countdown = ref(10);
+const showMessage = ref(false);
+
 const tabs = [
 	{ key: 'NGV4', caption: 'Новая газифиция', icon: 'mdi-file-document-plus-outline' },
 	{ key: 'PRV4', caption: 'Перемонтаж', icon: 'mdi-file-document-multiple-outline' }
@@ -191,8 +200,16 @@ async function sendForm() {
 			body: formData
 		});
 
-		console.log(data);
-		navigateTo('/issues');
+		showMessage.value = true;
+		countdown.value = 10;
+		let timerId = setInterval(() => {
+			if (countdown.value > 0) {
+				countdown.value--;
+			} else {
+				clearInterval(timerId);
+				navigateTo('/issues');
+			}
+		}, 1000);
 	} catch (err: any) {
 		const msg = err?.data?.message || err?.message || 'Не удалось отправить заявку';
 		errorMessage.value = msg;
@@ -230,6 +247,8 @@ async function sendForm() {
 
 <style lang="scss">
 .create-issue-page {
+	position: relative;
+
 	.forms {
 		max-width: 800px;
 		margin:2em auto;
@@ -251,6 +270,25 @@ async function sendForm() {
 				font-weight:400;
 			}
 		}
+	}
+
+	.msg {
+		position:sticky;
+		top:0;
+		left:0;
+		width:60%;
+		box-sizing:border-box;
+		max-width: 800px;
+		margin:1em auto;
+		padding:1em 2em;
+		border-radius:5px;
+		background-color:rgb(227, 255, 227);
+		color:forestgreen;
+		box-shadow:0 2px 40px rgba(34 139 34 / 20%);
+		font-weight:400;
+		font-size:1.6em;
+		z-index: 100;
+		text-align: center;
 	}
 }
 </style>

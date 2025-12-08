@@ -2,8 +2,8 @@
 	<section class="create-issue-page">
 		<aside v-if="showMessage" class="msg">
 			<BaseIcon name="mdi-alert-decagram-outline"/>
-			<span> Созданная задача отобразится в списке <b>после обработки филиалов</b> (Примерно в течении двух дней)</span>
-			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Ладно <span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
+			<span> Созданная задача отобразится в списке <b>сразу после обработки филиалом</b></span>
+			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Далее<span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
 		</aside>
 
 		<section class="forms">

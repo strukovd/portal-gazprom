@@ -39,10 +39,10 @@
 									<tr v-for="invoice of issue.payments">
 										<td>
 											<div class="invoice-service"><span>{{ invoice.service }}</span></div>
-											<div class="invoice-created-by"><span>{{ invoice.createdBy ?? `Не указано` }}</span></div>
+											<div v-if="invoice.createdBy" class="invoice-created-by"><span>{{ invoice.createdBy }}</span></div>
 										</td>
 										<td>
-											<div class="invoice-date"><span class="date">{{ invoice.created ? new Date(invoice.created).toLocaleDateString('RU-ru') : `Не указано` }}</span></div>
+											<div v-if="invoice.created" class="invoice-date"><span class="date">{{ new Date(invoice.created).toLocaleDateString('RU-ru') }}</span></div>
 											<div :class="[`invoice-status`, {payed: invoice.payed}]"><span>{{ invoice.payed ? 'Оплачен' : 'Не оплачен' }}</span></div>
 											<div class="invoice-amount"><span>Сумма: </span><span class="amount-value">{{ invoice.amount }}</span></div>
 										</td>

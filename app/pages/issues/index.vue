@@ -13,56 +13,58 @@
 				<BaseSkeleton v-for="i of 5" :key="i" height="7em" style="margin:.2em 0;"/>
 			</template>
 			<BasePageable v-else-if="appStore.issues.length" :page="1" :limit="linitIssues" :total="totalIssues" @change="fetchIssues">
-				<div class="issue" v-for="issue of appStore.issues" :key="String(issue.summary).slice(0, 4)">
-					<div class="title">{{ issue.summary }}</div>
-					<div class="flex-line">
-						<div>
-							<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
-							<div>{{ issue.issueKey }}</div>
-						</div>
+				<div class="issue" v-for="(issue, index) of appStore.issues" :key="String(issue?.id ?? index)">
+					<template v-if="issue"> <!-- В списке почему-то могут быть null элементы -->
+						<div class="title">{{ issue.summary }}</div>
+						<div class="flex-line">
+							<div>
+								<div class="issue-date"><span>Дата подачи: </span><span class="date">{{ issue.date }}</span></div>
+								<div>{{ issue.issueKey }}</div>
+							</div>
 
-						<div :class="[`status`, issue.color]">{{ issue.issueStatus }}</div>
-					</div>
-					<hr style="border-width:0 0 1px 0; border-bottom:1px solid #f0f0f0; margin:1em 0;">
-					<div class="actions" style="display:flex; align-items:flex-start; justify-content: space-between; gap:.4em;">
-						<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
-						<BaseButton v-if="issue?.payments" variant="secondary" @click="issue.showInvoices = !issue.showInvoices">
-							<BaseIcon name="mdi-invoice-text-fast-outline" size="2em" style="margin:0 .4em 0 0;"/>
-							<div>Счета на оплату</div>
-						</BaseButton>
-					</div>
-					<div class="invoices" v-if="issue?.showInvoices && Array.isArray(issue?.payments) && issue.payments.length">
-						<h2>Счета на оплату</h2>
-						<table class="invoices-table">
-							<tbody>
-								<tr v-for="invoice of issue.payments">
-									<td>
-										<div class="invoice-service"><span>{{ invoice.service }}</span></div>
-										<div class="invoice-created-by"><span>{{ invoice.createdBy ?? `Не указано` }}</span></div>
-									</td>
-									<td>
-										<div class="invoice-date"><span class="date">{{ invoice.created ? new Date(invoice.created).toLocaleDateString('RU-ru') : `Не указано` }}</span></div>
-										<div :class="[`invoice-status`, {payed: invoice.payed}]"><span>{{ invoice.payed ? 'Оплачен' : 'Не оплачен' }}</span></div>
-										<div class="invoice-amount"><span>Сумма: </span><span class="amount-value">{{ invoice.amount }}</span></div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-						<!-- <div class="invoice"
-							style="display:flex; justify-content:space-between; background: rgb(235 241 255 / 1); border-radius:10px; margin:.6em 0px; padding:1em; line-height:1.4em; font-size:.9em;"
-							v-for="(item, index) of [{ id: 207505, service: { name: `Выезд на замеры`, id: 613 }, created: `2023-01-25`, createdBy: `Кухаркина О.А.`, amount: 0, status: `Оплачен` }]" :key="index"
-						>
-							<div>
-								<div class="invoice-service"><span>{{ item.service.name }}</span></div>
-								<div class="invoice-date"><span class="date">{{ item.created }}</span></div>
-							</div>
-							<div>
-								<div class="invoice-created-by"><span>Сотрудник: </span><span>{{ item.createdBy }}</span></div>
-								<div class="invoice-status"><span style="background-color:forestgreen; color:whitesmoke; font-weight:600; padding:.2em .6em; border-radius:4px;">{{ item.status }}</span></div>
-								<div class="invoice-amount"><span>Сумма: </span><span class="date">{{ item.amount }}</span></div>
-							</div>
-						</div> -->
-					</div>
+							<div :class="[`status`, issue.color]">{{ issue.issueStatus }}</div>
+						</div>
+						<hr style="border-width:0 0 1px 0; border-bottom:1px solid #f0f0f0; margin:1em 0;">
+						<div class="actions" style="display:flex; align-items:flex-start; justify-content: space-between; gap:.4em;">
+							<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
+							<BaseButton v-if="issue?.payments" variant="secondary" @click="issue.showInvoices = !issue.showInvoices">
+								<BaseIcon name="mdi-invoice-text-fast-outline" size="2em" style="margin:0 .4em 0 0;"/>
+								<div>Счета на оплату</div>
+							</BaseButton>
+						</div>
+						<div class="invoices" v-if="issue?.showInvoices && Array.isArray(issue?.payments) && issue.payments.length">
+							<h2>Счета на оплату</h2>
+							<table class="invoices-table">
+								<tbody>
+									<tr v-for="invoice of issue.payments">
+										<td>
+											<div class="invoice-service"><span>{{ invoice.service }}</span></div>
+											<div class="invoice-created-by"><span>{{ invoice.createdBy ?? `Не указано` }}</span></div>
+										</td>
+										<td>
+											<div class="invoice-date"><span class="date">{{ invoice.created ? new Date(invoice.created).toLocaleDateString('RU-ru') : `Не указано` }}</span></div>
+											<div :class="[`invoice-status`, {payed: invoice.payed}]"><span>{{ invoice.payed ? 'Оплачен' : 'Не оплачен' }}</span></div>
+											<div class="invoice-amount"><span>Сумма: </span><span class="amount-value">{{ invoice.amount }}</span></div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+							<!-- <div class="invoice"
+								style="display:flex; justify-content:space-between; background: rgb(235 241 255 / 1); border-radius:10px; margin:.6em 0px; padding:1em; line-height:1.4em; font-size:.9em;"
+								v-for="(item, index) of [{ id: 207505, service: { name: `Выезд на замеры`, id: 613 }, created: `2023-01-25`, createdBy: `Кухаркина О.А.`, amount: 0, status: `Оплачен` }]" :key="index"
+							>
+								<div>
+									<div class="invoice-service"><span>{{ item.service.name }}</span></div>
+									<div class="invoice-date"><span class="date">{{ item.created }}</span></div>
+								</div>
+								<div>
+									<div class="invoice-created-by"><span>Сотрудник: </span><span>{{ item.createdBy }}</span></div>
+									<div class="invoice-status"><span style="background-color:forestgreen; color:whitesmoke; font-weight:600; padding:.2em .6em; border-radius:4px;">{{ item.status }}</span></div>
+									<div class="invoice-amount"><span>Сумма: </span><span class="date">{{ item.amount }}</span></div>
+								</div>
+							</div> -->
+						</div>
+					</template>
 				</div>
 			</BasePageable>
 			<div v-else-if="!appStore.issues.length">
@@ -125,15 +127,16 @@ async function fetchIssues(page: number = 1) {
 				const issues = data.data;
 				totalIssues.value = parseInt(data.pagination.total);
 
-				issues.forEach((issue: any) => {
+				const filteredIssues = issues.filter(Boolean); // Убираем null элементы
+				filteredIssues.forEach((issue: any) => {
+					if( !Boolean(issue) ) { console.log(`issue: ${issue}`); return; }
 					const status = String(issue.issueStatus);
 					const len = status.length;
 					const hash = (status.charCodeAt(0) + status.charCodeAt(len - 1) + len) % colors.length;
 					const color = colors[hash];
 					issue.color = color;
 				});
-
-				appStore.issues = issues;
+				appStore.issues = filteredIssues;
 			}
 		})
 		.catch( (error: any) => {

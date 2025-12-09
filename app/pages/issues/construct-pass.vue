@@ -3,13 +3,10 @@
 		<div class="documents">
 			<article class="document">
 
-				<h1 class="center">СТРОИТЕЛЬНЫЙ ПАСПОРТ № 2025-0001</h1>
+				<h1 class="center">СТРОИТЕЛЬНЫЙ ПАСПОРТ</h1>
 				<h1 class="center">ВНУТРИДОМОВОГО (ВНУТРИЦЕХОВОГО) ГАЗООБОРУДОВАНИЯ,</h1>
 				<div class="flex-line">
-					смонтированного <BaseAutocomplete emitValue v-model="form['smrName']" placeholder="Организация" :items="[
-						{ key: 'BISHKEKGAZ', value: 'филиала «Бишкекгаз» ОсОО «Газпром Кыргызстан»' },
-						{ key: 'GAZKOMM', value: 'частной организацией ОсОО «Газкомм»' },
-					]"/>
+					смонтированного <BaseTextBox v-model="form['smrName']" placeholder="Наименование проектной организации"/>
 				</div>
 
 				<h2 class="center">Служба по обслуживанию внутридомового газового оборудования</h2>
@@ -201,7 +198,7 @@ function sendDocument() {
 		body
 	})
 		.then((res: any) => {
-
+			navigateTo(`/issues/`);
 		})
 		.catch(err => {
 			console.error(err);
@@ -388,6 +385,16 @@ form.tightnessPressureDropCm2 = '-'; // presureDown2
 form.tightnessPermissiblePressureDrop = '20 мм.'; // presureDown3
 form.tightnessPermissiblePressureDropCm2 = '-'; // presureDown4
 
+const userData = JSON.parse( localStorage.getItem('user') || '{}' );
+form['smrName'] = userData.userName ?? '';
+
+const issues = useAppStore().issues;
+if( issueKey ) {
+	const issue = issues.find(issue => issue.issueKey === issueKey);
+	if( issue ) {
+		form['address'] = issue?.address ?? '';
+	}
+}
 </script>
 
 <style lang="scss">

@@ -207,6 +207,13 @@ async function sendDocument() {
 			body
 		});
 
+		// Добавляем счетчик в localStorage
+		let documentsMapCounter: any = localStorage.getItem('construct-pass');
+		if( !documentsMapCounter ) documentsMapCounter = {};
+		else documentsMapCounter = JSON.parse(documentsMapCounter);
+		documentsMapCounter[issueKey] = (documentsMapCounter[issueKey] ?? 0) + 1;
+		localStorage.setItem('construct-pass', JSON.stringify(documentsMapCounter));
+
 		showMessage.value = true;
 		countdown.value = 5;
 		let timerId = setInterval(() => {

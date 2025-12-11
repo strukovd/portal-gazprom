@@ -26,7 +26,8 @@
 						</div>
 						<hr style="border-width:0 0 1px 0; border-bottom:1px solid #f0f0f0; margin:1em 0;">
 						<div class="actions" style="display:flex; align-items:flex-start; justify-content: space-between; gap:.4em;">
-							<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
+							<BaseButton v-if="!documentsMapCounter[issue.issueKey]" @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
+							<BaseButton v-else variant="secondary" @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-refresh">Обновить файл строй паспорта</BaseButton>
 							<BaseButton v-if="issue?.payments" variant="secondary" @click="issue.showInvoices = !issue.showInvoices">
 								<BaseIcon name="mdi-invoice-text-fast-outline" size="2em" style="margin:0 .4em 0 0;"/>
 								<div>Счета на оплату</div>
@@ -98,6 +99,7 @@ const totalIssues = ref(0) as Ref<number>;
 const linitIssues = ref(50);
 const errorMessage = ref('');
 const colors = [`orange2`, `red`, `orange`, `orange3`, `salad`, `qiwi`, `salad2`, `salad3`, `turquoise`, `blue`, `purple`, `violet`, `violet2`, `pink`, `pink2`];
+const documentsMapCounter = ref({}) as Ref<Record<string, number>>;
 
 
 
@@ -151,6 +153,11 @@ async function fetchIssues(page: number = 1) {
 
 onBeforeMount(() => {
 	fetchIssues();
+
+	const documentsMapCounterStr = localStorage.getItem('construct-pass');
+	if(documentsMapCounterStr) {
+		documentsMapCounter.value = JSON.parse(documentsMapCounterStr);
+	}
 });
 </script>
 

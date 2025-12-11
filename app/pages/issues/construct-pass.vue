@@ -2,7 +2,7 @@
 	<section class="construct-pass-page">
 		<aside v-if="showMessage" class="msg">
 			<BaseIcon name="mdi-check"/>
-			<span> Документ успешно отправлен</span>
+			<span> Заявка успешно офрмлена</span>
 			<br>
 			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Далее<span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
 		</aside>

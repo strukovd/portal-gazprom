@@ -6,7 +6,7 @@
 			contenteditable
 			spellcheck="false"
 			@focusout="onInput($event, rowIndex, colIndex)"
-			@keydown.enter.prevent="focusNext(rowIndex, colIndex)"
+			@keydown.enter.prevent="focusNext($event, rowIndex, colIndex)"
 			class="cell">
 			{{ rows[rowIndex][colIndex] }}
 		</td>
@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick } from 'vue';
 
 export default defineComponent({
 	emits: [ 'update:modelValue' ],
@@ -84,7 +84,7 @@ export default defineComponent({
 			this.ensureInvariants();
 		},
 
-		focusNext(rowIndex: number, colIndex: number) {
+		async focusNext(e: KeyboardEvent, rowIndex: number, colIndex: number) {
 			// переход по Enter к след. ячейке/строке, добавляя хвостовую пустую при необходимости
 			const lastRowIdx = this.rows.length - 1;
 			if (rowIndex === lastRowIdx && !this.isRowEmpty(this.rows[rowIndex])) {
@@ -98,15 +98,17 @@ export default defineComponent({
 				nextRow = Math.min(rowIndex + 1, this.rows.length - 1);
 			}
 
-			// Фокус на следующую ячейку
-			queueMicrotask(() => {
-				// TODO: селектор будет путаться если будет несколько таблиц, обеспечить уникальность
-				const cell = document.querySelectorAll<HTMLTableCellElement>('tbody td')[nextRow * this.n + nextCol];
-				if (cell) {
-					cell.focus();
-					this.placeCaretAtEnd(cell);
-				}
-			});
+			// Фокус на следующую ячейку внутри текущего tbody
+			await nextTick();
+			const currentCell = e.target as HTMLTableCellElement | null;
+			const tbody = currentCell?.closest('tbody');
+			const cells = tbody?.querySelectorAll<HTMLTableCellElement>('td');
+			const cell = cells?.[nextRow * this.n + nextCol];
+
+			if (cell) {
+				cell.focus();
+				this.placeCaretAtEnd(cell);
+			}
 		},
 
 		placeCaretAtEnd(node: HTMLElement) {

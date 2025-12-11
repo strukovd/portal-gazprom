@@ -4,7 +4,7 @@
 			<article class="document">
 
 				<h1 class="center">СТРОИТЕЛЬНЫЙ ПАСПОРТ</h1>
-				<h1 class="center">ВНУТРИДОМОВОГО (ВНУТРИЦЕХОВОГО) ГАЗООБОРУДОВАНИЯ,</h1>
+				<h1 class="center">ВНУТРИДОМОВОГО (ВНУТРИЦЕХОВОГО) ГАЗООБОРУДОВАНИЯ</h1>
 				<div class="flex-line">
 					смонтированного <BaseTextBox v-model="form['smrName']" placeholder="Наименование проектной организации"/>
 				</div>
@@ -406,23 +406,25 @@ if( issueKey ) {
 		align-items: center;
 		gap: .6em;
 		margin-top:5em;
+		padding: 0 1rem;
 
 		.document {
 			font-family: serif;
 			color: #222;
 			background-color: #fff;
 			position: relative;
-			padding:2em 4em;
-			width: 800px;
+			padding: clamp(1.4em, 3vw, 2em) clamp(1.8em, 6vw, 4em);
+			width: min(800px, 100%);
 			border-radius: 6px;
 			box-shadow: 0 6px 40px rgba(0,0,0,.05);
 			// box-shadow: 0 0 8px 0px #0079C1aa;
+			overflow-x: auto;
 
 			h1 {
-				font-size: 24px;
+				font-size: clamp(18px, 2.6vw, 24px);
 			}
 			h2 {
-				font-size: 20px;
+				font-size: clamp(16px, 2.4vw, 20px);
 			}
 
 			p {
@@ -450,15 +452,18 @@ if( issueKey ) {
 				display:flex;
 				align-items:center;
 				gap:1em;
+				flex-wrap: wrap;
 
 				&>* {
-					flex:auto 1 1;
+					flex:1 1 220px;
+					min-width: 0;
 				}
 			}
 
 			table {
 				width: 100%;
 				border-collapse: collapse;
+				font-size: 14px;
 
 				td, th {
 					border: 1px solid #ddd;
@@ -485,6 +490,27 @@ if( issueKey ) {
 	}
 	table tr + tr td {
 		border-top: none;
+	}
+
+	@media (max-width: 768px) {
+		.documents {
+			margin-top: 2.4em;
+			gap: 1em;
+		}
+
+		.document {
+			padding: 1.2em 1.4em;
+			border-radius: 10px;
+			box-shadow: 0 4px 18px rgba(0,0,0,.08);
+
+			.flex-line {
+				gap: .6em;
+			}
+
+			table {
+				font-size: 13px;
+			}
+		}
 	}
 }
 </style>

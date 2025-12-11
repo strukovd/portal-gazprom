@@ -1,5 +1,6 @@
 body {
-	background-color: #ebf1ff; //#e0f2fe;
+	--background-color: #f4f7ff;
+	background-color: var(--background-color); // #ebf1ff; // #e0f2fe; // #f4f7ff
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	color: #183d6d;
 	margin: 0;

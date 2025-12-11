@@ -1,5 +1,11 @@
 <template>
 	<section class="construct-pass-page">
+		<aside v-if="showMessage" class="msg">
+			<BaseIcon name="mdi-check"/>
+			<span> Документ успешно отправлен</span>
+			<br>
+			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Далее<span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
+		</aside>
 		<div class="documents">
 			<article class="document">
 
@@ -138,12 +144,15 @@ const route = useRoute();
 const issueKey = route.query.issueKey as string;
 import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
 import BaseButton from '~/components/common/BaseButton.vue';
+import BaseIcon from '~/components/common/BaseIcon.vue';
 import BaseMemo from '~/components/common/BaseMemo.vue';
 import BaseTextBox from '~/components/common/BaseTextBox.vue';
 import DynamicRow from '~/components/DynamicRow.vue';
 
 const errorMessage = ref('');
 const loading = ref(false);
+const showMessage = ref(false);
+const countdown = ref(5);
 
 
 function normalizeForm(form: Record<string, any>) {
@@ -197,7 +206,17 @@ async function sendDocument() {
 			},
 			body
 		});
-		await navigateTo('/issues', { replace: true });
+
+		showMessage.value = true;
+		countdown.value = 5;
+		let timerId = setInterval(() => {
+			if (countdown.value > 0) {
+				countdown.value--;
+			} else {
+				clearInterval(timerId);
+				navigateTo('/issues');
+			}
+		}, 1000);
 	} catch (err: any) {
 		console.error(err);
 		errorMessage.value = err?.data?.message ?? 'Не удалось сохранить документ';
@@ -396,6 +415,27 @@ if( issueKey ) {
 
 <style lang="scss">
 .construct-pass-page {
+	position: relative;
+
+	.msg {
+		position:sticky;
+		top:0;
+		left:0;
+		width:60%;
+		box-sizing:border-box;
+		max-width: 800px;
+		margin:1em auto;
+		padding:1em 2em;
+		border-radius:5px;
+		background-color:rgb(227, 255, 227);
+		color:forestgreen;
+		box-shadow:0 2px 40px rgba(34 139 34 / 20%);
+		font-weight:400;
+		font-size:1.6em;
+		z-index: 100;
+		text-align: center;
+	}
+
 	.documents {
 		display: flex;
 		flex-direction: column;

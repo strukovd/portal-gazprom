@@ -3,6 +3,7 @@
 		<aside v-if="showMessage" class="msg">
 			<BaseIcon name="mdi-alert-decagram-outline"/>
 			<span> Созданная задача отобразится в списке <b>сразу после обработки филиалом</b></span>
+			<br>
 			<BaseButton @click="navigateTo('/issues')" color="seagreen" prependIcon="mdi-check" style=" margin-top:.8em; padding:.2em inherit; font-size:.7em;">Далее<span style="vertical-align:middle; font-size:.7em;">( {{ countdown }} )</span></BaseButton>
 		</aside>
 

@@ -172,7 +172,7 @@ function normalizeForm(form: Record<string, any>) {
 	return normalizedForm;
 }
 
-function sendDocument() {
+async function sendDocument() {
 	loading.value = true;
 	const normalizedForm = normalizeForm(form);
 	const denormalizedFirstTable = denormalizeTable(firstTable.value, 'firstTable');
@@ -189,24 +189,21 @@ function sendDocument() {
 	};
 	fillEmptyFields(body.data);
 
-	console.log(`body`, body);
-	$api('v1/portal/generate-passport', {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${token}`
-		},
-		body
-	})
-		.then((res: any) => {
-			navigateTo(`/issues/`);
-		})
-		.catch(err => {
-			console.error(err);
-			errorMessage.value = err.data.message;
-		})
-		.finally(() => {
-			loading.value = false;
-		})
+	try {
+		await $api('v1/portal/generate-passport', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${token}`
+			},
+			body
+		});
+		await navigateTo('/issues', { replace: true });
+	} catch (err: any) {
+		console.error(err);
+		errorMessage.value = err?.data?.message ?? 'Не удалось сохранить документ';
+	} finally {
+		loading.value = false;
+	}
 }
 
 function fillEmptyFields(form: Record<string, any>) {

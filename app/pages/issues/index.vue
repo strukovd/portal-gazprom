@@ -27,16 +27,16 @@
 						<hr style="border-width:0 0 1px 0; border-bottom:1px solid #f0f0f0; margin:1em 0;">
 						<div class="actions" style="display:flex; align-items:flex-start; justify-content: space-between; gap:.4em;">
 							<BaseButton @click="navigateTo(`/issues/construct-pass?issueKey=${issue.issueKey}`)" prependIcon="mdi-file-document-plus-outline">Добавить строй паспорт</BaseButton>
-							<BaseButton v-if="issue?.payments" variant="secondary" @click="issue.showInvoices = !issue.showInvoices">
+							<BaseButton v-if="issue?.invoices" variant="secondary" @click="issue.showInvoices = !issue.showInvoices">
 								<BaseIcon name="mdi-invoice-text-fast-outline" size="2em" style="margin:0 .4em 0 0;"/>
 								<div>Счета на оплату</div>
 							</BaseButton>
 						</div>
-						<div class="invoices" v-if="issue?.showInvoices && Array.isArray(issue?.payments) && issue.payments.length">
+						<div class="invoices" v-if="issue?.showInvoices && Array.isArray(issue?.invoices) && issue.invoices.length">
 							<h2>Счета на оплату</h2>
 							<table class="invoices-table">
 								<tbody>
-									<tr v-for="invoice of issue.payments">
+									<tr v-for="invoice of issue.invoices">
 										<td>
 											<div class="invoice-service"><span>{{ invoice.service }}</span></div>
 											<div v-if="invoice.createdBy" class="invoice-created-by"><span>{{ invoice.createdBy }}</span></div>

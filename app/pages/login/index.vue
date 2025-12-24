@@ -60,6 +60,7 @@ async function signIn() {
 						navigateTo('/');
 						break;
 					case 'CALLCENTER':
+					case 'CONTROLLER':
 						navigateTo('/readings');
 						break;
 

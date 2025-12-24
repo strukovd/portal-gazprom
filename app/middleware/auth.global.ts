@@ -67,6 +67,7 @@ const determinePageByRole = (role: string): string => {
 			return '/issues';
 		case 'ADMIN':
 			return '/';
+		case 'CONTROLLER':
 		case 'CALLCENTER':
 			return '/readings';
 

@@ -65,7 +65,7 @@
 								<table class="payments-table">
 									<thead>
 										<tr>
-											<th>Транзакция</th>
+											<!-- <th>Транзакция</th> -->
 											<th>Сумма</th>
 											<th>Дата</th>
 											<th>Услуга</th>
@@ -74,7 +74,7 @@
 									</thead>
 									<tbody>
 										<tr v-for="(payment, index) of sub.payments" :key="index">
-											<td class="small-text">{{ payment.txnId }}</td>
+											<!-- <td class="small-text">{{ payment.txnId }}</td> -->
 											<td class="small-text amount">{{ payment.amount }}</td>
 											<td class="small-text date">{{ new Date(payment.created).toLocaleDateString('RU-ru') }}</td>
 											<td class="small-text">[{{ payment.service.id }}] {{ payment.service.name }}</td>
@@ -312,6 +312,8 @@ function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
 
 			th, td {
 				padding:.1em .6em;
+				border: 1px solid rgba(224, 226, 231, .569);
+    			// padding: .4em .6em;
 				// border:1px solid #c9d9ff55;
 			}
 		}
@@ -351,10 +353,11 @@ function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
 				.account-info {
 					margin:.4em 0;
 
-					.readings-table {
+					.readings-table, .payments-table {
 						border-collapse: collapse;
 						width: 100%;
 						margin-top: .8em;
+						text-align: center;
 
 						thead {
 							tr {

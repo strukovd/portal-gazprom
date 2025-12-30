@@ -152,7 +152,7 @@ async function fetchSubscribers() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: SubscribersResponse = await $api('v2/facility/find', {
+	const data: SubscribersResponse = await $api('v1/portal/abonents', {
 		method: 'GET',
 		query: queryParams,
 	});

@@ -152,7 +152,8 @@ async function fetchSubscribers() {
 
 	if(search.value) queryParams.search = search.value;
 
-	const data: SubscribersResponse = await $api('v1/portal/abonents', {
+	const url = useUserStore().userData.role === 'CALLCENTER' ? `v2/facility/find` : `v1/portal/abonents`;
+	const data: SubscribersResponse = await $api(url, {
 		method: 'GET',
 		query: queryParams,
 	});

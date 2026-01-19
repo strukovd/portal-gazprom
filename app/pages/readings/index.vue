@@ -200,15 +200,15 @@ function sendReading(sub: SubscriberLite, reading: string) {
 		.then((data) => {
 			fetchSubscriberDetails(sub);
 			setTimeout(() => {
-				visibleMessage.type = 'success';
 				visibleMessage.message = 'Показание принято';
+				visibleMessage.type = 'success';
 			});
 		})
 		.catch((err: any) => {
 			console.error(err);
 			setTimeout(() => {
+				visibleMessage.message = err?.data?.message ?? 'Ошибка при отправке';
 				visibleMessage.type = 'error';
-				visibleMessage.message = err.data.message;
 			});
 		})
 		.finally(() => {
@@ -247,15 +247,15 @@ function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
 		.then((data) => {
 			fetchSubscriberDetails(sub);
 			setTimeout(() => {
-				visibleMessage.type = 'success';
 				visibleMessage.message = 'Показание удалено';
+				visibleMessage.type = 'success';
 			});
 		})
 		.catch((err: any) => {
 			console.error(err);
 			setTimeout(() => {
+				visibleMessage.message = err?.data?.message ?? 'Ошибка при отправке';
 				visibleMessage.type = 'error';
-				visibleMessage.message = err.data.message;
 			});
 		})
 		.finally(() => {

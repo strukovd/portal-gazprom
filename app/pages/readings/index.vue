@@ -213,6 +213,7 @@ function sendReading(sub: SubscriberLite, reading: string) {
 		})
 		.finally(() => {
 			setTimeout(() => {
+				visibleMessage.message = '';
 				visibleMessage.type = '';
 			}, 10000);
 		})
@@ -260,6 +261,7 @@ function deleteReading(sub: SubscriberLite, readingId: number, event: Event) {
 		})
 		.finally(() => {
 			setTimeout(() => {
+				visibleMessage.message = '';
 				visibleMessage.type = '';
 			}, 10000);
 		});

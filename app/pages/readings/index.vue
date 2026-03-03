@@ -69,7 +69,7 @@
 											<th>Сумма</th>
 											<th>Дата</th>
 											<th>Услуга</th>
-											<!-- <th>Отправитель</th> -->
+											<th>Отправитель</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -78,7 +78,7 @@
 											<td class="small-text amount">{{ payment.amount }}</td>
 											<td class="small-text date">{{ new Date(payment.created).toLocaleDateString('RU-ru') }}</td>
 											<td class="small-text">[{{ payment.service.id }}] {{ payment.service.name }}</td>
-											<!-- <td class="small-text">{{ payment }}</td> -->
+											<td class="small-text">{{ payment?.supplier?.name }}</td>
 										</tr>
 									</tbody>
 								</table>

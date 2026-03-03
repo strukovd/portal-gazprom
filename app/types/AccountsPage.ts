@@ -64,6 +64,11 @@ export  type Payment = {
 	service: {id: 2, name: 'Газоснабжение природным газом'};
 	txnId: string;
 	type: string;
+	supplier: {
+		name: string,
+		iconLight: string | null,
+		iconDark: string |null
+	}
 }
 
 export type Subscriber = SubscriberLite & Partial<SubscriberDetails> & { payments?: Payment[] };

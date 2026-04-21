@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import BaseIcon from '~/components/common/BaseIcon.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
 
 export default defineComponent({
 	name: 'BaseButton',
@@ -47,7 +47,7 @@ export default defineComponent({
 	// background: #EBF1FF;
 	// color: #0079C1;
 	font-weight: 500;
-	border-radius: 4px;
+	border-radius: 7px;
 	box-shadow: none;
 	padding:.6em 1em .6em .8em;
 	user-select: none;
@@ -69,7 +69,7 @@ export default defineComponent({
 		cursor: pointer;
 
 		&.primary {
-			background: #0079C1;
+			background: #2563ea;
 			color: #fff;
 			font-weight: 700;
 			// border: 1px solid rgba(224, 226, 231, 0.56);

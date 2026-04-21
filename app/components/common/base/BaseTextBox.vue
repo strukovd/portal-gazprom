@@ -43,8 +43,8 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import BaseButton from '~/components/common/BaseButton.vue';
-import BaseIcon from '~/components/common/BaseIcon.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
 
 export default defineComponent({
 	// TODO: добавить .lazy директиву
@@ -164,64 +164,62 @@ export default defineComponent({
 
 <style lang="scss">
 .base-text-box {
-  .text-box-wrapper {
-    // margin: 0 0 .6em 0;
+	.text-box-wrapper {
+		// margin: 0 0 .6em 0;
 
-    .caption {
-      font-size: 14px;
-      opacity: .6;
-      line-height: 1.4em;
-      margin-bottom: .4em;
-    }
+		.caption {
+			font-size: 14px;
+			opacity: .6;
+			line-height: 1.4em;
+			margin-bottom: .4em;
+		}
 
-    .text-box-area {
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      text-wrap: nowrap;
-      font-size: 16px;
-      background: #FFFFFF;
-      border-radius: 6px;
-      border: 1px solid #E0E2E791;
-      line-height: 1.4em;
-      font-weight: 500;
-      box-shadow: none;
-      padding: .4em .4em .4em .6em;
+		.text-box-area {
+			display: flex;
+			align-items: center;
+			white-space: nowrap;
+			text-wrap: nowrap;
+			font-size: 16px;
+			background: #FFFFFF;
+			border-radius: 7px;
+			border: 1px solid #d4d4d4;
+			line-height: 1.4em;
+			font-weight: 500;
+			box-shadow: none;
+			padding: .4em .4em .4em .6em;
 
 
-      &:focus-within {
-        box-shadow: 0 0 0 2px #0079C1aa;
-      }
+			&:focus-within {
+				box-shadow: 0 0 0 2px #0079C1aa;
+			}
 
-      & > input {
-        flex: auto 1 0;
-        color: inherit;
-        outline: none;
-        font-size: 16px;
-        box-sizing: border-box;
-        background: transparent;
-        // padding:.5em .7em;
-        padding: 0.4em .4em;
-		border-style: none;
+			& > input {
+				flex: auto 1 0;
+				color: inherit;
+				outline: none;
+				font-size: 16px;
+				box-sizing: border-box;
+				background: transparent;
+				// padding:.5em .7em;
+				padding: 0.4em .4em;
+				border-style: none;
 
-        &::placeholder {
-          font-weight: 300;
-          opacity: .6;
-        }
-      }
-    }
+				&::placeholder {
+					color: #95a3b8;
+					font-weight: 300;
+					opacity: .6;
+				}
+			}
+		}
 
-  }
+	}
 
-  &.invalid {
-    .text-box-area {
-      border-color: red;
-      border-style: dashed;
-      color: red;
-
-      // outline:1px dashed red;
-      // color: red;
-    }
-  }
+	&.invalid {
+		.text-box-area {
+			border-color: red;
+			border-style: dashed;
+			color: red;
+		}
+	}
 }
 </style>

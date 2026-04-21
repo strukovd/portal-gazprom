@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import BaseIcon from '~/components/common/BaseIcon.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
 
 export default defineComponent({
 	// TODO: добавить .lazy директиву

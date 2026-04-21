@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import BaseButton from '~/components/common/BaseButton.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
 
 const userStore = useUserStore();
 if( !userStore.userData ) navigateTo('/login');

@@ -92,13 +92,13 @@ definePageMeta({
 });
 
 const { $api } = useNuxtApp();
-import BaseButton from '~/components/common/BaseButton.vue';
-import BaseIcon from '~/components/common/BaseIcon.vue';
-import BaseTextBox from '~/components/common/BaseTextBox.vue';
-import BaseTabs from '~/components/common/BaseTabs.vue';
-import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
-import BaseFilePicker from '~/components/common/BaseFilePicker.vue'
-// import BaseFileMultiPicker from '~/components/common/BaseFileMultiPicker.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
+import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import BaseTabs from '~/components/common/base/BaseTabs.vue';
+import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
+import BaseFilePicker from '~/components/common/base/BaseFilePicker.vue'
+// import BaseFileMultiPicker from '~/components/common/base/BaseFileMultiPicker.vue';
 import type { Reactive } from 'vue';
 
 const userStore = useUserStore();

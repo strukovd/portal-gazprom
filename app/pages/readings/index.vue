@@ -130,9 +130,9 @@ definePageMeta({
 
 
 const { $api } = useNuxtApp();
-import BaseButton from '~/components/common/BaseButton.vue';
-import BaseIcon from '~/components/common/BaseIcon.vue';
-import BaseTextBox from '~/components/common/BaseTextBox.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
+import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import type { SubscribersResponse, SubscriberDetails, Subscriber, SubscriberLite, PaymentsResponse } from '~/types/AccountsPage';
 
 

@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import BaseButton from '~/components/common/BaseButton.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
 
 definePageMeta({
 	// layout: 'authorized'

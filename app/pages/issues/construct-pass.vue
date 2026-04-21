@@ -136,10 +136,10 @@ definePageMeta({
 const { $api } = useNuxtApp();
 const route = useRoute();
 const issueKey = route.query.issueKey as string;
-import BaseAutocomplete from '~/components/common/BaseAutocomplete.vue';
-import BaseButton from '~/components/common/BaseButton.vue';
-import BaseMemo from '~/components/common/BaseMemo.vue';
-import BaseTextBox from '~/components/common/BaseTextBox.vue';
+import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
+import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseMemo from '~/components/common/base/BaseMemo.vue';
+import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import DynamicRow from '~/components/DynamicRow.vue';
 
 const errorMessage = ref('');

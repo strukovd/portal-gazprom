@@ -188,9 +188,13 @@ export default defineComponent({
 			box-shadow: none;
 			padding: .4em .4em .4em .6em;
 
+			.append-icon, .prepend-icon {
+				color: #a3a3a3;
+			}
 
 			&:focus-within {
-				box-shadow: 0 0 0 2px #0079C1aa;
+				border-color: #2563ea80;
+				box-shadow: 0 0 0 2px #2563ea80;
 			}
 
 			& > input {

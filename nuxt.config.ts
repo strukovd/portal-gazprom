@@ -1,6 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	ssr: false,
+	devServer: {
+		host: '0.0.0.0',
+		port: 3000,
+	},
 	compatibilityDate: '2025-07-15',
 	devtools: { enabled: true },
 	css: [
@@ -23,11 +27,16 @@ export default defineNuxtConfig({
 		},
 		baseURL: process.env.BASE_URL ?? '/',
 	},
-	modules: ['@pinia/nuxt',],
+	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts'],
 	runtimeConfig: {
 		public: {
 			apiURL: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.gazprom.kg/api',
 			apiToken: process.env.NUXT_PUBLIC_API_TOKEN
 		},
-	}
+	},
+	fonts: {
+		families: [
+			{ name: 'Roboto', provider: 'fontsource', weights: [300, 400, 700] },
+		]
+	},
 })

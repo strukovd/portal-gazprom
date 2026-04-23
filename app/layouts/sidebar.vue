@@ -1,0 +1,81 @@
+<template>
+	<section class="sidebar-layout">
+		<header style="display:flex; align-items:center; gap:1em; padding:.5em 2em;">
+			<section class="logo" style="display: flex; align-items:center; gap:.6em; margin-right:2em;">
+				<img height="20px" src="/img/logo.svg" alt="Логотип" />
+				<h2>CallGas</h2>
+			</section>
+			<section class="search">
+				<BaseTextBox placeholder="Поиск абонента по ФИО, лицевому счету" prependIcon="mdi-magnify" />
+			</section>
+			<section class="actions" style="flex:auto 1 0; display:flex; gap:.5em;">
+				<BaseButton style="line-height:1.4em; text-align:center;" variant="light">Новая жалоба</BaseButton>
+				<BaseButton style="line-height:1.4em; text-align:center;" variant="outlined">Принять показания</BaseButton>
+			</section>
+			<section style="display:flex; gap:1em;">
+				<BaseIcon name="mdi-bell" size="20" style="color:#525252;"/>
+				<BaseIcon name="mdi-help-circle-outline" size="20" style="color:#525252;"/>
+				<BaseIcon name="mdi-cog" size="20" style="color:#525252;"/>
+			</section>
+			<section class="user-box" style="display:flex; align-items:center; gap:.5em;">
+				<!-- <img src="/img/user-avatar.png" alt="Аватар пользователя" /> -->
+				<div class="user-info" style="text-align:right;">
+					<div class="name" style="color:#171717; font-size:.9rem; font-weight:700;">Айгуль Нурланова</div>
+					<div class="role" style="color:#737373; font-size:.8rem;">Оператор смены</div>
+				</div>
+				<div>
+					<div style="background: #2563ea; color:#feffff; padding:.3em; border-radius:50%; font-weight: 700; line-height:2em; width:2em; aspect-ratio:1/1; text-align:center;">АН</div>
+				</div>
+				<BaseIcon @click="logout" name="mdi-logout" size="20" style="color:#a3a3a3;"/>
+			</section>
+		</header>
+		<main>
+			<Sidebar v-resizeble="`right`"/>
+			<section class="page-content">
+				<slot/>
+			</section>
+		</main>
+	</section>
+</template>
+
+<script lang="ts" setup>
+import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
+import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import Sidebar from '~/components/Sidebar.vue';
+
+const userStore = useUserStore();
+// if( !userStore.userData ) navigateTo('/login');
+
+function logout() {
+	userStore.reset();
+	navigateTo('/login');
+}
+
+</script>
+
+<style lang="scss">
+.sidebar-layout {
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+
+	header { // занимает свою естественную высоту
+		flex:0 0 auto;
+		background-color: #f6f7fb;
+		border-bottom:1px solid #e5e5e5;
+	}
+
+	main { // забирает остаток экрана
+		display: flex;
+		flex:1 1 auto;
+		min-height: 0; // можно быть меньше высоты собственного контента, если layout требует, позволяет дочерним элементам корректно обрабатывать overflow
+
+		.page-content {
+			flex:auto 1 1;
+			overflow-y: auto;
+			padding:2em;
+		}
+	}
+}
+</style>

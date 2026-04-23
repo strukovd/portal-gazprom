@@ -1,10 +1,44 @@
-body {
-	background-color: #ebf1ff; //#e0f2fe;
-	font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	color: #183d6d;
-	margin: 0;
-	padding: 0;
+:root {
+	body {
+		background-color: #f6f7fb; //#e0f2fe;
+		font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		color: #183d6d;
+		margin: 0;
+		padding: 0;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		color: #0d3896;
+		margin: 0;
+	}
+
+	.v-resizeble-handle {
+		position: absolute;
+		width: 1px;
+		// background: #f0f0f0;
+		z-index: 99;
+		top: 0;
+		bottom: 0;
+		height:100%;
+		cursor: e-resize;
+		border-radius: 3px;
+		transition: all 100ms ease 0s;
+
+		&[data-side='left'] {
+			left: 0;
+		}
+
+		&[data-side='right'] {
+			right: 0;
+		}
+
+		&:hover {
+			background: #0079C2;
+			width: 3px;
+		}
+	}
 }
+
 
 .status {
 	background-color: #0079c1;

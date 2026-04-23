@@ -186,7 +186,7 @@ export default defineComponent({
 			line-height: 1.4em;
 			font-weight: 500;
 			box-shadow: none;
-			padding: .4em .4em .4em .6em;
+			padding: .2em .4em .2em .6em;
 
 			.append-icon, .prepend-icon {
 				color: #a3a3a3;

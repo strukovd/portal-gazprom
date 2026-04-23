@@ -27,7 +27,7 @@ export default defineComponent({
 		disabled: { type: Boolean, default: false },
 		color: String,
 		variant: {
-			type: String as () => 'primary' | 'secondary',
+			type: String as () => 'primary' | 'secondary' | 'outlined' | 'light',
 			default: 'primary'
 		},
 	},
@@ -46,7 +46,6 @@ export default defineComponent({
 	// line-height:1.4em;
 	// background: #EBF1FF;
 	// color: #0079C1;
-	font-weight: 500;
 	border-radius: 7px;
 	box-shadow: none;
 	padding:.6em 1em .6em .8em;
@@ -71,7 +70,6 @@ export default defineComponent({
 		&.primary {
 			background: #2563ea;
 			color: #fff;
-			font-weight: 700;
 			// border: 1px solid rgba(224, 226, 231, 0.56);
 
 			// border-radius: 5px;
@@ -91,6 +89,16 @@ export default defineComponent({
 			// background: #EBF1FF;
 			// color: #0079C1;
 		}
+		&.outlined {
+			background: #ffffff;
+			color: #114bc8;
+			border: 1px solid #2563ea;
+		}
+		&.light {
+			background: #e9effd;
+			color: #2563ea;
+			border: 1px solid #a8c1f7;
+		}
 
 		&:hover {
 			opacity:.8;
@@ -99,7 +107,7 @@ export default defineComponent({
 
 
 	.button-text {
-		font-weight: 300;
+		font-weight: 700;
 		text-align: center;
     	flex: auto 1 1;
 	}

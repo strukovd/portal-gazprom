@@ -1,22 +1,22 @@
 <template>
-	<!-- FEATURES
-	- [+] label
-	- [+] placeholder
-	- [+] autofocus
-	- [+] error
-	- [+] disabled
-	- [+] readonly
-	- [+] button
-	- [+] appendIcon
-	- [+] prependIcon
-	- [+] type
-	- [+] value
-	- [+] name
-	- [+] mask
-
-		safari
-	-->
 	<div class="base-text-box" :class="{ 'invalid': error }" @keydown.enter="onSubmit" >
+		<!-- FEATURES
+		- [+] label
+		- [+] placeholder
+		- [+] autofocus
+		- [+] error
+		- [+] disabled
+		- [+] readonly
+		- [+] button
+		- [+] appendIcon
+		- [+] prependIcon
+		- [+] type
+		- [+] value
+		- [+] name
+		- [+] mask
+	
+			safari
+		-->
 		<label>
 			<div class="text-box-wrapper">
 				<header class="header" style="display:flex; align-items:start; padding-right:1em;">
@@ -104,7 +104,7 @@ export default defineComponent({
 
 			while (maskIndex < mask.length && inputIndex < input.length) {
 				const maskChar = mask[maskIndex];
-				const inputChar: string = input[inputIndex];
+				const inputChar: string = input[inputIndex]!;
 
 				if (maskChar === '#') {
 					if (/\d/.test(inputChar)) {

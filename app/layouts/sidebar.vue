@@ -6,7 +6,7 @@
 				<h2>CallGas</h2>
 			</section>
 			<section class="search">
-				<BaseTextBox placeholder="Поиск абонента по ФИО, лицевому счету" prependIcon="mdi-magnify" />
+				<BaseTextBox ref="searchInput" placeholder="Поиск абонента по ФИО, лицевому счету" prependIcon="mdi-magnify" />
 			</section>
 			<section class="actions" style="flex:auto 1 0; display:flex; gap:.5em;">
 				<BaseButton style="line-height:1.4em; text-align:center;" variant="light">Новая жалоба</BaseButton>
@@ -45,11 +45,42 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import Sidebar from '~/components/Sidebar.vue';
 
 const userStore = useUserStore();
+const searchInput = ref<any>(null);
 // if( !userStore.userData ) navigateTo('/login');
+
+onMounted(() => {
+	enableAutofocus();
+});
 
 function logout() {
 	userStore.reset();
 	navigateTo('/login');
+}
+
+function enableAutofocus() {
+	window.addEventListener('keydown', (e) => {
+		if( !searchInput.value ) return;
+		const input = searchInput.value.$el.querySelector('input') as HTMLInputElement;
+
+		// 1. Проверяем, что фокус НЕ в другом текстовом поле
+		const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+
+		// 2. Игнорируем системные сочетания (Ctrl+C, Alt+Tab, F5 и т.д.)
+		const isModifier = e.ctrlKey || e.metaKey || e.altKey;
+
+		// 3. Проверяем, что нажата печатаемая клавиша (буква, цифра или спецсимвол)
+		// В современных браузерах e.key.length === 1 гарантирует, что это символ
+		if (!isInput && !isModifier && e.key.length === 1) {
+			input.focus();
+			// Фокус перейдет, но символ напечатается автоматически благодаря событию
+		}
+
+		// Дополнительно: очистка поиска по Escape
+		if (e.key === 'Escape' && document.activeElement === input) {
+			input.setAttribute('value', '');
+			input.blur(); // Убираем фокус
+		}
+	});
 }
 
 </script>
@@ -60,21 +91,23 @@ function logout() {
 	display: flex;
 	flex-direction: column;
 
-	header { // занимает свою естественную высоту
-		flex:0 0 auto;
+	header {
+		// занимает свою естественную высоту
+		flex: 0 0 auto;
 		background-color: #f6f7fb;
-		border-bottom:1px solid #e5e5e5;
+		border-bottom: 1px solid #e5e5e5;
 	}
 
-	main { // забирает остаток экрана
+	main {
+		// забирает остаток экрана
 		display: flex;
-		flex:1 1 auto;
+		flex: 1 1 auto;
 		min-height: 0; // можно быть меньше высоты собственного контента, если layout требует, позволяет дочерним элементам корректно обрабатывать overflow
 
 		.page-content {
-			flex:auto 1 1;
+			flex: auto 1 1;
 			overflow-y: auto;
-			padding:2em;
+			padding: 2em;
 		}
 	}
 }

@@ -39,6 +39,9 @@ const rememberMe = ref(false);
 
 
 async function signIn() {
+	navigateTo('/dashboard');
+	return;
+
 	$api<UserData>('v1/portal/auth', {
 		method: 'POST',
 		body: { login: login.value, password: password.value },

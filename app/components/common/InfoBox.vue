@@ -17,13 +17,15 @@ import BaseIcon from './base/BaseIcon.vue';
 const props = defineProps({
 	title: String,
 	message: String,
-	type: { type: String as () => `info`|`error`|`protect`, default: '' },
+	type: { type: String as () => `info`|`error`|`warning`|`protect`, default: '' },
 });
 
 const iconName = computed(() => {
 	switch (props.type) {
 		case 'info':
 			return 'mdi-information';
+		case 'warning':
+			return 'mdi-alert-circle';
 		case 'error':
 			return 'mdi-alert';
 		case 'protect':
@@ -85,6 +87,22 @@ const iconName = computed(() => {
 			}
 			p {
 				color: #124bc8;
+			}
+		}
+	}
+	&.warning {
+		background: #fff4e5;
+		border-color: #f5c6a5;
+		color: #d97706;
+		.icon-area {	
+			color: #d87706;
+		}
+		.content-area {
+			h2 {
+				color: #a44f05;
+			}
+			p {
+				color: #9a3412;
 			}
 		}
 	}

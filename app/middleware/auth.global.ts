@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	if (import.meta.server) return;
 
 	const user = useUserStore();
-	const NEEDS_AUTH = Boolean(to.meta.auth);
+	const NEEDS_AUTH = false; // Boolean(to.meta.auth);
 	const ALLOWED_ROLES = Array.isArray(to.meta.roles) ? (to.meta.roles as string[]) : null;
 
 	// Если авторизация требуется

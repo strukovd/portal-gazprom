@@ -3,8 +3,8 @@
 	<header>
 		<div class="userbox">
 			<div>
-				<div class="login"><b>{{ userStore.userData.login }}</b></div>
-				<div>{{ userStore.userData.contractorName }}</div>
+				<div class="login"><b>{{ userStore.userData?.login ?? `Не определен` }}</b></div>
+				<div v-if="userStore.userData?.contractorName">{{ userStore.userData.contractorName }}</div>
 			</div>
 			<BaseButton @click="logout" variant="secondary">Выйти</BaseButton>
 		</div>
@@ -17,7 +17,7 @@
 import BaseButton from '~/components/common/base/BaseButton.vue';
 
 const userStore = useUserStore();
-if( !userStore.userData ) navigateTo('/login');
+// if( !userStore.userData ) navigateTo('/login');
 
 function logout() {
 	userStore.reset();

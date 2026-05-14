@@ -40,6 +40,7 @@ export default defineComponent({
 
 <style lang="scss">
 .base-button {
+	font-size: .9em;
 	// background: #0079C1;
 	// color: #fff;
 

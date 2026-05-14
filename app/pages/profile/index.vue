@@ -106,12 +106,12 @@
 				</section>
 				<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
 				<div style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;"
-				v-for="(item, index) of [
-					{ date: '18.01.2024', amount: '500.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Онлайн-банк' },
-					{ date: '15.12.2023', amount: '750.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Терминал' },
-					{ date: '10.11.2023', amount: '600.00', serviceId: 24, service: 'Изготовление эскизных чертежей', method: 'Онлайн-банк' },
-					{ date: '10.11.2023', amount: '600.00', serviceId: 47, service: 'Согласование', method: 'Онлайн-банк' },
-				]" :key="index">
+					v-for="(item, index) of [
+						{ date: '18.01.2024', amount: '500.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Онлайн-банк' },
+						{ date: '15.12.2023', amount: '750.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Терминал' },
+						{ date: '10.11.2023', amount: '600.00', serviceId: 24, service: 'Изготовление эскизных чертежей', method: 'Онлайн-банк' },
+						{ date: '10.11.2023', amount: '600.00', serviceId: 47, service: 'Согласование', method: 'Онлайн-банк' },
+					]" :key="index">
 					<div style="flex:33% 1 1; text-align:center;">
 						<div style="font-weight:700; color:forestgreen;">{{ item.amount }}</div>
 						<div style="font-size:.9em; color:#737373;">{{ item.date }}</div>

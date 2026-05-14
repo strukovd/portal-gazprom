@@ -5,7 +5,7 @@
 				<span class="caption">{{ label }}</span>
 			</div>
 			<div v-if="error" class="error-container" style="display:flex; gap:.2em; justify-content:flex-end; font-size:14px; color:red; opacity:.6; line-height:1.4em;">
-				<v-icon icon="mdi-alert-decagram" size="1.2em"></v-icon>
+				<BaseIcon name="mdi-alert-decagram" size="1.2em"></BaseIcon>
 				<span class="error-message">{{ error }}</span>
 			</div>
 		</header>
@@ -13,7 +13,7 @@
 		<main :class="[`file-picker`]" @dragover.prevent @drop.prevent="onSelectFile">
 			<div class="drop-zone">
 				<section v-if="!selectedFiles?.length" class="empty-section">
-					<v-icon class="icon" icon="mdi-image-multiple-outline"></v-icon>
+					<BaseIcon class="icon" name="mdi-image-multiple-outline"></BaseIcon>
 				</section>
 				<section v-else class="preview-section">
 					<header class="preview-header">
@@ -38,8 +38,8 @@
 						>
 							<span class="file-name">{{ file.name ?? file.key }}</span>
 							<div class="buttons">
-								<v-icon class="icon-button" icon="mdi-eye" size="16" fill="#858D9D"/>
-								<v-icon class="icon-button" icon="mdi-delete" size="16" fill="#858D9D"/>
+								<BaseIcon class="icon-button" name="mdi-eye" size="16" fill="#858D9D"/>
+								<BaseIcon class="icon-button" name="mdi-delete" size="16" fill="#858D9D"/>
 							</div>
 						</div>
 					</div>
@@ -80,7 +80,7 @@
 							}"
 						>
 							<!-- <div class="buttons">
-								<v-icon class="icon-button" icon="mdi-delete" size="16" fill="#858D9D"/>
+								<BaseIcon class="icon-button" name="mdi-delete" size="16" fill="#858D9D"/>
 							</div> -->
 
 							<div class="tag" v-if="file.tag">{{ file.tag }}</div>
@@ -91,7 +91,7 @@
 				<section class="label-section">
 					<span>Перетащите изображения сюда или нажмите <br> «Добавить изображения».</span>
 				</section>
-				<BaseButton class="button" prependIcon="mdi-plus" @click="onClick" color="primary"><span>Добавить изображения</span></BaseButton>
+				<BaseButton class="button" prependname="mdi-plus" @click="onClick" color="primary"><span>Добавить изображения</span></BaseButton>
 			</div>
 			<input type="file" ref="fileInput" accept="image/*" multiple style="display:none;" @change="onSelectFile">
 		</main>
@@ -119,6 +119,7 @@ export class FileRegistryModel {
 
 // import { PopupItem } from '@/plugins/popup';
 import { defineComponent } from 'vue';
+import BaseIcon from './BaseIcon.vue';
 
 
 export default defineComponent({

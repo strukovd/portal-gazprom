@@ -47,7 +47,7 @@
 					</section>
 					<section>
 						<div style="color:#737373;">{{ item.title }}</div>
-						<div style="font-size:1.2em; font-weight:700;">{{ item.value }}</div>
+						<div style="font-size:1.1em; font-weight:700;">{{ item.value }}</div>
 					</section>
 				</BaseIsland>
 			</template>
@@ -93,33 +93,34 @@
 				 </table>
 			</BaseIsland>
 			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold">
-				<section>
-					<div>
-						<div>Текущий баланс</div>
-						<div>1000.00 сом</div>
-						<div>Предоплата</div>
+				<section style="display:flex; gap:1em; flex-wrap:wrap;">
+					<div style="flex:auto 1 1; background:#e9effd; color:#2b63dd; padding:1em; border-radius:12px; text-align:center;">
+						<div style="font-size:.9em;">Текущий баланс</div>
+						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">1000.00 сом</div>
+						<div style="font-size:.9em;">Предоплата</div>
 					</div>
-					<div>
-						<div>Квитанция</div>
-						<div>за апрель</div>
+					<div style="flex:auto 1 1; background:#fef2f2; color:#dc2625; padding:1em; border-radius:12px; text-align:center;">
+						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">Квитанция</div>
+						<div style="font-size:.9em;">за апрель</div>
 					</div>
 				</section>
-				<div>Последние оплаты</div>
-				<table>
-					<tbody>
-						<tr>
-							<td>
-								<div>2540.00с</div>
-								<div>25.03.2024</div>
-							</td>
-							<td>Газоснаюжение природных газом</td>
-							<td>Pay24</td>
-						</tr>
-						<tr></tr>
-						<tr></tr>
-						<tr></tr>
-					</tbody>
-				</table>
+				<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
+				<div style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;"
+				v-for="(item, index) of [
+					{ date: '18.01.2024', amount: '500.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Онлайн-банк' },
+					{ date: '15.12.2023', amount: '750.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Терминал' },
+					{ date: '10.11.2023', amount: '600.00', serviceId: 24, service: 'Изготовление эскизных чертежей', method: 'Онлайн-банк' },
+					{ date: '10.11.2023', amount: '600.00', serviceId: 47, service: 'Согласование', method: 'Онлайн-банк' },
+				]" :key="index">
+					<div style="flex:33% 1 1; text-align:center;">
+						<div style="font-weight:700; color:forestgreen;">{{ item.amount }}</div>
+						<div style="font-size:.9em; color:#737373;">{{ item.date }}</div>
+					</div>
+					<div style="flex:33% 1 1; padding:0 1em; font-size:.8em; text-align:center; border-width:0 1px 0 1px; border-style:solid; border-color:#e5e5e5;">
+						<div :style="{color: item.serviceId === 1 ? '#659df2' : '#fe9f4d'}">{{ item.service }}</div>
+					</div>
+					<div style="flex:33% 1 1; text-align:center; font-size:.9em; color:#525252;">{{ item.method }}</div>
+				</div>
 			</BaseIsland>
 			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history">
 				<section style="display:flex; flex-direction:column; gap:.5em;">

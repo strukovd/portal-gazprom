@@ -27,7 +27,7 @@ export default defineNuxtConfig({
 		},
 		baseURL: process.env.BASE_URL ?? '/',
 	},
-	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts'],
+	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts', 'nuxt-echarts'],
 	runtimeConfig: {
 		public: {
 			apiURL: process.env.NUXT_PUBLIC_API_BASE ?? 'https://api.gazprom.kg/api',
@@ -39,4 +39,10 @@ export default defineNuxtConfig({
 			{ name: 'Roboto', provider: 'fontsource', weights: [300, 400, 700] },
 		]
 	},
+	echarts: {
+		renderer: 'canvas',
+		charts: ['BarChart', 'LineChart', 'PieChart', 'GaugeChart', 'RadarChart', 'ScatterChart'],
+		components: ['TitleComponent', 'TooltipComponent', 'GridComponent', 'LegendComponent', 'DataZoomComponent', 'VisualMapComponent'],
+		features: ['LabelLayout', 'UniversalTransition']
+	}
 })

@@ -24,11 +24,19 @@
 					<div class="role" style="color:#737373; font-size:.8rem;">Оператор смены</div>
 				</div>
 				<div>
-					<div style="background: #2563ea; color:#feffff; padding:.3em; border-radius:50%; font-weight: 700; line-height:2em; width:2em; aspect-ratio:1/1; text-align:center;">АН</div>
+					<Avatar size="2.2em" name="Айгуль Нурланова"/>
 				</div>
 				<BaseIcon @click="logout" name="mdi-logout" size="20" style="color:#a3a3a3;"/>
 			</section>
 		</header>
+		<section class="banner" style="display: flex;background: #ffca00;padding: .5em 1em; position:sticky; top:0; z-index:10;">
+			<span style="background:rgb(255 202 0); filter:sepia(1); color:#444; padding:.3em .8em; border-radius:9px;">
+				<BaseIcon name="mdi-currency-usd" style="color:forestgreen; margin-right:.2em;"/>
+				<span style="font-size:.8em;">Текущий тариф: </span>
+				<b style="padding:0 .1em;">24,10</b>
+				<span style="font-size:.8em;"> сом/м³</span>
+			</span>
+		</section>
 		<main>
 			<Sidebar v-resizeble="`right`"/>
 			<section class="page-content">
@@ -39,6 +47,7 @@
 </template>
 
 <script lang="ts" setup>
+import Avatar from '~/components/common/Avatar.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';

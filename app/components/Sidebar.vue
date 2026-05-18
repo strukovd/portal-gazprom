@@ -45,7 +45,6 @@
 <script lang="ts" setup>
 import { version } from '../../package.json';
 import BaseIcon from './common/base/BaseIcon.vue';
-
 type SidebarLink = {
 	title?: string
 	link?: string
@@ -56,38 +55,42 @@ type SidebarLink = {
 	children?: SidebarLink[]
 }
 
-const route = useRoute();
 
-const links = ref([
+const route = useRoute();
+const links = ref<SidebarLink[]>([
 	{
 		title: 'Панель правления',
-		link: '/dashboard',
+		link: '/',
 		icon: 'mdi-view-dashboard'
 	},
 	{
 		title: 'Оперативные новости',
 		link: '/news',
-		icon: 'mdi-newspaper'
-	},
-	{
-		title: 'Отключение газа',
-		link: '/gas-off',
-		icon: 'mdi-fire'
+		icon: 'mdi-newspaper',
+		children: [
+			{
+				title: 'Отключение газа',
+				link: '/gas-off',
+				icon: 'mdi-fire',
+				disabled: true
+			},
+			{
+				title: 'Газификация',
+				link: '/gasification',
+				icon: 'mdi-gas-burner',
+				disabled: true
+			},
+		]
 	},
 	{
 		title: 'Тарифы',
 		link: '/tariffs',
-		icon: 'mdi-currency-usd'
+		icon: 'mdi-currency-usd',
 	},
 	{
 		title: 'Офисы обслуживания',
 		link: '/offices',
-		icon: 'mdi-office-building'
-	},
-	{
-		title: 'Газификация',
-		link: '/gasification',
-		icon: 'mdi-gas-burner'
+		icon: 'mdi-office-building',
 	},
 	{
 		spacer: true,
@@ -155,6 +158,7 @@ function handleDisabledLink(link: SidebarLink, event: Event) {
 	flex-direction: column;
 	background:#0e3896;
 	color: #a9c0f6;
+	min-width: 18em;
 	max-width:50vw;
 
 	.links {

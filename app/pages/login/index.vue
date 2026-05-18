@@ -39,7 +39,7 @@ const rememberMe = ref(false);
 
 
 async function signIn() {
-	navigateTo('/dashboard');
+	navigateTo('/');
 	return;
 
 	$api<UserData>('v1/portal/auth', {

@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-APP_NAME="portal"
+APP_NAME="v2"
 ARCHIVE_NAME="${APP_NAME}-build.tar.gz"
 REMOTE_TMP="/tmp/${ARCHIVE_NAME}"
 REMOTE_HOST="root@5.23.48.222"

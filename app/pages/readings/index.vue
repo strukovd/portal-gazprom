@@ -16,8 +16,9 @@
 							@submit="(value: string)=>{ sendReading(sub, value) }"
 							style="flex:auto 1 0;"
 							prepend-icon="mdi-counter"
-							button="Отправить"
+							:button="sending ? 'Отправляется...' : 'Отправить'"
 							placeholder="Отправить показание"
+							:disabled="sending"
 						/>
 						<BaseButton v-if="!sub.district" @click="fetchSubscriberDetails(sub)" prependIcon="mdi-text-box-search-outline">Подробнее</BaseButton>
 					</div>
@@ -138,6 +139,7 @@ import type { SubscribersResponse, SubscriberDetails, Subscriber, SubscriberLite
 
 const search = ref('');
 const loading = ref(false);
+const sending = ref(false);
 
 const subscriberIndex = reactive<{ [key: string]: Subscriber }>({});
 const visibleMessage = reactive<{ type: '' | 'success' | 'error', message: string }>({ type: '', message: '' });
@@ -190,6 +192,7 @@ async function fetchSubscriberDetails(sub: SubscriberLite) {
 }
 
 function sendReading(sub: SubscriberLite, reading: string) {
+	sending.value = true;
 	$api('v1/portal/readings', {
 		method: 'POST',
 		body: {
@@ -212,6 +215,7 @@ function sendReading(sub: SubscriberLite, reading: string) {
 			});
 		})
 		.finally(() => {
+			sending.value = false;
 			setTimeout(() => {
 				visibleMessage.message = '';
 				visibleMessage.type = '';

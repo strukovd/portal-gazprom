@@ -16,7 +16,7 @@
 
 		safari
 	-->
-	<div class="base-text-box" :class="{ 'invalid': error }" @keydown.enter="onSubmit" >
+	<div class="base-text-box" :class="{ 'invalid': error, 'disabled': disabled }" @keydown.enter="onSubmit" >
 		<label>
 			<div class="text-box-wrapper">
 				<header class="header" style="display:flex; align-items:start; padding-right:1em;">
@@ -61,6 +61,7 @@ export default defineComponent({
 		appendIcon: String,
 		autofocus: Boolean,
 		placeholder: String,
+		disabled: Boolean,
 		type: {
 			type: String as () => 'text' | 'password' | 'color'
 				| 'date' | 'datetime'
@@ -104,7 +105,7 @@ export default defineComponent({
 
 			while (maskIndex < mask.length && inputIndex < input.length) {
 				const maskChar = mask[maskIndex];
-				const inputChar: string = input[inputIndex];
+				const inputChar: string = input[inputIndex]!;
 
 				if (maskChar === '#') {
 					if (/\d/.test(inputChar)) {
@@ -164,64 +165,71 @@ export default defineComponent({
 
 <style lang="scss">
 .base-text-box {
-  .text-box-wrapper {
-    // margin: 0 0 .6em 0;
+	.text-box-wrapper {
+		.caption {
+			font-size: 14px;
+			opacity: .6;
+			line-height: 1.4em;
+			margin-bottom: .4em;
+		}
 
-    .caption {
-      font-size: 14px;
-      opacity: .6;
-      line-height: 1.4em;
-      margin-bottom: .4em;
-    }
-
-    .text-box-area {
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-      text-wrap: nowrap;
-      font-size: 16px;
-      background: #FFFFFF;
-      border-radius: 6px;
-      border: 1px solid #E0E2E791;
-      line-height: 1.4em;
-      font-weight: 500;
-      box-shadow: none;
-      padding: .4em .4em .4em .6em;
+		.text-box-area {
+			display: flex;
+			align-items: center;
+			white-space: nowrap;
+			text-wrap: nowrap;
+			font-size: 16px;
+			background: #FFFFFF;
+			border-radius: 6px;
+			border: 1px solid #E0E2E791;
+			line-height: 1.4em;
+			font-weight: 500;
+			box-shadow: none;
+			padding: .4em .4em .4em .6em;
 
 
-      &:focus-within {
-        box-shadow: 0 0 0 2px #0079C1aa;
-      }
+			&:focus-within {
+				box-shadow: 0 0 0 2px #0079C1aa;
+			}
 
-      & > input {
-        flex: auto 1 0;
-        color: inherit;
-        outline: none;
-        font-size: 16px;
-        box-sizing: border-box;
-        background: transparent;
-        // padding:.5em .7em;
-        padding: 0.4em .4em;
-		border-style: none;
+			& > input {
+				flex: auto 1 0;
+				color: inherit;
+				outline: none;
+				font-size: 16px;
+				box-sizing: border-box;
+				background: transparent;
+				padding: 0.4em .4em;
+				border-style: none;
 
-        &::placeholder {
-          font-weight: 300;
-          opacity: .6;
-        }
-      }
-    }
+				&::placeholder {
+					font-weight: 300;
+					opacity: .6;
+				}
+			}
+		}
 
-  }
+	}
 
-  &.invalid {
-    .text-box-area {
-      border-color: red;
-      border-style: dashed;
-      color: red;
+	&.invalid {
+		.text-box-area {
+			border-color: red;
+			border-style: dashed;
+			color: red;
+		}
+	}
 
-      // outline:1px dashed red;
-      // color: red;
-    }
-  }
+	&.disabled {
+		pointer-events: none;
+
+		.text-box-area {
+			border-color: #e5e5e5;
+			color: #c5c5c5;
+
+			& > input {
+				cursor: not-allowed;
+			}
+		}
+	}
 }
 </style>

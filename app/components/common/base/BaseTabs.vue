@@ -9,7 +9,7 @@
 		>
 			<BaseIcon v-if="button.icon" :name="button.icon" size="1.2em" style="margin-right:.2em; opacity:.8; vertical-align:baseline;"></BaseIcon>
 			<span style="font-weight:300;">{{ button.caption }}</span>
-			<div class="error-counter" v-if="button.badge">{{ button.badge }}</div>
+			<span v-if="button.badge" class="tab-button-badge">{{ button.badge }}</span>
 		</button>
 	</section>
 </template>
@@ -22,7 +22,7 @@ type TabModel = {
 	icon?: string;
 	caption: string;
 	color?: string;
-	badge?: string;
+	badge?: string | number;
 }
 
 export default defineComponent({
@@ -72,54 +72,55 @@ export default defineComponent({
 <style lang="scss">
 .tabs {
 	display: flex;
-	justify-content: center;
+	/* justify-content: center; */
+	overflow-x: auto;
 	align-items: center;
 	margin: 0 0 0.6em 0;
-	padding:.5em .7em;
+	/* padding:.5em .7em; */
 	background: #FFFFFF;
 	backdrop-filter: blur(20px);
-	// box-shadow: 0px 0px 30px rgba(3, 100, 165, 0.1);
-	box-shadow: 0 0 3px rgba(0 0 0 / .12);
+	/* box-shadow: 0px 0px 30px rgba(3, 100, 165, 0.1); */
+	/* box-shadow: 0 0 3px rgba(0 0 0 / .12); */
 	border-radius: 6px;
-	// border: 1px solid #E0E2E791;
+	/* border: 1px solid #E0E2E791; */
 
 	.tab-button {
-		flex:auto 1 1;
-		position:relative;
+		display: flex;
+		align-items: center;
+		gap: .3em;
 		line-height:1.4em;
 		margin:0 .1em;
-		// background: #EBF1FF;
-		// color: #0079C1;
+		background: #f3f4f6;
 		font-size: .9em;
 		font-weight: 500;
 		border-radius: 4px;
 		box-shadow: none;
 		padding:.4em 1em;
 		transition:all 300ms ease 0s;
-		background-color: transparent;
 		border-style: none;
 		cursor: pointer;
+		white-space: nowrap;
 
-		&.selected {
-			background: #0079C1;
-			color: #fff !important;
-
-			&:hover {
-				background: #0079C1;
-			}
+		.tab-button-badge {
+			background-color:rgb(255 255 255 / .8);
+			color:inherit;
+			display:inline-block;
+			padding:0 .5em;
+			border-radius:3px;
+			font-size:.74em;
 		}
 
-		.error-counter {
-			position: absolute;
-			display: inline-block;
-			top: -.5em;
-			right: -.5em;
-			color: whitesmoke;
-			background: red;
-			padding: 0 .8em;
-			line-height: 1.7em;
-			border-radius: 10px;
-			font-size: .7em;
+		&.selected {
+			background: #2563ea;
+			color: #fff;
+
+			&:hover {
+				background: #1853d3;
+			}
+
+			.tab-button-badge {
+				background-color:rgb(255 255 255 / .2);
+			}
 		}
 	}
 

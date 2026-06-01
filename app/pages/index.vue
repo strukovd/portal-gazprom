@@ -220,55 +220,56 @@ definePageMeta({
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 16px;
-	}
 
-	.stat-card {
-		display: grid;
-		justify-items: center;
-		gap: 6px;
-		padding: 22px 16px;
-		border: 1px solid #e5e7eb;
-		border-radius: 12px;
-		background: #fff;
-
-		.icon {
+		.stat-card {
 			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 50%;
-
-			&.red {
-				color: #ef4444;
-				background: #fee2e2;
+			justify-items: center;
+			gap: 6px;
+			padding: 22px 16px;
+			border: 1px solid #e5e7eb;
+			border-radius: 12px;
+			background: #fff;
+	
+			.icon {
+				display: grid;
+				place-items: center;
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+	
+				&.red {
+					color: #ef4444;
+					background: #fee2e2;
+				}
+	
+				&.blue {
+					color: #2563eb;
+					background: #dbeafe;
+				}
+	
+				&.green {
+					color: #16a34a;
+					background: #dcfce7;
+				}
+	
+				&.yellow {
+					color: #d97706;
+					background: #fef3c7;
+				}
 			}
-
-			&.blue {
-				color: #2563eb;
-				background: #dbeafe;
+	
+			strong {
+				font-size: 24px;
+				line-height: 1;
 			}
-
-			&.green {
-				color: #16a34a;
-				background: #dcfce7;
+	
+			span {
+				color: #6b7280;
+				font-size: 12px;
 			}
-
-			&.yellow {
-				color: #d97706;
-				background: #fef3c7;
-			}
-		}
-
-		strong {
-			font-size: 24px;
-			line-height: 1;
-		}
-
-		span {
-			color: #6b7280;
-			font-size: 12px;
 		}
 	}
+
 
 	:deep(.base-island) {
 		height: 100%;

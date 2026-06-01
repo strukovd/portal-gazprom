@@ -159,7 +159,7 @@
 						{ label: 'Расход', key: 'consumption' },
 						{ label: 'Источник', key: 'source' },
 						{ label: 'Статус', key: 'status' },
-					]" :items="[
+					]" :rows="[
 						{ date: '18.01.2024', reading: '1500', consumption: '50', source: 'Счетчик', status: 'Аномалия' },
 						{ date: '18.12.2023', reading: '1450', consumption: '50', source: 'Счетчик', status: 'Норма' },
 						{ date: '18.11.2023', reading: '1400', consumption: '50', source: 'Счетчик', status: 'Норма' },

@@ -25,9 +25,9 @@ const props = defineProps({
 	border-radius:12px;
 	margin-top:1em;
 
-	&:not(:last-child) {
+	/* &:not(:last-child) {
 		margin-bottom: 1em;
-	}
+	} */
 
 	.bi-title {
 		display: flex;

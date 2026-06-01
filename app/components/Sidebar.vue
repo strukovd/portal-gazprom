@@ -113,7 +113,11 @@ const links = ref<SidebarLink[]>([
 	{
 		title: 'Жалобы',
 		link: '/complaints',
-		icon: 'mdi-alert-circle'
+		icon: 'mdi-alert-circle',
+		children: [
+			{ title: 'Реестр жалоб', link: '/complaints/list', icon: 'mdi-file-document' },
+			{ title: 'Форма создания', link: '/complaints/create', icon: 'mdi-file-document-plus' },
+		]
 	},
 	{
 		title: 'Ответственные лица',

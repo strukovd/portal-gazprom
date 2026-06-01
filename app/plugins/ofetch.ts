@@ -3,10 +3,10 @@ import { defineNuxtPlugin } from '#app';
 export default defineNuxtPlugin((nuxtApp) => {
 	const config = useRuntimeConfig();
 
-	const apiFetch = $fetch.create({
-		baseURL: config.public.apiURL,
+	const createApiClient = (baseURL: string) => $fetch.create({
+		baseURL,
 		onRequest({ options }) {
-			options.headers.set('api-token', config.public.apiToken);
+			// if(config.public.apiToken) options.headers.set('api-token', config.public.apiToken);
 
 			if(import.meta.server) return;
 			else {
@@ -31,6 +31,12 @@ export default defineNuxtPlugin((nuxtApp) => {
 		},
 	});
 
-	// Делаем доступным как $api
-	return { provide: { api: apiFetch } };
+	const fetchCallGas = createApiClient(config.public.CALL_GAS_BASE_URL);
+
+	// Делаем доступным как $fetchCallGas
+	return {
+		provide: {
+			fetchCallGas,
+		}
+	};
 })

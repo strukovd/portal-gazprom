@@ -3,44 +3,46 @@
 		<table class="base-table">
 			<thead class="bt-thead">
 				<tr>
-					<th
-						v-for="column in columns"
-						:key="column.key"
-						class="base-table__cell"
+					<th v-for="column in columns" :key="column.key"
+						:class="['base-table__cell', 'base-table__cell--head', column.headerClass]"
 						:style="{ width: column.width }"
 					>
-						{{ column.label }}
+						<slot :name="`header.${column.key}`" :column="column" :label="column.label">
+							{{ column.label }}
+						</slot>
 					</th>
 				</tr>
 			</thead>
 
 			<tbody class="bt-tbody">
+				<!-- Загрузка -->
 				<tr v-if="loading">
 					<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
 						<slot name="loading">Загрузка...</slot>
 					</td>
 				</tr>
-
-				<tr v-else-if="!items.length">
+				<!-- Нет данных -->
+				<tr v-else-if="!rows.length">
 					<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
 						<slot name="empty">Нет данных</slot>
 					</td>
 				</tr>
-
+				<!-- Есть данные (строки) -->
 				<tr v-else
-					v-for="(item, rowIndex) in items"
-					:key="getRowKey(item, rowIndex)"
+					v-for="(row, rowIndex) of rows"
+					:key="getRowKey(row, rowIndex)"
 					class="base-table-row"
 				>
-					<td v-for="column in columns" :key="column.key" class="base-table__cell">
+					<td v-for="column of columns" :key="column.key" :class="['base-table__cell', column.cellClass]">
 						<slot
 							:name="`cell.${column.key}`"
-							:item="item"
-							:value="getValue(item, column.key)"
+							:row="row"
+							:value="getValue(row, column.key)"
 							:column="column"
+							:index="rowIndex"
 							:row-index="rowIndex"
 						>
-							{{ getValue(item, column.key) }}
+							{{ getValue(row, column.key) }}
 						</slot>
 					</td>
 				</tr>
@@ -54,30 +56,39 @@ type TableColumn = {
 	key: string;
 	label: string;
 	width?: string;
+	headerClass?: string | string[] | Record<string, boolean>;
+	cellClass?: string | string[] | Record<string, boolean>;
 };
 
-type TableItem = Record<string, unknown>;
+type TableRow = Record<string, unknown>;
 
 const props = withDefaults(defineProps<{
 	columns: TableColumn[];
-	items: TableItem[];
+	rows: TableRow[];
 	loading?: boolean;
-	rowKey?: string | ((item: TableItem, index: number) => string | number);
+	rowKey?: string | ((row: TableRow, index: number) => string | number);
 }>(), {
 	loading: false,
 	rowKey: 'id',
 });
 
-function getValue(item: TableItem, key: string): unknown {
-	return item[key] ?? '';
+function getValue(row: TableRow, key: string): unknown {
+	// Поддержка вложенных ключей через точку, например "user.name"
+	return key.split('.').reduce<unknown>((value, path) => {
+		if(value && typeof value === 'object' && path in value) {
+			return (value as Record<string, unknown>)[path];
+		}
+
+		return undefined;
+	}, row) ?? '';
 }
 
-function getRowKey(item: TableItem, index: number): string | number {
+function getRowKey(row: TableRow, index: number): string | number {
 	if(typeof props.rowKey === 'function') {
-		return props.rowKey(item, index);
+		return props.rowKey(row, index);
 	}
 
-	const value = item[props.rowKey];
+	const value = getValue(row, props.rowKey);
 
 	if(typeof value === 'string' || typeof value === 'number') {
 		return value;
@@ -114,12 +125,16 @@ function getRowKey(item: TableItem, index: number): string | number {
 		}
 	}
 
-
 	&__cell {
 		padding: 10px 12px;
 		text-align: left;
 		vertical-align: middle;
 		white-space: nowrap;
+
+		&--head {
+			color: #525252;
+			font-weight: 700;
+		}
 
 		&--state {
 			padding: 24px;

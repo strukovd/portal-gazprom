@@ -32,11 +32,13 @@ export default defineNuxtPlugin((nuxtApp) => {
 	});
 
 	const fetchCallGas = createApiClient(config.public.CALL_GAS_BASE_URL);
+	const fetchPortal = createApiClient(config.public.PORTAL_BASE_URL);
 
 	// Делаем доступным как $fetchCallGas
 	return {
 		provide: {
 			fetchCallGas,
+			fetchPortal,
 		}
 	};
 })

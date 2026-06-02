@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-const { $api } = useNuxtApp();
+const { $fetchPortal } = useNuxtApp();
 import type { FetchError } from 'ofetch';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
@@ -39,10 +39,7 @@ const rememberMe = ref(false);
 
 
 async function signIn() {
-	navigateTo('/');
-	return;
-
-	$api<UserData>('v1/portal/auth', {
+	$fetchPortal<UserData>('v1/portal/auth', {
 		method: 'POST',
 		body: { login: login.value, password: password.value },
 	})

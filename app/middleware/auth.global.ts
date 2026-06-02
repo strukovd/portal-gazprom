@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	if (import.meta.server) return;
 
 	const user = useUserStore();
-	const NEEDS_AUTH = false; // Boolean(to.meta.auth);
+	const NEEDS_AUTH = Boolean(to.meta.auth);
 	const ALLOWED_ROLES = Array.isArray(to.meta.roles) ? (to.meta.roles as string[]) : null;
 
 	// Если авторизация требуется
@@ -18,7 +18,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
 			const role = user.userData?.role;
 			if(ALLOWED_ROLES && ALLOWED_ROLES.length > 0) {
 				if(!ALLOWED_ROLES.includes(role)) { // Если пользователь не иммет доступа (роли) к странице
-					const page = determinePageByRole(role);
+					let page = determinePathByRole(role);
+					if(page === to.path) page = '/403'; // Анти-зацикливание
 					return navigateTo(page, { replace: true });
 				}
 			}
@@ -29,7 +30,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	// Если уже авторизован и пришёл на /login — перекинуть на главную
 	if (to.path.replace(/\/$/, '') === '/login' && user.token) {
 		const role = user.userData?.role;
-		const page = determinePageByRole(role);
+		const page = determinePathByRole(role);
 		return navigateTo(page, { replace: true });
 	}
 
@@ -61,7 +62,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 	// }
 })
 
-const determinePageByRole = (role: string): string => {
+const determinePathByRole = (role: string): string => {
 	switch( String(role).toUpperCase() ) {
 		case 'CONTRACTOR':
 			return '/issues';

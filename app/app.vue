@@ -1,5 +1,8 @@
 <template>
   <div>
+	<transition name="modal">
+		<ModalWrapper v-if="appStore.modals.length"/>
+	</transition>
 	<NuxtLayout>
 		<NuxtPage/>
 	</NuxtLayout>
@@ -7,6 +10,9 @@
 </template>
 
 <script lang="ts" setup>
+import ModalWrapper from './components/modals/ModalWrapper.vue';
+
+const appStore = useAppStore();
 
 </script>
 

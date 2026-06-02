@@ -2,12 +2,15 @@
 	<section id="complaint-issue-list">
 		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Жалобы' }]"/>
 
-		<!-- <header>
-			<div>
+		<header style="display:flex; align-items:center; justify-content:space-between; gap:1em;">
+			<section>
 				<h2>Жалобы</h2>
 				<span>Управление обращениями и жалобами абонентов</span>
-			</div>
-		</header> -->
+			</section>
+			<section>
+				<BaseButton variant="primary" icon="mdi-plus" @click="$modal.show('ComplaintCreate', {title: 'das'})">Создать жалобу</BaseButton>
+			</section>
+		</header>
 
 		<!-- Статистика -->
 		<section class="stats no-api">

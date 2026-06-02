@@ -100,14 +100,14 @@ function enableAutofocus() {
 	display: flex;
 	flex-direction: column;
 
-	header {
+	>header {
 		// занимает свою естественную высоту
 		flex: 0 0 auto;
 		background-color: #f6f7fb;
 		border-bottom: 1px solid #e5e5e5;
 	}
 
-	main {
+	>main {
 		// забирает остаток экрана
 		display: flex;
 		flex: 1 1 auto;

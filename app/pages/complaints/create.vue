@@ -152,7 +152,7 @@ definePageMeta({
 
 <style lang="scss">
 #complaint-create-page {
-	header {
+	>header {
 		display: flex;
 		align-items: start;
 		justify-content: space-between;
@@ -392,7 +392,7 @@ definePageMeta({
 	}
 
 	@media (max-width: 768px) {
-		header {
+		>header {
 			display: grid;
 
 			.updated {

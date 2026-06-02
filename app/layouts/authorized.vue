@@ -28,7 +28,7 @@ function logout() {
 
 <style lang="scss">
 .authorized-layout {
-	header {
+	>header {
 		display: flex;
 		flex-direction: column;
 		align-items: end;

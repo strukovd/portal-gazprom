@@ -8,12 +8,11 @@
 			<form class="form" @keyup.enter="signIn" @submit.prevent="signIn">
 				<BaseTextBox v-model="login" label="Логин сотрудника" prependIcon="mdi-account-outline" placeholder="Введите логин" autofocus/>
 				<BaseTextBox v-model="password" label="Пароль" type="password" prependIcon="mdi-lock" placeholder="Введите пароль"/>
-				<div v-if="error" style="color:red; text-align:center; font-size:.9em">{{ error }}</div>
 				<div style="display:flex; justify-content:space-between; align-items:center; margin-top:.5em;">
 					<BaseCheckbox label="Запомнить сессию" v-model="rememberMe"/>
 					<a href="/forgot-password" style="color:#2563ea; font-size:.9em;">Забыли пароль?</a>
 				</div>
-				<InfoBox type="error" title="Ошибка авторизации" :message="`Неверный логин или пароль. Проверьте данные и повторите попытку. Если проблема сохраняется — восстановите доступ или обратитесь к администратору.`"/>
+				<InfoBox v-if="error" type="error" title="Ошибка авторизации" :message="error"/>
 				<BaseButton @click="signIn" style="line-height:2em; text-align:center;">Войти в систему</BaseButton>
 			</form>
 			<InfoBox type="protect" title="Защищённый доступ" :message="`Все данные абонентов передаются по шифрованному каналу. \nДоступ регулируется политикой безопасности компании.`"/>

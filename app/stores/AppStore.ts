@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
+import type { FlagsModel } from '~/plugins/flag';
 import type { ModalModel } from '~/plugins/modal';
 
 type Invoice = {
@@ -28,6 +29,7 @@ export const useAppStore = defineStore('app', {
 	state: () => ({
 		issues: [] as Issue[],
 		modals: [] as ModalModel[],
+		flags: [] as FlagsModel[]
 	}),
 	actions: {}
 });

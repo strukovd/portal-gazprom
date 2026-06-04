@@ -6,7 +6,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 	const createApiClient = (baseURL: string) => $fetch.create({
 		baseURL,
 		onRequest({ options }) {
-			// if(config.public.apiToken) options.headers.set('api-token', config.public.apiToken);
+			if(config.public.API_TOKEN) options.headers.set('api-token', config.public.API_TOKEN);
 
 			if(import.meta.server) return;
 			else {
@@ -31,12 +31,13 @@ export default defineNuxtPlugin((nuxtApp) => {
 		},
 	});
 
+	const fetchApi = createApiClient(config.public.API_BASE_URL);
 	const fetchCallGas = createApiClient(config.public.CALL_GAS_BASE_URL);
 	const fetchPortal = createApiClient(config.public.PORTAL_BASE_URL);
 
-	// Делаем доступным как $fetchCallGas
 	return {
 		provide: {
+			fetchApi,
 			fetchCallGas,
 			fetchPortal,
 		}

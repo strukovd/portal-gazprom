@@ -20,13 +20,15 @@
 			<section class="user-box" style="display:flex; align-items:center; gap:.5em;">
 				<!-- <img src="/img/user-avatar.png" alt="Аватар пользователя" /> -->
 				<div class="user-info" style="text-align:right;">
-					<div class="name" style="color:#171717; font-size:.9rem; font-weight:700;">Айгуль Нурланова</div>
-					<div class="role" style="color:#737373; font-size:.8rem;">Оператор смены</div>
+					<div class="name" style="color:#171717; font-size:.9rem; font-weight:700;">{{ userStore.userData?.userName }}</div>
+					<div class="role" style="color:#737373; font-size:.8rem;">{{ role }}</div>
 				</div>
 				<div>
-					<Avatar size="2.2em" name="Айгуль Нурланова"/>
+					<Avatar size="2.2em" :name="userStore.userData?.userName"/>
 				</div>
-				<BaseIcon @click="logout" name="mdi-logout" size="20" style="color:#a3a3a3;"/>
+				<div style="color:#a3a3a3; cursor:pointer;">
+					<BaseIcon @click="logout" name="mdi-logout" size="20"/>
+				</div>
 			</section>
 		</header>
 		<section class="banner" style="display: flex;background: #ffca00;padding: .5em 1em; position:sticky; top:0; z-index:10;">
@@ -59,6 +61,20 @@ const searchInput = ref<any>(null);
 
 onMounted(() => {
 	enableAutofocus();
+});
+
+const role = computed(() => {
+	switch( userStore.userData?.role ) {
+		case 'CALLCENTER':
+			return 'Оператор колл-центра';
+		case 'CONTROLLER':
+			return 'Контролёр';
+		case 'ADMIN':
+			return 'Администратор';
+		case 'CONTRACTOR':
+			return 'Подрядчик';
+		default: return userStore.userData?.role;
+	}
 });
 
 function logout() {

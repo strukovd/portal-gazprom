@@ -25,9 +25,9 @@ const props = defineProps({
 	border-radius:12px;
 	margin-top:1em;
 
-	/* &:not(:last-child) {
-		margin-bottom: 1em;
-	} */
+	// border: 1px solid rgba(37, 99, 234, 0.12);
+	// box-shadow: 0 18px 42px rgba(37, 99, 234, 0.08);
+	// border-radius: 24px;
 
 	.bi-title {
 		display: flex;
@@ -35,9 +35,10 @@ const props = defineProps({
 		color: #172b4d;
 		font-weight: 700;
 		font-size:1em;
-		margin-bottom: 1em;
 		background: #fdfdfd;
-		border-radius: 5px;
+		border-bottom: 1px solid #eff6ff;
+		padding-bottom: 1rem;
+		margin-bottom: 1rem;
 	}
 }
 </style>

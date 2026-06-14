@@ -99,12 +99,12 @@ const links = ref<SidebarLink[]>([
 	{
 		title: 'Данные абонента',
 		link: '/profile',
-		icon: 'mdi-account'
-	},
-	{
-		title: 'Показания счетчика',
-		link: '/readings',
-		icon: 'mdi-counter'
+		icon: 'mdi-account',
+		children: [
+			{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
+			{ title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
+			{ title: 'Показания', link: '/readings', icon: 'mdi-counter' },
+		]
 	},
 	{
 		spacer: true,

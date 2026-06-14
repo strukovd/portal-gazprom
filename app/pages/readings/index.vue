@@ -110,7 +110,7 @@
 			</section>
 
 			<section class="col-5 right-column">
-				<BaseIsland title="Статистика принятых показаний" prependIcon="mdi-finance">
+				<BaseIsland class="no-api" title="Статистика принятых показаний" prependIcon="mdi-finance">
 					<div class="stats">
 						<div class="stat-card">
 							<strong>147</strong>
@@ -148,7 +148,7 @@
 					</div>
 				</BaseIsland>
 
-				<BaseIsland title="Журнал последних действий" prependIcon="mdi-history">
+				<BaseIsland class="no-api" title="Журнал последних действий" prependIcon="mdi-history">
 					<div class="journal">
 						<div class="journal-item">
 							<div>
@@ -215,8 +215,8 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR'],
-	layout: 'sidebar'
+	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	layout: 'authorized'
 });
 </script>
 

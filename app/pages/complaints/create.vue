@@ -145,8 +145,8 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR'],
-	layout: 'sidebar'
+	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	layout: 'authorized'
 });
 </script>
 

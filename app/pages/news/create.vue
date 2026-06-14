@@ -40,7 +40,7 @@ const form = reactive({}) as Record<string, string | number>;
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CONTRACTOR'],
-	layout: 'sidebar'
+	layout: 'authorized'
 });
 
 

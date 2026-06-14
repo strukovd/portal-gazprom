@@ -172,7 +172,7 @@ import BaseTabs from '~/components/common/base/BaseTabs.vue';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CONTRACTOR'],
-	layout: 'sidebar'
+	layout: 'authorized'
 });
 
 const form = reactive({}) as Record<string, string | number>;

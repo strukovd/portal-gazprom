@@ -86,8 +86,8 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 const { $fetchCallGas } = useNuxtApp(); 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR'],
-	layout: 'sidebar'
+	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	layout: 'authorized'
 });
 
 const form = ref({
@@ -196,29 +196,6 @@ async function fetchList() {
 		.sla-pill {
 			color: #92400e;
 			background: #fef3c7;
-		}
-	}
-
-
-	/* Блок к которому еще не реализован API */
-	.no-api {
-		filter: grayscale(1) opacity(0.6);
-		cursor: not-allowed !important;
-
-		&::after {
-			content: '🚫 Нет данных';
-			display: inline-block;
-			text-align: center;
-			position: absolute;
-			top: 0;
-			right:48%;
-			opacity:.8;
-			padding: 1em;
-			background: #f3f4f6;
-			border: 1px solid #e5e7eb;
-			border-radius: 6px;
-			font-size: .8em;
-			overflow: visible;
 		}
 	}
 }

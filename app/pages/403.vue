@@ -13,11 +13,6 @@
 
 <script lang="ts" setup>
 import BaseButton from '~/components/common/base/BaseButton.vue';
-
-definePageMeta({
-	// layout: 'authorized'
-});
-
 function logout() {
 	useUserStore().reset();
 	navigateTo('/login');

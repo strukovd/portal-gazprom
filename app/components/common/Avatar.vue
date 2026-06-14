@@ -23,7 +23,7 @@ const initials = computed(() => {
 });
 
 const backgroundColor = computed(() => {
-	const colors = ['#2563ea', '#17a34a', '#ee4444', '#d87706', '#2563ea', '#17a34a', '#ee4444', '#d87706'];
+	const colors = ['#2563ea', '#17a34a', '#ee4444', '#d87706', '#06b1d8', '#f1569e', '#8a2be2'];
 	if(props.name) {
 		const charCode = props.name.charCodeAt(0);
 		return colors[charCode % colors.length];

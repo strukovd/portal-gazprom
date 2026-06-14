@@ -24,49 +24,6 @@
 				<BaseIcon class="found-item-chevron" name="mdi-chevron-right" size="20"/>
 			</BaseIsland>
 		</section>
-
-
-
-
-		<section style="display:flex; gap:1em; margin-top:1em;">
-			<BaseIsland title="История показаний" prependIcon="mdi-clipboard-list-outline">
-				<section style="display:flex; flex-direction:column; gap:.5em;">
-					<div style="font-size:.9em; display:flex; gap:.6em;">
-						<div style="color:#737373;">Расчётный период:</div>
-						<div style="color:#171717; font-weight:700;">Январь 2024</div>
-					</div>
-
-					<BaseTable :columns="[
-						{ label: 'Дата', key: 'date' },
-						{ label: 'Показание, м³', key: 'reading' },
-						{ label: 'Расход', key: 'consumption' },
-						{ label: 'Источник', key: 'source' },
-						{ label: 'Статус', key: 'status' },
-					]" :rows="[
-						{ date: '18.01.2024', reading: '1500', consumption: '50', source: 'Счетчик', status: 'Аномалия' },
-						{ date: '18.12.2023', reading: '1450', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.11.2023', reading: '1400', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.10.2023', reading: '1350', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.09.2023', reading: '1300', consumption: '50', source: 'Счетчик', status: 'Норма' },
-					]">
-						<template #cell.status="{ row, column }">
-							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#ee4444' : '#17a34a', fontWeight: '700' }">
-								{{ row.status }}
-							</div>
-							<div v-else>
-								{{ row[column.key] }}
-							</div>
-						</template>
-					</BaseTable>
-					<InfoBox type="warning" title="Внимание" message="Расход за январь (2 348 м³) превышает среднее значение на 162%. Необходимо проверить показания"/>
-				</section>
-			</BaseIsland>
-			<BaseIsland class="no-api" title="Анализ потребления" prependIcon="mdi-chart-line">
-				<section class="consumption-analytics">
-					<VChart :option="dualLineChartOption" class="chart-small"/>
-				</section>
-			</BaseIsland>
-		</section>
 	</section>
 </template>
 

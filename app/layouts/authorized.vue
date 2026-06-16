@@ -23,7 +23,8 @@
 						@click="selectAccount(a)"
 					>
 						<div class="found-list__avatar">
-							<BaseIcon name="mdi-account-outline" size="18"/>
+							<BaseIcon v-if="`56789`.split('').includes(a.account.charAt(0))" name="mdi-scale-balance" style="color:brown;" size="18"/>
+							<BaseIcon v-else name="mdi-account-outline" size="18"/>
 						</div>
 						<div class="found-list__content">
 							<div class="found-list__topline">
@@ -54,14 +55,14 @@
 			<section class="user-box">
 				<!-- <img src="/img/user-avatar.png" alt="Аватар пользователя" /> -->
 				<div class="user-info" style="text-align:right;">
-					<div class="name" style="color:#171717; font-size:.9rem; font-weight:700;">{{ userStore.userData?.userName }}</div>
-					<div class="role" style="color:#737373; font-size:.8rem;">{{ role }}</div>
+					<div class="name" style="color:#171717; font-size:.9rem; font-weight:700;">{{ s.userData?.userName }}</div>
+					<div class="role" style="color:#737373; font-size:.8rem;">{{ s.prettyRole }}</div>
 				</div>
 				<div>
-					<Avatar size="2.2em" :name="userStore.userData?.userName"/>
+					<Avatar size="2.2em" :name="s.userData?.userName"/>
 				</div>
 				<div style="color:#a3a3a3; cursor:pointer;">
-					<BaseIcon @click="logout" name="mdi-logout" size="20"/>
+					<BaseIcon @click="s.logout" name="mdi-logout" size="20"/>
 				</div>
 			</section>
 		</header>
@@ -83,63 +84,50 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import Sidebar from '~/components/Sidebar.vue';
-const userStore = useUserStore();
+import type { FindPayload } from '~/stores/AccountStore';
+const s = useUserStore();
 const accountStore = useAccountStore();
 const route = useRoute();
-const { $flags } = useNuxtApp();
 const searchInput = ref<any>(null);
 const accountSearch = ref('');
 const searchFocused = ref(false);
+const foundAccounts = ref<FindPayload[]>([]);
 let hideFoundListTimer: ReturnType<typeof window.setTimeout> | null = null;
 // if( !userStore.userData ) navigateTo('/login');
-
-const foundAccounts = computed(() => {
-	return accountStore.find(accountSearch.value);
-});
 
 const showFoundList = computed(() => {
 	return searchFocused.value && accountSearch.value.trim().length >= 2;
 });
 
 onMounted(() => {
-	syncActiveAccount();
-	enableAutofocus();
+	checkAccountUrlParam();
+	initAutofocus();
 });
 
-const role = computed(() => {
-	switch( userStore.userData?.role ) {
-		case 'CALLCENTER':
-			return 'Оператор колл-центра';
-		case 'CONTROLLER':
-			return 'Контролёр';
-		case 'ADMIN':
-			return 'Администратор';
-		case 'CONTRACTOR':
-			return 'Подрядчик';
-		default: return userStore.userData?.role;
-	}
+watch(() => route.params.account, () => {
+	checkAccountUrlParam();
 });
 
-function logout() {
-	userStore.reset();
-	navigateTo('/login');
-}
+watch(accountSearch, async (value) => {
+	foundAccounts.value = await accountStore.find(value);
+});
 
-function syncActiveAccount() {
-	const routeAccount = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
-	if (routeAccount) {
-		accountStore.setActiveAccount(routeAccount);
+function checkAccountUrlParam() {
+	const account = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
+	if (account) {
+		accountStore.setActiveAccount(account);
 		return;
 	}
-
-	accountStore.init();
+	else {
+		accountStore.fetchAccountData();
+	}
 }
 
 function selectAccount(account: any) {
-	accountStore.setActiveAccount(account);
+	accountStore.setActiveAccount(account.account);
 	accountSearch.value = '';
 	searchFocused.value = false;
-	$flags.success(`Выбран абонент: Л/с ${account.account}`);
+	navigateTo(`/profile/${account.account}`);
 }
 
 function selectFirstFoundAccount() {
@@ -154,22 +142,21 @@ function hideFoundList() {
 	}, 160);
 }
 
-function enableAutofocus() {
+function initAutofocus() {
 	window.addEventListener('keydown', (e) => {
+		// Убедимся что поле поиска доступно
 		if( !searchInput.value ) return;
 		const input = searchInput.value.$el.querySelector('input') as HTMLInputElement;
 
-		// 1. Проверяем, что фокус НЕ в другом текстовом поле
-		const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
-
-		// 2. Игнорируем системные сочетания (Ctrl+C, Alt+Tab, F5 и т.д.)
-		const isModifier = e.ctrlKey || e.metaKey || e.altKey;
-
-		// 3. Проверяем, что нажата печатаемая клавиша (буква, цифра или спецсимвол)
-		// В современных браузерах e.key.length === 1 гарантирует, что это символ
-		if (!isInput && !isModifier && e.key.length === 1) {
-			input.focus();
+		// Убедимся что не забираем фокус у другого input'а
+		const activeElement = document.activeElement?.tagName ?? '';
+		if( ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement) ) return;
+		// Игнорируем системные сочетания (Ctrl+C, Alt+Tab, F5 и т.д.) и проверяем, что нажата печатаемая клавиша (буква, цифра или спецсимвол)
+		const modifierKeyIsNotPressed = !(e.ctrlKey || e.metaKey || e.altKey);
+		const isSymbol = e.key.length === 1; // гарантирует, что это символ
+		if (modifierKeyIsNotPressed && isSymbol) {
 			// Фокус перейдет, но символ напечатается автоматически благодаря событию
+			input.focus();
 		}
 
 		// Дополнительно: очистка поиска по Escape
@@ -179,7 +166,6 @@ function enableAutofocus() {
 		}
 	});
 }
-
 </script>
 
 <style lang="scss">

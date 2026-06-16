@@ -23,7 +23,7 @@ const props = defineProps({
 	border:1px solid #e5e5e5;
 	padding:1.2em;
 	border-radius:12px;
-	margin-top:1em;
+	// margin-top:1em;
 
 	// border: 1px solid rgba(37, 99, 234, 0.12);
 	// box-shadow: 0 18px 42px rgba(37, 99, 234, 0.08);

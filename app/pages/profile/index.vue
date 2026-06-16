@@ -1,44 +1,45 @@
 <template>
-	<section id="profile-page">
-		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Данные абонента' }]"/>
+	<section id="profile-search-page">
+		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Данные абонента' }]" />
+
 
 		<section>
-			<BaseIsland title="Выбор абонента" prependIcon="mdi-account-box">
-				<BaseTextBox label="Абонент" vmodel="searchText" prependIcon="mdi-magnify" button="Поиск" @submit="findAccounts"/>
+			<BaseIsland class="search-panel" title="Выбор абонента" prependIcon="mdi-account-box">
+				<BaseTextBox v-model="searchText" @submit="findAccounts" label="Абонент" prependIcon="mdi-magnify" button="Поиск" placeholder="Введите ФИО, адрес или лицевой счет"/>
 			</BaseIsland>
-		</section>
-
-		<section class="found-list">
-			<BaseIsland v-for="a of foundAccounts" :key="a.account"
-				class="found-item"
-				@click="selectAccount(a)"
-			>
-				<div class="found-item-avatar">
-					<BaseIcon name="mdi-account-outline" size="18"/>
-				</div>
-				<div class="found-item-content">
-					<div class="found-item-name">{{ a.name }}</div>
-					<div class="found-item-account">{{ a.account }}</div>
-					<div class="found-list__address">{{ a.address || 'Адрес не указан' }}</div>
-				</div>
-				<BaseIcon class="found-item-chevron" name="mdi-chevron-right" size="20"/>
-			</BaseIsland>
+	
+			<section v-if="foundList?.length" class="found-list">
+				<BaseIsland v-for="account of foundList" :key="account.account" class="item"
+					@click="selectAccount(account)">
+					<div class="avatar">
+						<BaseIcon name="mdi-account-outline" size="22" />
+					</div>
+					<div class="content">
+						<div class="name">{{ account.name || 'Абонент' }}</div>
+						<div class="number">Л/с {{ account.account }}</div>
+						<div class="address">{{ account.address || 'Адрес не указан' }}</div>
+					</div>
+					<BaseIcon class="chevron" name="mdi-chevron-right" size="24" />
+				</BaseIsland>
+			</section>
+			<template v-else-if="foundList?.length === 0">
+				<BaseIsland class="empty-state">
+					<BaseIcon name="mdi-account-search-outline" size="32" />
+					<div>
+						<div class="title">Абоненты не найдены</div>
+						<div class="message">Попробуйте изменить ФИО, адрес или лицевой счет.</div>
+					</div>
+				</BaseIsland>
+			</template>
 		</section>
 	</section>
 </template>
 
 <script lang="ts" setup>
-import Avatar from '~/components/common/Avatar.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
-import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
-import BaseTable from '~/components/common/base/BaseTable.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-import InfoBox from '~/components/common/InfoBox.vue';
-const route = useRoute();
-const a = useAccountStore();
-const { $fetchApi } = useNuxtApp();
 
 definePageMeta({
 	auth: true,
@@ -46,162 +47,134 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-const chartMonths = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-const monthlyConsumption = [2600, 2400, 2100, 1840, 1380, 920, 760, 720, 930, 1480, 1980, 2360];
-const monthlyTemperature = [-6, -2, 5, 11, 17, 23, 27, 26, 19, 11, 4, -1];
-const dualLineChartOption = {
-	tooltip: {
-		trigger: 'axis',
-		backgroundColor: '#171717',
-		borderWidth: 0,
-		textStyle: { color: '#ffffff' }
-	},
-	legend: {
-		top: 8,
-		textStyle: { color: '#525252' },
-		data: ['Расход', 'Температура']
-	},
-	grid: {
-		left: 18,
-		right: 18,
-		top: 48,
-		bottom: 24,
-		containLabel: true
-	},
-	xAxis: {
-		...{
-			type: 'category',
-			boundaryGap: true,
-			data: chartMonths,
-			axisTick: { show: false },
-			axisLine: { lineStyle: { color: '#d4d4d4' } },
-			axisLabel: { color: '#737373' }
-		},
-		boundaryGap: false
-	},
-	yAxis: [
-		{
-			type: 'value',
-			axisLabel: { color: '#737373' },
-			splitLine: { lineStyle: { color: '#eef2ff' } }
-		},
-		{
-			type: 'value',
-			axisLabel: { color: '#737373', formatter: '{value}°' },
-			splitLine: { show: false }
-		}
-	],
-	series: [
-		{
-			name: 'Расход',
-			type: 'line',
-			data: monthlyConsumption,
-			smooth: true,
-			symbol: 'none',
-			lineStyle: { width: 4, color: '#2563ea' },
-			areaStyle: {
-				color: 'rgba(37, 99, 234, 0.10)'
-			}
-		},
-		{
-			name: 'Температура',
-			type: 'line',
-			yAxisIndex: 1,
-			data: monthlyTemperature,
-			smooth: true,
-			symbolSize: 7,
-			lineStyle: { width: 3, color: '#f97316', type: 'dashed' },
-			itemStyle: { color: '#f97316' }
-		}
-	]
-};
+const accountStore = useAccountStore();
+const { $flags } = useNuxtApp();
 
+const searchText = ref('');
+const foundList = ref<any[] | null>(null);
 
-const searchText = ref(``);
-const foundAccounts = ref<any[]>([]);
-function findAccounts(text: string, e: Event) {
-	console.log(text, e);
-	foundAccounts.value = a.find(text);
+onMounted(() => {
+	redirectToActiveAccount();
+});
+
+watch(() => accountStore.account, () => {
+	redirectToActiveAccount();
+});
+
+async function findAccounts(text = searchText.value) {
+	const value = String(text || '').trim();
+	foundList.value = await accountStore.find(value);
+}
+
+function selectAccount(account: any) {
+	accountStore.setActiveAccount(account.account);
+	$flags.success(`Выбран абонент: Л/с ${account.account}`);
+	navigateTo(`/profile/${account.account}`);
+}
+
+function redirectToActiveAccount() {
+	if (accountStore.account) {
+		navigateTo(`/profile/${accountStore.account}`);
+	}
 }
 </script>
 
 <style lang="scss">
-#profile-page {
-	.base-island .bi-title .base-icon {
-		opacity: 1 !important;
-		color: #2563ea;
+#profile-search-page {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+
+	.search-panel {
+
 	}
 
 	.found-list {
-		.found-item {
+		display: grid;
+		gap: .75em;
+		// max-width: 920px;
+
+		.item {
 			display: flex;
 			align-items: center;
-			gap: 1rem;
+			gap: 1em;
 			cursor: pointer;
-			padding: 1rem 1.1rem;
+			padding: 1em 1.1em;
 
 			&:hover,
 			&:focus-visible {
 				background: #eff6ff;
 				border-color: #bfdbfe;
-				// transform: translateY(-1px);
 				outline: none;
 			}
 
-			.found-item-avatar {
-				width: 42px;
-				height: 42px;
-				flex: 0 0 42px;
+			.avatar {
+				width: 44px;
+				height: 44px;
+				flex: 0 0 44px;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				border-radius: 14px;
+				border-radius: 8px;
 				background: #eff6ff;
 				color: #2563ea;
-				box-shadow: inset 0 0 0 1px rgba(37, 99, 234, 0.08);
 			}
 
-			.found-item-content {
+			.content {
 				min-width: 0;
 				flex: 1 1 auto;
 
-				.found-item-name {
-					font-size: 1.4rem;
+				.name {
 					color: #111827;
+					font-size: 1.05rem;
+					font-weight: 700;
 					white-space: nowrap;
 					overflow: hidden;
 					text-overflow: ellipsis;
-					font-weight: 700;
 				}
-				
-				.found-item-account {
-					margin-top:.2em;
-					font-size: 1.9em;
-					font-weight: 700;
-					// color: #0f172a;
+
+				.number {
+					margin-top: .2em;
 					color: #2563ea;
-					background: #eff6ff;
-					padding: 0.55rem 0.85rem;
-					border-radius: 14px;
-					display: inline-flex;
-					align-items: center;
-					box-shadow: inset 0 0 0 1px rgba(37, 99, 234, 0.12);
+					font-size: .9rem;
+					font-weight: 700;
 				}
 
-				.found-list__address {
-					margin-top: 0.35em;
+				.address {
+					margin-top: .2em;
 					color: #64748b;
-					font-size: 0.83rem;
+					font-size: .86rem;
 					white-space: nowrap;
 					overflow: hidden;
 					text-overflow: ellipsis;
 				}
 			}
 
-			.found-item-chevron {
+			.chevron {
 				color: #94a3b8;
-				// flex: 0 0 auto;
 			}
+		}
+	}
+
+	.empty-state {
+		display: flex;
+		align-items: center;
+		gap: .9em;
+		max-width: 720px;
+		color: #64748b;
+
+		.base-icon {
+			color: #2563ea;
+		}
+
+		.title {
+			color: #111827;
+			font-weight: 700;
+		}
+
+		.message {
+			margin-top: .2em;
+			font-size: .9rem;
 		}
 	}
 }

@@ -5,7 +5,13 @@ export const useUserStore = defineStore('user', {
 		token: import.meta.browser ? localStorage.getItem('token') : null as string | null,
 		userData: null as any,
 	}),
+
 	actions: {
+		logout() {
+			this.reset();
+			navigateTo('/login');
+		},
+
 		setData(data: any) {
 			if(!data || !data.token) {
 				console.error('Token не получен!');
@@ -34,6 +40,22 @@ export const useUserStore = defineStore('user', {
 			this.userData = null;
 			localStorage.removeItem('token');
 			localStorage.removeItem('user');
+		}
+	},
+
+	getters: {
+		prettyRole: (state) => {
+			switch( state.userData?.role ) {
+				case 'CALLCENTER':
+					return 'Оператор колл-центра';
+				case 'CONTROLLER':
+					return 'Контролёр';
+				case 'ADMIN':
+					return 'Администратор';
+				case 'CONTRACTOR':
+					return 'Подрядчик';
+				default: return state.userData?.role;
+			}
 		}
 	}
 });

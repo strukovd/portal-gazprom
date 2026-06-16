@@ -2,15 +2,24 @@
 	<section id="profile-page">
 		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Карточка абонента' }]"/>
 
+		<BaseIsland v-if="accountStore.loading && !accountData" style="margin-top:1em;">
+			Загрузка данных абонента...
+		</BaseIsland>
+
+		<BaseIsland v-else-if="accountStore.error && !accountData" style="margin-top:1em;">
+			Не удалось загрузить данные абонента.
+		</BaseIsland>
+
+		<template v-else-if="accountData">
 		<section style="display:flex; gap:1em; align-items:center; margin-top:1em;">
-			<Avatar size="80px" name="Иванов Иван Иванович"/>
+			<Avatar size="80px" :name="accountData.name || '?'"/>
 			<div>
-				<h2 style="margin:0; color:#171717;">Иванов Иван Иванович</h2>
+				<h2 style="margin:0; color:#171717;">{{ accountData.name || 'Абонент' }}</h2>
 				<div style="color:#737373;">
 					<span>Лицевой счет: </span>
-					<span>{{ $route.params.account }}</span>
+					<span>{{ accountData.account }}</span>
 					<span style="padding:0 .3em; user-select:none;">·</span>
-					<span style="color:#157f3d; font-weight:700;">Подключён</span>
+					<span style="color:#157f3d; font-weight:700;">{{ 'Подключен' }}</span>
 				</div>
 			</div>
 
@@ -24,7 +33,7 @@
 			<template
 				v-for="(item, index) of [
 					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-lightning-bolt',			value: 'Плановое 18.01 - ул. Ленина',		title: 'Отключение в районе' },
-					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-currency-usd',			value: '24,10 сом/м3',						title: 'Текущий тариф' },
+					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-currency-usd',			value: 'Не указан',						title: 'Текущий тариф' },
 					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-calculator-variant',		value: 'Перерасчёт при смене счетчика',		title: 'Обновления FAQ' },
 					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-alert-box',				value: '1 жалоба в обработке',				title: 'Открытые жалобы' },
 				]" :key="index">
@@ -45,76 +54,104 @@
 			</template>
 		</section>
 
-		<section style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
-			<BaseIsland title="Контактная информация" prependIcon="mdi-card-account-details">
+		<section style="margin-top:1em;">
+			<BaseIsland title="Контактная информация" prependIcon="mdi-card-account-details" class="col-4">
 				 <table class="contact-info-table">
 					<tbody>
 						<tr>
 							<td>ФИО</td>
-							<td>Иванов Иван Иванович</td>
+							<td>{{ accountData.name || 'Не указано' }}</td>
 						</tr>
 						<tr>
 							<td>Лицевой счет</td>
-							<td>123456789</td>
+							<td>
+								<div style="display:inline-flex; gap:.4em; align-items:center; cursor:pointer;">
+									{{ accountData.account }}
+									<BaseIcon name="mdi-content-copy" style="color:#737373"/>
+								</div>
+							</td>
 						</tr>
 						<tr>
 							<td>Адрес</td>
-							<td>г. Бишкек, ул. Ленина, д. 10</td>
+							<td>{{ accountData.address || 'Не указан' }}</td>
 						</tr>
 						<tr>
 							<td>Статус</td>
-							<td style="color:#157f3d; font-weight:700;">Подключён</td>
+							<td style="color:#157f3d; font-weight:700;">{{ 'Подключён' }}</td>
 						</tr>
 						<tr>
 							<td>Телефон</td>
-							<td>+7 (999) 123-45-67</td>
+							<td>Не указан</td>
 						</tr>
 						<tr>
 							<td>Email</td>
-							<td>ivanov@example.com</td>
+							<td>Не указан</td>
 						</tr>
 						<tr>
 							<td>Счетчик</td>
-							<td>Газовый, 2015 г.в.</td>
+							<td>Не указан</td>
 						</tr>
 						<tr>
 							<td>Тип</td>
-							<td>Телеметрический</td>
+							<td>{{ accountStore.prettyType }}</td>
 						</tr>
+
+						<template v-if="accountData.ul">
+							<tr>
+								<td colspan="2" style="font-weight:700;">
+									<BaseIcon name="mdi-information" style="color:#2563ea; margin-right:.4em;"/>
+									<span>Сведения о дороговоре</span>
+								</td>
+							</tr>
+							<tr>
+								<td>Номер</td>
+								<td>{{ accountData.ul.agreementNumber ?? 'Не указан' }}</td>
+							</tr>
+							<tr>
+								<td>Дата заключения</td>
+								<td>{{ accountData.ul.agreementDate ?? `Не указана` }}</td>
+							</tr>
+							<tr>
+								<td>Тип деятельности</td>
+								<td>{{ accountData.ul.typeOfActivity ?? `Не указана` }}</td>
+							</tr>
+							<tr>
+								<td>Статус</td>
+								<td>Действителен</td>
+							</tr>
+						</template>
 					</tbody>
 				 </table>
 			</BaseIsland>
-			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold">
+			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold" class="col-4">
 				<section style="display:flex; gap:1em; flex-wrap:wrap;">
-					<div style="flex:auto 1 1; background:#e9effd; color:#2b63dd; padding:1em; border-radius:12px; text-align:center;">
-						<div style="font-size:.9em;">Текущий баланс</div>
-						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">1000.00 сом</div>
-						<div style="font-size:.9em;">Предоплата</div>
-					</div>
 					<div style="flex:auto 1 1; background:#fef2f2; color:#dc2625; padding:1em; border-radius:12px; text-align:center;">
+						<div style="font-size:.9em;">Текущий баланс</div>
+						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">{{ accountData.balance ?? '0.00' }} сом</div>
+						<!-- <div style="font-size:.9em;">{{ accountData.balance > 0 ? `Долг` : `Предоплата` }}</div> -->
+					</div>
+					<div style="flex:auto 1 1; background:#e9effd; color:#2b63dd; padding:1em; border-radius:12px; text-align:center;">
 						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">Квитанция</div>
 						<div style="font-size:.9em;">за апрель</div>
 					</div>
 				</section>
-				<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
-				<div style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;"
-					v-for="(item, index) of [
-						{ date: '18.01.2024', amount: '500.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Онлайн-банк' },
-						{ date: '15.12.2023', amount: '750.00', serviceId: 1, service: 'Газоснабжение природным газом', method: 'Терминал' },
-						{ date: '10.11.2023', amount: '600.00', serviceId: 24, service: 'Изготовление эскизных чертежей', method: 'Онлайн-банк' },
-						{ date: '10.11.2023', amount: '600.00', serviceId: 47, service: 'Согласование', method: 'Онлайн-банк' },
-					]" :key="index">
-					<div style="flex:33% 1 1; text-align:center;">
-						<div style="font-weight:700; color:forestgreen;">{{ item.amount }}</div>
-						<div style="font-size:.9em; color:#737373;">{{ item.date }}</div>
-					</div>
-					<div style="flex:33% 1 1; padding:0 1em; font-size:.8em; text-align:center; border-width:0 1px 0 1px; border-style:solid; border-color:#e5e5e5;">
-						<div :style="{color: item.serviceId === 1 ? '#659df2' : '#fe9f4d'}">{{ item.service }}</div>
-					</div>
-					<div style="flex:33% 1 1; text-align:center; font-size:.9em; color:#525252;">{{ item.method }}</div>
-				</div>
+				<section v-if="accountData?.payments">
+					<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
+					<section style="max-height:350px; overflow:auto;">
+						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;">
+							<div style="flex:33% 1 1; text-align:center;">
+								<div style="font-weight:700; color:forestgreen;">{{ payment.amount }}</div>
+								<div style="font-size:.9em; color:#737373;">{{ payment.created }}</div>
+							</div>
+							<div style="flex:33% 1 1; padding:0 1em; font-size:.8em; text-align:center; border-width:0 1px 0 1px; border-style:solid; border-color:#e5e5e5;">
+								<div :style="{color: payment.service.id === 2 ? '#659df2' : '#fe9f4d'}">{{ payment.service.name }}</div>
+							</div>
+							<div style="flex:33% 1 1; text-align:center; font-size:.9em; color:#525252;">{{ payment.supplier.name ?? 'Не указано' }}</div>
+						</div>
+					</section>
+				</section>
 			</BaseIsland>
-			<BaseIsland class="no-api" title="Таймлайн взаимодействий" prependIcon="mdi-history">
+			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history" class="col-4 no-api">
 				<section style="display:flex; flex-direction:column; gap:.5em;">
 					<div v-for="(item, index) of [
 						{ date: '18.01.2024, 10:42', title: 'Плановое отключение в связи с техническим обслуживанием', description: 'Ожидаемое время восстановления: 3 часа.' },
@@ -137,8 +174,8 @@
 			</BaseIsland>
 		</section>
 
-		<section style="display:flex; gap:1em; margin-top:1em;">
-			<BaseIsland title="История показаний" prependIcon="mdi-clipboard-list-outline">
+		<section style="margin-top:1em;">
+			<BaseIsland v-if="accountData?.readings" title="История показаний" prependIcon="mdi-clipboard-list-outline" class="col-6">
 				<section style="display:flex; flex-direction:column; gap:.5em;">
 					<div style="font-size:.9em; display:flex; gap:.6em;">
 						<div style="color:#737373;">Расчётный период:</div>
@@ -146,18 +183,12 @@
 					</div>
 
 					<BaseTable :columns="[
-						{ label: 'Дата', key: 'date' },
+						{ label: 'Дата', key: 'created' },
 						{ label: 'Показание, м³', key: 'reading' },
 						{ label: 'Расход', key: 'consumption' },
-						{ label: 'Источник', key: 'source' },
+						{ label: 'Источник', key: 'supplier.name' },
 						{ label: 'Статус', key: 'status' },
-					]" :rows="[
-						{ date: '18.01.2024', reading: '1500', consumption: '50', source: 'Счетчик', status: 'Аномалия' },
-						{ date: '18.12.2023', reading: '1450', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.11.2023', reading: '1400', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.10.2023', reading: '1350', consumption: '50', source: 'Счетчик', status: 'Норма' },
-						{ date: '18.09.2023', reading: '1300', consumption: '50', source: 'Счетчик', status: 'Норма' },
-					]">
+					]" :rows="accountData?.readings">
 						<template #cell.status="{ row, column }">
 							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#ee4444' : '#17a34a', fontWeight: '700' }">
 								{{ row.status }}
@@ -170,12 +201,13 @@
 					<InfoBox type="warning" title="Внимание" message="Расход за январь (2 348 м³) превышает среднее значение на 162%. Необходимо проверить показания"/>
 				</section>
 			</BaseIsland>
-			<BaseIsland class="no-api" title="Анализ потребления" prependIcon="mdi-chart-line">
+			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6 no-api">
 				<section class="consumption-analytics">
 					<VChart :option="dualLineChartOption" class="chart-small"/>
 				</section>
 			</BaseIsland>
 		</section>
+		</template>
 	</section>
 </template>
 
@@ -188,8 +220,8 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
 const route = useRoute();
-const a = useAccountStore();
-const { $fetchApi } = useNuxtApp();
+const accountStore = useAccountStore();
+const accountData = computed(() => accountStore.accountData);
 
 definePageMeta({
 	auth: true,
@@ -267,7 +299,28 @@ const dualLineChartOption = {
 	]
 };
 
+onMounted(() => {
+	syncAccountContext();
+});
 
+watch(() => route.params.account, () => {
+	syncAccountContext();
+});
+
+function syncAccountContext() {
+	const routeAccount = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
+	if (!routeAccount) {
+		navigateTo('/profile');
+		return;
+	}
+
+	if (accountStore.account !== routeAccount) {
+		accountStore.setActiveAccount(routeAccount);
+		return;
+	}
+
+	accountStore.fetchAccountData();
+}
 </script>
 
 <style lang="scss">
@@ -277,7 +330,7 @@ const dualLineChartOption = {
 		color: #2563ea;
 	}
 
-		.contact-info-table {
+	.contact-info-table {
 		border-collapse: collapse;
 		width: 100%;
 		font-size:.9em;

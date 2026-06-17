@@ -31,7 +31,7 @@
 
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
-					<input :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
+					<input ref="input" :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
 					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
 					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
 					<BaseButton v-if="button" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
@@ -93,6 +93,9 @@ export default defineComponent({
 		}
 	},
 	methods: {
+		focus() {
+			(this.$refs.input as HTMLInputElement | undefined)?.focus();
+		},
 		applyMask(value: string) {
 			if (!this.mask) return value;
 
@@ -149,6 +152,14 @@ export default defineComponent({
 	},
 	created() {
 		this.masked = this.type === 'password';
+	},
+	mounted() {
+		if (this.autofocus) {
+			this.$nextTick(() => {
+				this.focus();
+				setTimeout(() => this.focus());
+			});
+		}
 	},
 	watch: {
 		// Если родитель всё же начал менять modelValue — синхронизируем стартовое внутреннее значение

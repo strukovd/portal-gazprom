@@ -44,7 +44,7 @@ export default defineComponent({
 	// background: #0079C1;
 	// color: #fff;
 
-	// line-height:1.4em;
+	line-height:1.4em;
 	// background: #EBF1FF;
 	// color: #0079C1;
 	border-radius: 7px;

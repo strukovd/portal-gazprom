@@ -313,7 +313,7 @@ function initAutofocus() {
 		flex: 1 1 auto;
 		min-height: 0; // можно быть меньше высоты собственного контента, если layout требует, позволяет дочерним элементам корректно обрабатывать overflow
 
-		.page-content {
+		>.page-content {
 			flex: auto 1 1;
 			overflow-y: auto;
 			padding: 2em;

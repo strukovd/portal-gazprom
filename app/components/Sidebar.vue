@@ -102,7 +102,7 @@ const links = ref<SidebarLink[]>([
 		icon: 'mdi-account',
 		children: [
 			{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
-			{ title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
+			// { title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
 			{ title: 'Показания', link: '/readings', icon: 'mdi-counter' },
 		]
 	},
@@ -113,11 +113,7 @@ const links = ref<SidebarLink[]>([
 	{
 		title: 'Жалобы',
 		link: '/complaints',
-		icon: 'mdi-alert-circle',
-		children: [
-			{ title: 'Реестр жалоб', link: '/complaints/list', icon: 'mdi-file-document' },
-			{ title: 'Форма создания', link: '/complaints/create', icon: 'mdi-file-document-plus' },
-		]
+		icon: 'mdi-alert-circle'
 	},
 	{
 		title: 'Ответственные лица',

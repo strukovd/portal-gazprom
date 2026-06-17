@@ -12,66 +12,68 @@
 			</section>
 		</header>
 
-		<!-- Статистика -->
-		<section class="stats no-api">
-			<BaseIsland class="col-4 stat-island" v-for="(item, index) of [
-				{ value: 12, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
-				{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
-				{ value: 87, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
-			]" :key="index">
-				<section v-if="item.icon" :class="['icon-circle', item.color]">
-					<BaseIcon :name="item.icon" size="1.6em"/>
-				</section>
-				<section>
-					<div style="font-size:1.6em; font-weight:700;">{{ item.value }}</div>
-					<div style="font-size:.8em; color: #6b728088;">{{ item.label }}</div>
-				</section>
+		<main class="page-blocks">
+			<!-- Статистика -->
+			<section class="stats no-api">
+				<BaseIsland class="col-4 stat-island" v-for="(item, index) of [
+					{ value: 12, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
+					{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+					{ value: 87, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+				]" :key="index">
+					<section v-if="item.icon" :class="['icon-circle', item.color]">
+						<BaseIcon :name="item.icon" size="1.6em"/>
+					</section>
+					<section>
+						<div style="font-size:1.6em; font-weight:700;">{{ item.value }}</div>
+						<div style="font-size:.8em; color: #6b728088;">{{ item.label }}</div>
+					</section>
+				</BaseIsland>
+			</section>
+	
+			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant">
+				<BaseTextBox v-model="form.description" @submit="" @change="" placeholder="Поиск по ключу, теме, ФИО..."/>
+				<BaseTabs class="filter-tabs no-api" v-model="form.status" :items="[
+					{ caption: 'Все', key: '', badge: 12 },
+					{ caption: 'Новые', key: 'open', badge: 5 },
+					{ caption: 'В работе', key: 'in-progress', badge: 3 },
+					{ caption: 'Просроченные', key: 'overdue', badge: 2 },
+					{ caption: 'Закрытые', key: 'closed', badge: 10 },
+				]"/>
 			</BaseIsland>
-		</section>
-
-		<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant">
-			<BaseTextBox v-model="form.description" @submit="" @change="" placeholder="Поиск по ключу, теме, ФИО..."/>
-			<BaseTabs class="filter-tabs no-api" v-model="form.status" :items="[
-				{ caption: 'Все', key: '', badge: 12 },
-				{ caption: 'Новые', key: 'open', badge: 5 },
-				{ caption: 'В работе', key: 'in-progress', badge: 3 },
-				{ caption: 'Просроченные', key: 'overdue', badge: 2 },
-				{ caption: 'Закрытые', key: 'closed', badge: 10 },
-			]"/>
-		</BaseIsland>
-
-		<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline">
-			<BaseTable
-				:columns="[
-					{ key: 'key', label: 'Key' },
-					{ key: 'theme', label: 'Тема' },
-					{ key: 'date', label: 'Дата' },
-					{ key: 'status', label: 'Статус' },
-					{ key: 'sla', label: 'SLA' },
-					{ key: 'assignee', label: 'Исполнитель' },
-				]"
-				:rows="[
-					{ key: `ЖЛ-04187`, theme: 'Некорректные начисления', date: '12.06.2025', status: 'В работе', sla: '3 дня', assignee: 'Иванов И.И.' },
-					{ key: `ЖЛ-04188`, theme: 'Нет газа', date: '13.06.2025', status: 'Новое', sla: '1 день', assignee: 'Петров П.П.' },
-				]"
-			>
-				<template #cell.key="{ value }">
-					<NuxtLink :to="`/complaints/${value}`">
-						<strong class="complaint-key">{{ value }}</strong>
-					</NuxtLink>
-				</template>
-
-				<template #cell.status="{ value }">
-					<span :class="['status-pill', value === 'Новое' ? 'status-pill--new' : 'status-pill--progress']">
-						{{ value }}
-					</span>
-				</template>
-
-				<template #cell.sla="{ value }">
-					<span class="sla-pill">{{ value }}</span>
-				</template>
-			</BaseTable>
-		</BaseIsland>
+	
+			<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline">
+				<BaseTable
+					:columns="[
+						{ key: 'key', label: 'Key' },
+						{ key: 'theme', label: 'Тема' },
+						{ key: 'date', label: 'Дата' },
+						{ key: 'status', label: 'Статус' },
+						{ key: 'sla', label: 'SLA' },
+						{ key: 'assignee', label: 'Исполнитель' },
+					]"
+					:rows="[
+						{ key: `ЖЛ-04187`, theme: 'Некорректные начисления', date: '12.06.2025', status: 'В работе', sla: '3 дня', assignee: 'Иванов И.И.' },
+						{ key: `ЖЛ-04188`, theme: 'Нет газа', date: '13.06.2025', status: 'Новое', sla: '1 день', assignee: 'Петров П.П.' },
+					]"
+				>
+					<template #cell.key="{ value }">
+						<NuxtLink :to="`/complaints/${value}`">
+							<strong class="complaint-key">{{ value }}</strong>
+						</NuxtLink>
+					</template>
+	
+					<template #cell.status="{ value }">
+						<span :class="['status-pill', value === 'Новое' ? 'status-pill--new' : 'status-pill--progress']">
+							{{ value }}
+						</span>
+					</template>
+	
+					<template #cell.sla="{ value }">
+						<span class="sla-pill">{{ value }}</span>
+					</template>
+				</BaseTable>
+			</BaseIsland>
+		</main>
 	</section>
 </template>
 
@@ -125,77 +127,85 @@ async function fetchList() {
 
 <style lang="scss">
 #complaint-issue-list {
-	.stats {
-		.stat-island {
-			display: flex;
-			align-items: center;
-			gap:1em;
-			/* margin:1em 0; */
-			padding-top:1.8em;
-			padding-bottom:1.8em;
+	.page-blocks {
+		margin:1em 0;
 
-			.icon-circle {
-				display: grid;
-				place-items: center;
-				width: 3em;
-				aspect-ratio: 1/1;
-				border-radius: 50%;
+		>section, >div {
+			margin:0 0 1em 0;
+		}
 
-				&.red {
-					color: #ef4444;
-					background: #fee2e2;
+		.stats {
+			.stat-island {
+				display: flex;
+				align-items: center;
+				gap:1em;
+				/* margin:1em 0; */
+				padding-top:1.8em;
+				padding-bottom:1.8em;
+	
+				.icon-circle {
+					display: grid;
+					place-items: center;
+					width: 3em;
+					aspect-ratio: 1/1;
+					border-radius: 50%;
+	
+					&.red {
+						color: #ef4444;
+						background: #fee2e2;
+					}
+					&.blue {
+						color: #2563eb;
+						background: #dbeafe;
+					}
+					&.green {
+						color: #16a34a;
+						background: #dcfce7;
+					}
+					&.yellow {
+						color: #d97706;
+						background: #fef3c7;
+					}
 				}
-				&.blue {
-					color: #2563eb;
-					background: #dbeafe;
-				}
-				&.green {
-					color: #16a34a;
+			}
+		}
+	
+		.filters {
+			.filter-tabs {
+				margin-top:.7em;
+			}
+		}
+	
+		.list {
+			.complaint-key {
+				color: #2563eb;
+				text-decoration: underline;
+				cursor: pointer;
+			}
+			.status-pill,
+			.sla-pill {
+				display: inline-flex;
+				align-items: center;
+				border-radius: 999px;
+				padding: .25em .65em;
+				font-size: .85em;
+				font-weight: 700;
+			}
+			.status-pill {
+				&--new {
+					color: #166534;
 					background: #dcfce7;
 				}
-				&.yellow {
-					color: #d97706;
-					background: #fef3c7;
+		
+				&--progress {
+					color: #1d4ed8;
+					background: #dbeafe;
 				}
 			}
-		}
-	}
-
-	.filters {
-		.filter-tabs {
-			margin-top:.7em;
-		}
-	}
-
-	.list {
-		.complaint-key {
-			color: #2563eb;
-			text-decoration: underline;
-			cursor: pointer;
-		}
-		.status-pill,
-		.sla-pill {
-			display: inline-flex;
-			align-items: center;
-			border-radius: 999px;
-			padding: .25em .65em;
-			font-size: .85em;
-			font-weight: 700;
-		}
-		.status-pill {
-			&--new {
-				color: #166534;
-				background: #dcfce7;
+			.sla-pill {
+				color: #92400e;
+				background: #fef3c7;
 			}
-	
-			&--progress {
-				color: #1d4ed8;
-				background: #dbeafe;
-			}
-		}
-		.sla-pill {
-			color: #92400e;
-			background: #fef3c7;
 		}
 	}
 }

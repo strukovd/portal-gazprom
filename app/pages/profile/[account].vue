@@ -318,7 +318,20 @@ const copy = async (text: string) => {
 };
 
 const showCreateReading = () => {
-	$modal.show('CreateReading', { title: 'Приём показаний' });
+	if (!accountData.value) return;
+
+	const lastReading = [...(accountData.value.readings || [])].sort((a, b) => {
+		return new Date(b.created).getTime() - new Date(a.created).getTime();
+	})[0];
+
+	$modal.show('CreateReading', {
+		title: 'Приём показаний',
+		payload: {
+			account: accountData.value.account,
+			previousReading: lastReading?.reading ?? null,
+			previousReadingDate: lastReading?.created ?? null,
+		}
+	});
 }
 
 function syncAccountContext() {

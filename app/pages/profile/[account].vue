@@ -25,7 +25,7 @@
 
 			<div style="margin-left:auto;"></div>
 
-			<BaseButton variant="primary">Принять показания</BaseButton>
+			<BaseButton @click="showCreateReading" variant="primary">Принять показания</BaseButton>
 			<BaseButton variant="outlined">Новая жалоба</BaseButton>
 		</section>
 
@@ -67,7 +67,7 @@
 							<td>
 								<div style="display:inline-flex; gap:.4em; align-items:center; cursor:pointer;">
 									{{ accountData.account }}
-									<BaseIcon name="mdi-content-copy" style="color:#737373"/>
+									<BaseIcon @click="copy(accountData.account)" name="mdi-content-copy" style="color:#737373"/>
 								</div>
 							</td>
 						</tr>
@@ -125,23 +125,25 @@
 			</BaseIsland>
 			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold" class="col-4">
 				<section style="display:flex; gap:1em; flex-wrap:wrap;">
-					<div style="flex:auto 1 1; background:#fef2f2; color:#dc2625; padding:1em; border-radius:12px; text-align:center;">
+					<div :class="[`tile`, { red: accountData.balance < 0 }]">
 						<div style="font-size:.9em;">Текущий баланс</div>
 						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">{{ accountData.balance ?? '0.00' }} сом</div>
 						<!-- <div style="font-size:.9em;">{{ accountData.balance > 0 ? `Долг` : `Предоплата` }}</div> -->
 					</div>
-					<div style="flex:auto 1 1; background:#e9effd; color:#2b63dd; padding:1em; border-radius:12px; text-align:center;">
+					<div :class="[`tile`, { red: !accountData.bill}]">
 						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">Квитанция</div>
-						<div style="font-size:.9em;">за апрель</div>
+						<div v-if="accountData.bill" style="font-size:.9em;">за {{ String(accountData.bill) }}</div>
+						<div v-else style="font-size:.9em;">нету</div>
 					</div>
 				</section>
-				<section v-if="accountData?.payments">
+				<section v-if="Array.isArray(accountData?.payments)">
 					<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
-					<section style="max-height:350px; overflow:auto;">
+					<div v-if="!accountData.payments.length" style="font-weight:700; margin:2em 0 0 0; text-align:center; color:#737373; font-size:.9em;">Нет данных</div>
+					<section v-else style="max-height:350px; overflow:auto;">
 						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;">
 							<div style="flex:33% 1 1; text-align:center;">
 								<div style="font-weight:700; color:forestgreen;">{{ payment.amount }}</div>
-								<div style="font-size:.9em; color:#737373;">{{ payment.created }}</div>
+								<div style="font-size:.9em; color:#737373;">{{ toLocaleDate(payment.created) }}</div>
 							</div>
 							<div style="flex:33% 1 1; padding:0 1em; font-size:.8em; text-align:center; border-width:0 1px 0 1px; border-style:solid; border-color:#e5e5e5;">
 								<div :style="{color: payment.service.id === 2 ? '#659df2' : '#fe9f4d'}">{{ payment.service.name }}</div>
@@ -219,7 +221,9 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
+import { toLocaleDate } from '~/utils/format';
 const route = useRoute();
+const { $modal } = useNuxtApp();
 const accountStore = useAccountStore();
 const accountData = computed(() => accountStore.accountData);
 
@@ -307,6 +311,16 @@ watch(() => route.params.account, () => {
 	syncAccountContext();
 });
 
+
+const copy = async (text: string) => {
+	if (navigator.clipboard)
+		navigator.clipboard.writeText(text);
+};
+
+const showCreateReading = () => {
+	$modal.show('CreateReading', { title: 'Приём показаний' });
+}
+
 function syncAccountContext() {
 	const routeAccount = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
 	if (!routeAccount) {
@@ -328,6 +342,19 @@ function syncAccountContext() {
 	.base-island .bi-title .base-icon {
 		opacity: 1 !important;
 		color: #2563ea;
+	}
+
+	.tile {
+		flex:auto 1 1;
+		background:#e9effd;
+		color:#2b63dd;
+		padding:1em;
+		border-radius:12px;
+		text-align:center;
+		&.red {
+			background:#fef2f2;
+			color:#dc2625;
+		}
 	}
 
 	.contact-info-table {

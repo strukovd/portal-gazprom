@@ -1,122 +1,46 @@
 <template>
-	<section id="complaint-create-page">
+	<section id="complaint-issue-list">
 		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Жалобы' }]"/>
 
-		<header>
-			<div>
+		<header style="display:flex; align-items:center; justify-content:space-between; gap:1em;">
+			<section>
 				<h2>Жалобы</h2>
-				<p>Регистрация и контроль исполнения обращений абонентов</p>
-			</div>
+				<span>Управление обращениями и жалобами абонентов</span>
+			</section>
+			<section>
+				<BaseButton prependIcon="mdi-plus" @click="$modal.show('ComplaintCreate', { title: 'Регистрация жалобы' })">Создать жалобу</BaseButton>
+			</section>
 		</header>
 
-		<BaseIsland title="Регистрация жалобы" prependIcon="mdi-pencil-box-outline">
-			<div class="form-grid">
-				<section class="left">
-					<div class="field">
-						<label>Абонент<BaseIcon name="mdi-account-check"/></label>
-
-						<div class="search">
-							<BaseTextBox model-value="" placeholder="Поиск по ФИО или лицевому счёту..."/>
-							<BaseButton variant="outlined" icon="mdi-magnify"/>
-						</div>
-					</div>
-
-					<div class="subscriber-card">
-						<strong>Маратов Ержан Кайратович</strong>
-						<span>| ЛС: 10 000 26 57</span>
-						<span>| Чуйская область, Ысык-Атинский район, ул. Абая 45, кв. 12</span>
-					</div>
-
-					<div class="field">
-						<label>Клиент</label>
-						<BaseTextBox model-value="" placeholder="Введите ФИО"/>
-					</div>
-
-					<div class="field">
-						<BaseTextBox model-value="" placeholder="Введите Номер телефона: +996......"/>
-					</div>
+		<!-- Статистика -->
+		<section class="stats no-api">
+			<BaseIsland class="col-4 stat-island" v-for="(item, index) of [
+				{ value: 12, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
+				{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+				{ value: 87, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+			]" :key="index">
+				<section v-if="item.icon" :class="['icon-circle', item.color]">
+					<BaseIcon :name="item.icon" size="1.6em"/>
 				</section>
-
-				<section class="right">
-					<div class="field">
-						<label>Тема обращения<span>*</span></label>
-
-						<BaseSelect
-							model-value="Некорректные начисления"
-							:items="[
-								'Некорректные начисления',
-								'Нет газа',
-								'Проблема со счётчиком',
-								'Консультация',
-							]"
-						/>
-					</div>
-
-					<div class="right-row">
-						<div class="field">
-							<label>Подтверждающие материалы</label>
-
-							<div class="upload">
-								<div class="upload-box">
-									<BaseIcon name="mdi-cloud-upload"/>
-									<span>Перетащите<br>файлы или</span>
-									<BaseButton size="small" variant="outlined">Выбрать</BaseButton>
-									<small>Макс. 10 МБ</small>
-								</div>
-
-								<div class="files">
-									<div class="file"
-										v-for="(file, index) of [
-											{ name: 'фото_плиты.jpg', icon: 'mdi-image-outline' },
-											{ name: 'акт_проверки.pdf', icon: 'mdi-file-pdf-box' },
-										]" :key="index">
-										<v-icon :icon="file.icon"/>
-										<span>{{ file.name }}</span>
-										<button type="button">
-											<BaseIcon name="mdi-close"/>
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<div class="field urgency">
-							<label>Уровень срочности</label>
-							<BaseSelect model-value="Обычная" :items="['Обычная', 'Высокая', 'Критическая']"/>
-						</div>
-					</div>
+				<section>
+					<div style="font-size:1.6em; font-weight:700;">{{ item.value }}</div>
+					<div style="font-size:.8em; color: #6b728088;">{{ item.label }}</div>
 				</section>
+			</BaseIsland>
+		</section>
 
-				<section class="description">
-					<div class="field">
-						<label>Описание ситуации</label>
-
-						<BaseTextarea model-value="" placeholder="Подробное описание проблемы абонента..."/>
-					</div>
-				</section>
-
-				<section class="answer-template">
-					<div class="template-title">
-						<BaseIcon name="mdi-file-document-outline"/>
-						<strong>Шаблон ответа абоненту</strong>
-					</div>
-
-					<div class="template-text">
-						Уважаемый(ая) Маратов Ержан Кайратович! Ваше обращение №ЖЛ-2025-04187 от 12.06.2025 принято в работу.
-						Ответственный специалист - Закирова А. Плановый срок рассмотрения — до 19.06.2026.
-						По результатам проверки Вам будет направлено уведомление. Благодарим за обращение.
-						С уважением, КЦ ОсОО «Газпром Кыргызстан».
-					</div>
-				</section>
-
-				<section class="actions">
-					<BaseButton>Зарегистрировать жалобу</BaseButton>
-					<BaseButton variant="outlined">Очистить</BaseButton>
-				</section>
-			</div>
+		<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant">
+			<BaseTextBox v-model="form.description" @submit="" @change="" placeholder="Поиск по ключу, теме, ФИО..."/>
+			<BaseTabs class="filter-tabs no-api" v-model="form.status" :items="[
+				{ caption: 'Все', key: '', badge: 12 },
+				{ caption: 'Новые', key: 'open', badge: 5 },
+				{ caption: 'В работе', key: 'in-progress', badge: 3 },
+				{ caption: 'Просроченные', key: 'overdue', badge: 2 },
+				{ caption: 'Закрытые', key: 'closed', badge: 10 },
+			]"/>
 		</BaseIsland>
 
-		<BaseIsland title="Реестр жалоб" prependIcon="mdi-file-document-outline">
+		<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline">
 			<BaseTable
 				:columns="[
 					{ key: 'key', label: 'Key' },
@@ -130,7 +54,23 @@
 					{ key: `ЖЛ-04187`, theme: 'Некорректные начисления', date: '12.06.2025', status: 'В работе', sla: '3 дня', assignee: 'Иванов И.И.' },
 					{ key: `ЖЛ-04188`, theme: 'Нет газа', date: '13.06.2025', status: 'Новое', sla: '1 день', assignee: 'Петров П.П.' },
 				]"
-			/>
+			>
+				<template #cell.key="{ value }">
+					<NuxtLink :to="`/complaints/${value}`">
+						<strong class="complaint-key">{{ value }}</strong>
+					</NuxtLink>
+				</template>
+
+				<template #cell.status="{ value }">
+					<span :class="['status-pill', value === 'Новое' ? 'status-pill--new' : 'status-pill--progress']">
+						{{ value }}
+					</span>
+				</template>
+
+				<template #cell.sla="{ value }">
+					<span class="sla-pill">{{ value }}</span>
+				</template>
+			</BaseTable>
 		</BaseIsland>
 	</section>
 </template>
@@ -141,284 +81,121 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
+import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-
+const { $fetchCallGas } = useNuxtApp(); 
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
+
+const form = ref({
+	account: '',
+	subject: '',
+	urgencyLevel: '',
+	status: '',
+	description: '',
+});
+
+
+async function fetchList() {
+	$fetchCallGas(`/complaints`, {
+		method: 'GET',
+		query: {
+			// account: '123456789',
+			// subject: 'Некорректные начисления',
+			// urgencyLevel: 'HIGH',
+			// status: 'OPEN',
+			// description: '',
+			createdFrom: '2024-01-01',
+			createdTo: '2027-12-31',
+			page: 1,
+			size: 10,
+		},
+	})
+		.then((response) => {
+			console.log('Список жалоб:', response);
+		})
+		.catch((error) => {
+			console.error('Ошибка при получении списка жалоб:', error);
+		});
+}
 </script>
 
 <style lang="scss">
-#complaint-create-page {
-	>header {
-		display: flex;
-		align-items: start;
-		justify-content: space-between;
-		gap: 16px;
-		margin-bottom: 16px;
-
-		h2 {
-			margin: 0;
-			font-size: 22px;
-			font-weight: 700;
-		}
-
-		p {
-			margin: 4px 0 0;
-			color: #6b7280;
-			font-size: 14px;
-		}
-
-		.updated {
+#complaint-issue-list {
+	.stats {
+		.stat-island {
 			display: flex;
 			align-items: center;
-			gap: 6px;
-			margin-top: 4px;
-			color: #6b7280;
-			font-size: 12px;
-			white-space: nowrap;
+			gap:1em;
+			/* margin:1em 0; */
+			padding-top:1.8em;
+			padding-bottom:1.8em;
 
-			.v-icon {
-				font-size: 15px;
+			.icon-circle {
+				display: grid;
+				place-items: center;
+				width: 3em;
+				aspect-ratio: 1/1;
+				border-radius: 50%;
+
+				&.red {
+					color: #ef4444;
+					background: #fee2e2;
+				}
+				&.blue {
+					color: #2563eb;
+					background: #dbeafe;
+				}
+				&.green {
+					color: #16a34a;
+					background: #dcfce7;
+				}
+				&.yellow {
+					color: #d97706;
+					background: #fef3c7;
+				}
 			}
 		}
 	}
 
-	.form-grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(360px, .85fr);
-		gap: 28px 84px;
-	}
-
-	.left,
-	.right {
-		display: grid;
-		align-content: start;
-		gap: 14px;
-	}
-
-	.field {
-		display: grid;
-		gap: 7px;
-
-		label {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			font-size: 13px;
-			font-weight: 700;
-			color: #333;
-
-			.v-icon,
-			span {
-				color: #2563eb;
-			}
-
-			.v-icon {
-				font-size: 16px;
-			}
+	.filters {
+		.filter-tabs {
+			margin-top:.7em;
 		}
 	}
 
-	.search {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 44px;
-		gap: 10px;
-	}
-
-	.subscriber-card {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		min-height: 42px;
-		padding: 0 12px;
-		border-radius: 8px;
-		background: #eaf1ff;
-		color: #4b5563;
-		font-size: 12px;
-
-		strong {
-			color: #174ea6;
-			font-size: 13px;
-			white-space: nowrap;
+	.list {
+		.complaint-key {
+			color: #2563eb;
+			text-decoration: underline;
+			cursor: pointer;
 		}
-
-		span {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-	}
-
-	.right-row {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 150px;
-		gap: 28px;
-		align-items: start;
-	}
-
-	.upload {
-		display: grid;
-		gap: 10px;
-	}
-
-	.upload-box {
-		display: grid;
-		grid-template-columns: auto 1fr auto auto;
-		align-items: center;
-		gap: 10px;
-		min-height: 58px;
-		padding: 10px 12px;
-		border: 2px dashed #d1d5db;
-		border-radius: 10px;
-		background: #fafafa;
-		color: #6b7280;
-		font-size: 12px;
-
-		.v-icon {
-			color: #9ca3af;
-			font-size: 22px;
-		}
-
-		small {
-			color: #9ca3af;
-			font-size: 11px;
-		}
-	}
-
-	.files {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-	}
-
-	.file {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 5px 8px;
-		border-radius: 5px;
-		background: #eef3ff;
-		color: #2563eb;
-		font-size: 12px;
-		font-weight: 600;
-
-		.v-icon {
-			font-size: 14px;
-		}
-
-		button {
+		.status-pill,
+		.sla-pill {
 			display: inline-flex;
 			align-items: center;
-			justify-content: center;
-			width: 16px;
-			height: 16px;
-			padding: 0;
-			border: 0;
-			background: transparent;
-			color: #9ca3af;
-			cursor: pointer;
-
-			.v-icon {
-				font-size: 12px;
+			border-radius: 999px;
+			padding: .25em .65em;
+			font-size: .85em;
+			font-weight: 700;
+		}
+		.status-pill {
+			&--new {
+				color: #166534;
+				background: #dcfce7;
+			}
+	
+			&--progress {
+				color: #1d4ed8;
+				background: #dbeafe;
 			}
 		}
-	}
-
-	.urgency {
-		:deep(.base-select),
-		:deep(.v-field) {
-			background: #fff3b0;
-		}
-	}
-
-	.description {
-		grid-column: 1 / -1;
-
-		:deep(textarea) {
-			min-height: 74px;
-		}
-	}
-
-	.answer-template {
-		grid-column: 1 / -1;
-		display: grid;
-		gap: 14px;
-		padding: 18px 22px 26px;
-		border: 1px solid #bdd0ff;
-		border-radius: 14px;
-		background: #eaf1ff;
-	}
-
-	.template-title {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		color: #174ea6;
-		font-size: 14px;
-
-		.v-icon {
-			font-size: 16px;
-		}
-	}
-
-	.template-text {
-		padding: 14px 16px;
-		border-radius: 8px;
-		background: #fff;
-		color: #333;
-		font-size: 14px;
-		line-height: 1.45;
-	}
-
-	.actions {
-		grid-column: 1 / -1;
-		display: flex;
-		justify-content: flex-end;
-		gap: 14px;
-	}
-
-	@media (max-width: 1100px) {
-		.form-grid {
-			grid-template-columns: 1fr;
-			gap: 22px;
-		}
-
-		.right-row {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	@media (max-width: 768px) {
-		>header {
-			display: grid;
-
-			.updated {
-				white-space: normal;
-			}
-		}
-
-		.subscriber-card {
-			display: grid;
-			gap: 4px;
-			padding: 10px 12px;
-
-			strong,
-			span {
-				white-space: normal;
-			}
-		}
-
-		.upload-box {
-			grid-template-columns: 1fr;
-			justify-items: start;
-		}
-
-		.actions {
-			display: grid;
-			grid-template-columns: 1fr;
+		.sla-pill {
+			color: #92400e;
+			background: #fef3c7;
 		}
 	}
 }

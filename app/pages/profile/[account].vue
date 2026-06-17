@@ -191,6 +191,7 @@
 						{ label: 'Источник', key: 'supplier.name' },
 						{ label: 'Статус', key: 'status' },
 					]" :rows="accountData?.readings">
+						<template #cell.created="{ row, column }">{{ toLocaleDate( String(row[column.key]) ) }}</template>
 						<template #cell.status="{ row, column }">
 							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#ee4444' : '#17a34a', fontWeight: '700' }">
 								{{ row.status }}

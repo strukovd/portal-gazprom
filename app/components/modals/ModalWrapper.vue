@@ -72,7 +72,7 @@ onBeforeUnmount(() => {
 	height:100vh;
 	display: flex;
 	transition:background-color 200ms ease-out 0s;
-	background-color: rgb(20 33 51 / 10%);
+	background-color: rgb(20 33 51 / 30%);
 	z-index:9999999;
 
 	.modal-window {

@@ -42,10 +42,10 @@
 					</div>
 				</section>
 			</section>
-			<section class="actions">
+			<!-- <section class="actions">
 				<BaseButton style="line-height:1.4em; text-align:center;" variant="light">Новая жалоба</BaseButton>
 				<BaseButton style="line-height:1.4em; text-align:center;" variant="outlined">Принять показания</BaseButton>
-			</section>
+			</section> -->
 			<div class="flex-spacer"></div>
 			<section class="service-tools">
 				<BaseIcon name="mdi-bell" size="20" style="color:#525252;"/>

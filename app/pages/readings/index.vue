@@ -113,12 +113,12 @@
 				<BaseIsland class="no-api" title="Статистика принятых показаний" prependIcon="mdi-finance">
 					<div class="stats">
 						<div class="stat-card">
-							<strong>147</strong>
+							<strong><Incrementator :value="147"/></strong>
 							<span>Успешно принято</span>
 						</div>
 
 						<div class="stat-card danger">
-							<strong>5</strong>
+							<strong><Incrementator :value="5"/></strong>
 							<span>Ошибка в показаниях.</span>
 						</div>
 					</div>
@@ -212,6 +212,7 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import Incrementator from '~/components/common/Incrementator.vue';
 
 definePageMeta({
 	auth: true,

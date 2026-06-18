@@ -18,8 +18,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
 			const role = user.userData?.role;
 			if(ALLOWED_ROLES && ALLOWED_ROLES.length > 0) {
 				if(!ALLOWED_ROLES.includes(role)) { // Если пользователь не иммет доступа (роли) к странице
-					let page = determinePathByRole(role);
-					if(page === to.path) page = '/403'; // Анти-зацикливание
+					let page = '/403';
+					// let page = determinePathByRole(role);
+					// if(page === to.path) page = '/403'; // Анти-зацикливание
 					return navigateTo(page, { replace: true });
 				}
 			}

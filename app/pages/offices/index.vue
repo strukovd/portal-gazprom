@@ -49,7 +49,7 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
 

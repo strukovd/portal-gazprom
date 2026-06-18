@@ -78,7 +78,7 @@
 <script lang="ts" setup>
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
 

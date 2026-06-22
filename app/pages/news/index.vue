@@ -3,9 +3,9 @@
 
 		<section class="row-tabs">
 			<BaseTabs v-model="form.tab" :items="[
-				{ caption: 'Все', key: undefined },
-				{ caption: 'Отключение', key: 'gas-off' },
-				{ caption: 'Газификация', key: 'gasification' },
+				{ value: 'Все', key: undefined },
+				{ value: 'Отключение', key: 'gas-off' },
+				{ value: 'Газификация', key: 'gasification' },
 			]"/>
 		</section>
 

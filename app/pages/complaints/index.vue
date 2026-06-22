@@ -33,11 +33,11 @@
 			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant">
 				<BaseTextBox v-model="form.description" @submit="" @change="" placeholder="Поиск по ключу, теме, ФИО..."/>
 				<BaseTabs class="filter-tabs no-api" v-model="form.status" :items="[
-					{ caption: 'Все', key: '', badge: 12 },
-					{ caption: 'Новые', key: 'open', badge: 5 },
-					{ caption: 'В работе', key: 'in-progress', badge: 3 },
-					{ caption: 'Просроченные', key: 'overdue', badge: 2 },
-					{ caption: 'Закрытые', key: 'closed', badge: 10 },
+					{ value: 'Все', key: '', badge: 12 },
+					{ value: 'Новые', key: 'open', badge: 5 },
+					{ value: 'В работе', key: 'in-progress', badge: 3 },
+					{ value: 'Просроченные', key: 'overdue', badge: 2 },
+					{ value: 'Закрытые', key: 'closed', badge: 10 },
 				]"/>
 			</BaseIsland>
 	

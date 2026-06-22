@@ -8,7 +8,7 @@
 			@click="onSelected(button.key)"
 		>
 			<BaseIcon v-if="button.icon" :name="button.icon" size="1.2em" style="margin-right:.2em; opacity:.8; vertical-align:baseline;"></BaseIcon>
-			<span style="font-weight:300;">{{ button.caption }}</span>
+			<span style="font-weight:300;">{{ button.value }}</span>
 			<span v-if="button.badge" class="tab-button-badge">{{ button.badge }}</span>
 		</button>
 	</section>
@@ -20,7 +20,7 @@ import BaseIcon from './BaseIcon.vue';
 type TabModel = {
 	key: any;
 	icon?: string;
-	caption: string;
+	value: string;
 	color?: string;
 	badge?: string | number;
 }

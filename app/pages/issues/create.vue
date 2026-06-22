@@ -108,8 +108,8 @@ const countdown = ref(10);
 const showMessage = ref(false);
 
 const tabs = [
-	{ key: 'NGV4', caption: 'Новая газифиция', icon: 'mdi-file-document-plus-outline' },
-	{ key: 'PRV4', caption: 'Перемонтаж', icon: 'mdi-file-document-multiple-outline' }
+	{ key: 'NGV4', value: 'Новая газифиция', icon: 'mdi-file-document-plus-outline' },
+	{ key: 'PRV4', value: 'Перемонтаж', icon: 'mdi-file-document-multiple-outline' }
 ];
 const projectKey = ref('');
 const form = reactive({}) as Reactive<Record<string, any>>;

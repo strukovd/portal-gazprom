@@ -19,13 +19,23 @@ export default defineNuxtPlugin((nuxtApp) => {
 		onResponse({ response }) {
 			// централизованная обработка
 		},
-		onResponseError({ response }) {
+		onResponseError({ response, request, options }) {
 			// логика на 401/403/500 и т.п.
 			switch (response.status) {
-				case 401:
-				case 403:
+				case 401: // Пользователь не представился
 					useUserStore().reset();
 					navigateTo('/login');
+					break;
+				case 403: // Пользователь представился, но ему сюда нельзя
+					nuxtApp.$flags.error(`
+							<div>У данного пользовалтеля нет прав на выполнение данного запроса</div>
+							<div><pre><code>${options.method} ${request}</code></pre></div>
+							<div>Текущий пользователь: <code>${useUserStore().userData.login}</code> с ролью <code>${useUserStore().userData.role}</code></div>
+						`,
+						{
+							title: `${response.status}. Нет доступа`,
+						}
+					);
 					break;
 			}
 		},

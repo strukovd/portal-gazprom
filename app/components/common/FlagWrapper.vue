@@ -1,7 +1,15 @@
 <template>
 	<section class="flags" v-if="appStore.flags?.length">
 		<TransitionGroup name="flag-list">
-			<div v-for="flag of appStore.flags" :key="flag.id" class="flag">
+			<div
+				v-for="flag of appStore.flags"
+				:key="flag.id"
+				class="flag"
+				:style="{
+					'--flag-timeout': `${flag.timeout ?? 6000}ms`,
+					'--flag-color': iconMap[flag.type ?? 'info'].color,
+				}"
+			>
 				<div class="flag-icon">
 					<BaseIcon :name="iconMap[flag.type ?? 'info'].name" :fill="iconMap[flag.type ?? 'info'].color"
 						size="1.4em" />
@@ -11,7 +19,11 @@
 					<p class="flag-message" v-html="flag.message"></p>
 				</div>
 				<div class="flag-close">
-					<BaseIcon @click="removeFlag(flag.id!)" name="mdi-close" size="1.4em" />
+					<svg v-if="flag.autoclose" class="timer" viewBox="0 0 40 40">
+						<circle class="track" cx="20" cy="20" r="17" pathLength="100" />
+						<circle class="progress" cx="20" cy="20" r="17" pathLength="100" />
+					</svg>
+					<BaseIcon @click="removeFlag(flag.id!)" name="mdi-close" size="1em" />
 				</div>
 			</div>
 		</TransitionGroup>
@@ -113,6 +125,7 @@ const iconMap = {
 		}
 
 		.flag-close {
+			position: relative;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -127,6 +140,31 @@ const iconMap = {
 			// border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle light border */
 			// box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow */
 			cursor: pointer;
+
+			.timer {
+				position: absolute;
+				aspect-ratio: 1 / 1;
+				height: 80%;
+				transform: rotate(-90deg);
+				pointer-events: none;
+
+				circle {
+					fill: none;
+					stroke-width: 2.4;
+				}
+
+				.track {
+					stroke: rgba(0, 0, 0, .05);
+				}
+
+				.progress {
+					stroke: color-mix(in srgb, var(--flag-color) 50%, transparent);
+					stroke-linecap: round;
+					stroke-dasharray: 100;
+					stroke-dashoffset: 100;
+					animation: flag-progress var(--flag-timeout) linear forwards;
+				}
+			}
 
 			&:hover {
 				background: rgba(255, 255, 255, 1);
@@ -160,6 +198,16 @@ const iconMap = {
 
 	.flag-list-move {
 		transition: transform 0.3s ease;
+	}
+}
+
+@keyframes flag-progress {
+	from {
+		stroke-dashoffset: 100;
+	}
+
+	to {
+		stroke-dashoffset: 0;
 	}
 }
 </style>

@@ -1,4 +1,4 @@
-type FlagsPlugin = {
+export type FlagsPlugin = {
 	show:		(options: FlagsModel) => void;
 	success:	(message: string, params?: Omit<FlagsModel, 'type' | 'message'>) => void;
 	info:		(message: string, params?: Omit<FlagsModel, 'type' | 'message'>) => void;
@@ -19,24 +19,28 @@ declare module '@vue/runtime-core' {
 	}
 }
 declare module '#app' {
-  interface NuxtApp {
-    $flags: FlagsPlugin;
-  }
+	interface NuxtApp {
+		$flags: FlagsPlugin;
+	}
 }
 
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(() => {
 	const flags: FlagsPlugin = {
 		show: (params: FlagsModel) => {
 			const appStore = useAppStore();
 			if (appStore) {
-				const id = params.id = params.id ?? Math.random().toString(36).substring(2, 9);
-				appStore.flags.push(params);
+				const id = params.id ?? Math.random().toString(36).substring(2, 9);
+				const timeout = params.timeout ?? params.type === 'error' ? 20000 : 6000; // По умолчанию 6 секунд, для ошибок 20
+				const autoclose = params.autoclose !== false; // Включаем, если явно не указано false
 
-				if(params.autoclose || params.autoclose === undefined && params.type !== 'error') {
+				appStore.flags.push({ ...params, id, timeout, autoclose });
+
+				// Запускаем таймер автозакрытия
+				if(autoclose) {
 					setTimeout(() => {
 						appStore.flags = appStore.flags.filter(flag => flag.id !== id);
-					}, params.timeout ?? 6000);
+					}, timeout);
 				}
 			} else {
 				console.warn('Метод $flag.show: Невозможно показать флаг, appStore еще не инициализирован');
@@ -56,5 +60,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 		},
 	};
 
-	nuxtApp.provide('flags', flags);
+	return {
+		provide: {
+			flags,
+		}
+	};
 });

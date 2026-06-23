@@ -1,12 +1,13 @@
 <template>
 	<section id="news-page">
 
-		<section class="row-tabs">
+		<section class="row-tools">
 			<BaseTabs v-model="form.tab" :items="[
 				{ value: 'Все', key: undefined },
 				{ value: 'Отключение', key: 'gas-off' },
 				{ value: 'Газификация', key: 'gasification' },
 			]"/>
+			<BaseButton prependIcon="mdi-plus" @click="$modal.show('NewsCreate', { title: 'Создание новости', nonCloseable: true })">Создать новость</BaseButton>
 		</section>
 
 		<section v-if="!form.tab || form.tab === `gas-off`" class="row-outages">
@@ -171,7 +172,7 @@ import BaseTabs from '~/components/common/base/BaseTabs.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
 
@@ -181,6 +182,18 @@ const form = reactive({}) as Record<string, string | number>;
 
 <style lang="scss">
 #news-page {
+	.row-tools {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+		margin-bottom: 1em;
+
+		>.tabs {
+			margin: 0;
+		}
+	}
+
 	.row-outages {
 		width: 100%;
 
@@ -504,6 +517,11 @@ const form = reactive({}) as Record<string, string | number>;
 	}
 
 	@media (max-width: 900px) {
+		.row-tools {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
 		.gasification-list {
 			grid-template-columns: 1fr;
 		}

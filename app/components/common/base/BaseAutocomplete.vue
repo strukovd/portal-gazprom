@@ -34,7 +34,6 @@
 					@input="onInput"
 					@keydown="onKeydown"
 				>
-				{{ appendIcon }}
 				<BaseIcon class="append-icon" size="1.4em" :name="appendIcon ?? 'mdi-menu-down'"/>
 				<!-- <template v-else>
 					<BaseIcon name="mdi-menu-down" style="transform: rotate(180deg);"/>
@@ -78,6 +77,7 @@ export default defineComponent({
 		modelValue: [String, Number, Array] as any,
 		label: String,
 		placeholder: String,
+		prependIcon: String,
 		appendIcon: String,
 		items: Array as () => any[],
 		autoselect: Boolean,
@@ -364,11 +364,11 @@ export default defineComponent({
 			font-size: 16px;
 			background: #FFFFFF;
 			border-radius: 6px;
-			border: 1px solid #E0E2E791;
+			border: 1px solid #d4d4d4;
 			line-height: 1.4em;
 			font-weight: 500;
 			box-shadow: none;
-			padding: .4em .4em .4em .6em;
+			padding: .2em .4em .2em .6em;
 
 			.selected-items {
 				flex: auto 0 0;
@@ -410,7 +410,8 @@ export default defineComponent({
 
 
 			&:focus-within {
-				box-shadow: 0 0 0 2px #0079C1aa;
+				border-color: #2563ea80;
+				box-shadow: 0 0 0 2px #2563ea80;
 			}
 
 			&:has(input.selected) {

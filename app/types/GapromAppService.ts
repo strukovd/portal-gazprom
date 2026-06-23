@@ -1,10 +1,10 @@
-export type NewsResponse = {
-	// data: NewsPayload[];
-	total: number;
-	page: number;
-	limit: number;
-	totalPages: number;
-};
+// export type OfficesResponse = {
+// 	// data: NewsPayload[];
+// 	total: number;
+// 	page: number;
+// 	limit: number;
+// 	totalPages: number;
+// };
 export type OfficesPayload = {
 	id: number;
 	name: string;

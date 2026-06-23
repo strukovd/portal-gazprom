@@ -215,7 +215,7 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import type { ReadingsResponse, ReadingPayload } from '~/types/Portal';
 import Incrementator from '~/components/common/Incrementator.vue';
-import type { NewsGetQuery } from '~/types/CallGas';
+import type { NewsGetQuery, NewsPayload, NewsResponse } from '~/types/CallGas';
 import type { OfficesPayload } from '~/types/GapromAppService';
 const { $fetchPortal } = useNuxtApp();
 
@@ -260,7 +260,7 @@ async function init() {
 
 async function fetchReadings(): Promise<ReadingPayload[] | void> {
 	const todayISO = new Date().toLocaleDateString('fr-CA');
-	useNuxtApp().$fetchPortal<ReadingsResponse>(`/v1/portal/readings`, {
+	return useNuxtApp().$fetchPortal<ReadingsResponse>(`/v1/portal/readings`, {
 		method: 'GET',
 		query: {
 			success: true,
@@ -276,21 +276,21 @@ async function fetchReadings(): Promise<ReadingPayload[] | void> {
 		});
 }
 
-async function fetchNews(query: Partial<NewsGetQuery> = {}): Promise<any[] | void> {
-	useNuxtApp().$fetchCallGas<any>(`/news`, {
+async function fetchNews(query: Partial<NewsGetQuery> = {}): Promise<NewsPayload[] | void> {
+	return useNuxtApp().$fetchCallGas<NewsResponse>(`/news`, {
 		method: 'GET',
 		query
 	})
 		.then((resp) => {
-			return resp;
+			return resp.data;
 		})
 		.catch((error: any) => {
 			console.error('Ошибка при загрузке новостей:', error);
 		});
 }
 
-async function fetchOffices(query: Partial<any> = {}): Promise<any[] | void> {
-	useNuxtApp().$fetchApi<OfficesPayload>(`/v1/gazprom-app/content/offices`, {
+async function fetchOffices(query: Partial<any> = {}): Promise<OfficesPayload[] | void> {
+	return useNuxtApp().$fetchApi<OfficesPayload[]>(`/v1/gazprom-app/content/offices`, {
 		method: 'GET',
 		query
 	})
@@ -301,8 +301,9 @@ async function fetchOffices(query: Partial<any> = {}): Promise<any[] | void> {
 			console.error('Ошибка при загрузке офисов:', error);
 		});
 }
+
 async function fetchTariffs(query: Partial<any> = {}): Promise<any[] | void> {
-	useNuxtApp().$fetchApi<OfficesPayload>(`/v1/gazprom-app/content/tariff`, {
+	return useNuxtApp().$fetchApi<OfficesPayload>(`/v1/gazprom-app/content/tariff`, {
 		method: 'GET',
 		query
 	})

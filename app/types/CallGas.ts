@@ -1,10 +1,29 @@
 export type NewsResponse = {
-	// data: NewsPayload[];
+	data: NewsPayload[];
 	total: number;
 	page: number;
 	limit: number;
 	totalPages: number;
 };
+export type NewsPayload = {
+	id: number;
+	category: string;
+	categoryType: string;
+	branch: string;
+	urgencyLevel: string;
+	title: string;
+	text: string;
+	textForClient: string;
+	startDate: string;
+	endDate: string;
+	user: {
+		id: number;
+		login: string;
+		name: string;
+	};
+	created: string;
+	updated: string;
+}
 export type NewsCreatePayload = {
 	title: string;
 	text: string; // Основной текст

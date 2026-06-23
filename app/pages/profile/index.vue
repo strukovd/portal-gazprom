@@ -7,7 +7,7 @@
 			<BaseIsland class="search-panel" title="Выбор абонента" prependIcon="mdi-account-box">
 				<BaseTextBox v-model="searchText" @submit="findAccounts" label="Абонент" prependIcon="mdi-magnify" button="Поиск" placeholder="Введите ФИО, адрес или лицевой счет"/>
 			</BaseIsland>
-	
+
 			<section v-if="foundList?.length" class="found-list">
 				<BaseIsland v-for="account of foundList" :key="account.account" class="item"
 					@click="selectAccount(account)">
@@ -15,8 +15,11 @@
 						<BaseIcon name="mdi-account-outline" size="22" />
 					</div>
 					<div class="content">
-						<div class="name">{{ account.name || 'Абонент' }}</div>
-						<div class="number">Л/с {{ account.account }}</div>
+						<div class="name">{{ account.name }}</div>
+						<div class="number"  @click.stop="copy(account.account)">
+							<BaseIcon name="mdi-content-copy" style="margin-right:.4em;" size="18"/>
+							<span>{{ account.account }}</span>
+						</div>
 						<div class="address">{{ account.address || 'Адрес не указан' }}</div>
 					</div>
 					<BaseIcon class="chevron" name="mdi-chevron-right" size="24" />
@@ -43,7 +46,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTRACTOR'],
 	layout: 'authorized'
 });
 
@@ -77,10 +80,26 @@ function redirectToActiveAccount() {
 		navigateTo(`/profile/${accountStore.account}`);
 	}
 }
+
+const copy = async (text: string) => {
+	if (navigator.clipboard) {
+		try {
+			await navigator.clipboard.writeText(text);
+			$flags.success('Лицевой счет скопирован');
+		} catch (err) {
+			console.error('Не удалось скопировать:', err);
+		}
+	}
+}
 </script>
 
 <style lang="scss">
 #profile-search-page {
+	.base-island .bi-title .base-icon {
+		opacity: 1 !important;
+		color: #2563ea;
+	}
+
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
@@ -109,15 +128,18 @@ function redirectToActiveAccount() {
 			}
 
 			.avatar {
-				width: 44px;
-				height: 44px;
-				flex: 0 0 44px;
+				aspect-ratio: 1/1;
+				padding:1em;
+				// width: 44px;
+				// height: 44px;
+				// flex: 0 0 44px;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				border-radius: 8px;
 				background: #eff6ff;
 				color: #2563ea;
+				box-shadow: inset 0 0 0 1px rgba(37, 99, 234, 0.08);
 			}
 
 			.content {
@@ -125,6 +147,7 @@ function redirectToActiveAccount() {
 				flex: 1 1 auto;
 
 				.name {
+					font-size: 1.4rem;
 					color: #111827;
 					font-size: 1.05rem;
 					font-weight: 700;
@@ -134,10 +157,23 @@ function redirectToActiveAccount() {
 				}
 
 				.number {
-					margin-top: .2em;
+					margin-top:.2em;
 					color: #2563ea;
+					// color: #0f172a;
 					font-size: .9rem;
 					font-weight: 700;
+					background: #eff6ff;
+					padding: .5em .8em;
+					border-radius:8px;
+					display: inline-flex;
+					align-items: center;
+					box-shadow: inset 0 0 0 1px rgba(37, 99, 234, 0.12);
+					transition: all 200ms ease-out 0s;
+
+					&:active {
+						background: #2563ea;
+						color: #fff;
+					}
 				}
 
 				.address {

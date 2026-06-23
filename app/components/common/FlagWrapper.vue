@@ -7,8 +7,8 @@
 						size="1.4em" />
 				</div>
 				<div class="flag-content">
-					<h2 v-if="flag.title">{{ flag.title }}</h2>
-					<p>{{ flag.message }}</p>
+					<h4 class="flag-title" v-if="flag.title">{{ flag.title }}</h4>
+					<p class="flag-message" v-html="flag.message"></p>
 				</div>
 				<div class="flag-close">
 					<BaseIcon @click="removeFlag(flag.id!)" name="mdi-close" size="1.4em" />
@@ -53,7 +53,7 @@ const iconMap = {
 		border: 1px solid rgba(255, 255, 255, 0.3);
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		padding: .6em 1em;
-		border-radius: 4px;
+		border-radius: 12px;
 		transition: all 200ms ease-out 0s;
 		max-width: 400px;
 
@@ -76,15 +76,39 @@ const iconMap = {
 			gap: .2em;
 			color: #333;
 
-			h2 {
+			>.flag-title {
 				margin: 0 0 .2em 0;
-				font-size: 1.2em;
-				font-weight: 600;
+				font-size: 1.2rem;
+				font-weight: 300;
 			}
 
-			p {
+			>.flag-message {
 				margin: 0;
-				font-size: .9em;
+				font-size: .84em;
+				font-weight: 300;
+
+				code {
+					font-family: 'Consolas', 'Courier New', monospace;
+					background-color: #f1f1f1;
+					color: #c7254e;
+					padding: 2px 6px;
+					border-radius: 4px;
+					font-size: 90%;
+				}
+
+				pre code {
+					display: block;
+					background-color: #f1f1f1;
+					color: #c7254e;
+					padding:.6rem;
+					border-radius: 4px;
+					border-left: 4px solid #c7254e;
+					overflow-x: auto;
+					white-space: pre-wrap;
+					overflow-wrap: anywhere;
+					// font-size: 1.2em;
+					margin:.3em 0;
+				}
 			}
 		}
 

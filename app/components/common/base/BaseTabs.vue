@@ -77,8 +77,8 @@ export default defineComponent({
 	align-items: center;
 	margin: 0 0 0.6em 0;
 	/* padding:.5em .7em; */
-	background: #FFFFFF;
-	backdrop-filter: blur(20px);
+	// background: #FFFFFF;
+	// backdrop-filter: blur(20px);
 	/* box-shadow: 0px 0px 30px rgba(3, 100, 165, 0.1); */
 	/* box-shadow: 0 0 3px rgba(0 0 0 / .12); */
 	border-radius: 6px;

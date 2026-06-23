@@ -88,7 +88,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 const { $fetchCallGas } = useNuxtApp(); 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
 

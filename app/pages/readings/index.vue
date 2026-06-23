@@ -216,7 +216,7 @@ import Incrementator from '~/components/common/Incrementator.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CONTRACTOR', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
 </script>

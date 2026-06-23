@@ -230,7 +230,7 @@ const accountData = computed(() => accountStore.accountData);
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTRACTOR'],
 	layout: 'authorized'
 });
 

@@ -202,11 +202,13 @@
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
-import type { ReadingsResponse, ReadingPayload } from '~/types/Portal';
+import type { ReadingPayload } from '~/types/Portal';
 import Incrementator from '~/components/common/Incrementator.vue';
-import type { NewsGetQuery, NewsPayload, NewsResponse } from '~/types/CallGas';
+import type { NewsPayload } from '~/types/CallGas';
 import type { OfficesPayload } from '~/types/GapromAppService';
-const { $fetchPortal } = useNuxtApp();
+import { readings } from '~/services/readings';
+import { news } from '~/services/news';
+import { offices } from '~/services/offices';
 
 definePageMeta({
 	auth: true,
@@ -234,74 +236,16 @@ const stats = computed(() => {
 
 onMounted(() => { init(); });
 async function init() {
-	const readingsRes = await fetchReadings();
-	const newsRes = await fetchNews();
-	const faqRes = await fetchNews({categoryFilter: 'FAQ'});
-	const disconnectionsRes = await fetchNews({categoryFilter: 'DISCONNECTION', urgencyLevelFilter: ['MIDDLE', 'HIGH']});
-	const officesRes = await fetchOffices();
-
-	if (readingsRes) pageData.readings = readingsRes;
-	if (newsRes) pageData.news = newsRes;
-	if (faqRes) pageData.faq = faqRes;
-	if (disconnectionsRes) pageData.disconnections = disconnectionsRes;
-	if (officesRes) pageData.offices = officesRes;
-}
-
-async function fetchReadings(): Promise<ReadingPayload[] | void> {
-	const todayISO = new Date().toLocaleDateString('fr-CA');
-	return useNuxtApp().$fetchPortal<ReadingsResponse>(`/v1/portal/readings`, {
-		method: 'GET',
-		query: {
-			success: true,
-			date: todayISO,
-			sortOrder: 'ASC'
-		}
-	})
-		.then((resp) => {
-			return resp.data;
-		})
-		.catch((error: any) => {
-			console.error('Ошибка при загрузке показаний:', error);
-		});
-}
-
-async function fetchNews(query: Partial<NewsGetQuery> = {}): Promise<NewsPayload[] | void> {
-	return useNuxtApp().$fetchCallGas<NewsResponse>(`/news`, {
-		method: 'GET',
-		query
-	})
-		.then((resp) => {
-			return resp.data;
-		})
-		.catch((error: any) => {
-			console.error('Ошибка при загрузке новостей:', error);
-		});
-}
-
-async function fetchOffices(query: Partial<any> = {}): Promise<OfficesPayload[] | void> {
-	return useNuxtApp().$fetchApi<OfficesPayload[]>(`/v1/gazprom-app/content/offices`, {
-		method: 'GET',
-		query
-	})
-		.then((resp) => {
-			return resp;
-		})
-		.catch((error: any) => {
-			console.error('Ошибка при загрузке офисов:', error);
-		});
-}
-
-async function fetchTariffs(query: Partial<any> = {}): Promise<any[] | void> {
-	return useNuxtApp().$fetchApi<OfficesPayload>(`/v1/gazprom-app/content/tariff`, {
-		method: 'GET',
-		query
-	})
-		.then((resp) => {
-			return resp;
-		})
-		.catch((error: any) => {
-			console.error('Ошибка при загрузке офисов:', error);
-		});
+	readings.fetchToday()
+		.then((res) => { if (res) pageData.readings = res; })
+	news.fetch()
+		.then((res) => { if (res) pageData.news = res; })
+	news.fetch({categoryFilter: 'FAQ'})
+		.then((res) => { if (res) pageData.faq = res; })
+	news.fetch({categoryFilter: 'DISCONNECTION', urgencyLevelFilter: ['MIDDLE', 'HIGH']})
+		.then((res) => { if (res) pageData.disconnections = res; })
+	offices.fetch()
+		.then((res) => { if (res) pageData.offices = res; })
 }
 </script>
 

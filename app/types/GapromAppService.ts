@@ -1,43 +1,41 @@
-// export type OfficesResponse = {
-// 	// data: NewsPayload[];
-// 	total: number;
-// 	page: number;
-// 	limit: number;
-// 	totalPages: number;
-// };
 export type OfficesPayload = {
 	id: number;
 	name: string;
-	description: string;
-	workDays: string;
-	openTime: string;
-	closeTime: string;
 	city: string;
 	branch: number;
 	address: string;
+	workDays: {
+		name?: string;
+		isOpen: boolean;
+		workTime: string[];
+		breakTime: string[];
+	}[];
+	openTime: string;
+	closeTime: string;
 	contacts: string;
 	latitude: number;
 	longitude: number;
 	isPublished: boolean;
-	order: number;
 	created: string;
-	createdBy: {
-		id: number;
-		username: string;
-		fullname: string;
-		image_key: string;
-		default_lang: string;
-		groups: Record<string, any>;
-	},
-	updated: string;
-	updatedBy: {
-		id: number;
-		username: string;
-		fullname: string;
-		image_key: string;
-		default_lang: string;
-		groups: Record<string, any>;
-	},
-	removed: string;
-	images: string[];
+	createdBy: number;
+	order: null;
 };
+
+
+
+export type TariffPayload = {
+	id: number;
+	fizValue: number;
+	fizNds: number;
+	fizNsp: number;
+	ulValue: number;
+	ulNds: number;
+	ulNsp: number;
+	exchangeRate: number;
+	showExchangeRate: boolean;
+	clientQty: number;
+	areaQty: number;
+	mainGasPipelineLength: number;
+	streetNetworkLength: number;
+	created: string;
+}

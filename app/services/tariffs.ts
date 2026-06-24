@@ -1,8 +1,10 @@
+import type { TariffPayload } from "~/types/GapromAppService";
+
 export const tariffs = {
-	fetch(query: Record<string, any> = {}): Promise<any | void> {
+	fetch(query: Record<string, any> = {}): Promise<TariffPayload | void> {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<any>('/v1/gazprom-app/content/tariff', {
+		return $fetchApi<TariffPayload>('/v1/gazprom-app/content/tariff', {
 			method: 'GET',
 			query
 		})

@@ -93,12 +93,7 @@
 				<section class="col-4">
 					<BaseIsland title="Актуальные тарифы" prependIcon="mdi-currency-usd">
 						<div class="tariffs">
-							<div v-for="(item, index) of [
-								{ name: 'Население', value: '24,10 сом/м³', },
-								{ name: 'Население (Майлы-Суу)', value: '24,10 сом/м³', },
-								{ name: 'Юр. лица без налогов', value: '22,10 сом/м³', },
-								{ name: 'Юр. лица с НДС-12% и НСП-8%', value: '24,10 сом/м³', },
-							]" :key="index">
+							<div v-for="(item, index) of pageData.tariffs" :key="index">
 								<span>{{ item.name }}</span>
 								<strong>{{ item.value }}</strong>
 							</div>
@@ -109,23 +104,18 @@
 				<section class="col-4">
 					<BaseIsland title="Режим работы офисов" prependIcon="mdi-office-building">
 						<div class="offices">
-							<div v-for="(item, index) of [
-								{ name: 'Бишкекгаз', work: '08:00 - 17:00', break: '12:00 - 13:00', },
-								{ name: 'ЦОН ул. М.Горького 22', work: '08:00 - 17:00', break: '12:00 - 13:00', },
-								{ name: 'ЦОН ул. Ю.Фучика', work: '08:00 - 17:00', break: '12:00 - 13:00', },
-								{ name: 'ЦОН ул. Ахунбаева', work: '8:00 - 17:00', break: '12:00 - 13:00', },
-							]" :key="index">
+							<div v-for="(item, index) of pageData.offices" :key="index">
 								<strong>{{ item.name }}</strong>
 
 								<div>
 									<span class="work">
 										<BaseIcon name="mdi-clock-outline" />
-										{{ item.work }}
+										{{ item.workDays[currentDay]?.workTime.join(' - ') }}
 									</span>
 
 									<span class="break">
 										<BaseIcon name="mdi-clock-remove-outline" />
-										{{ item.break }}
+										{{ item.workDays[0]?.breakTime.join(' - ') }}
 									</span>
 								</div>
 							</div>
@@ -205,10 +195,11 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import type { ReadingPayload } from '~/types/Portal';
 import Incrementator from '~/components/common/Incrementator.vue';
 import type { NewsPayload } from '~/types/CallGas';
-import type { OfficesPayload } from '~/types/GapromAppService';
+import type { OfficesPayload, TariffPayload } from '~/types/GapromAppService';
 import { readings } from '~/services/readings';
 import { news } from '~/services/news';
 import { offices } from '~/services/offices';
+import { tariffs } from '~/services/tariffs';
 
 definePageMeta({
 	auth: true,
@@ -217,12 +208,14 @@ definePageMeta({
 });
 
 
+const currentDay = (new Date().getDay() + 6) % 7;
 const pageData = reactive({
 	readings: [] as ReadingPayload[],
 	news: [] as NewsPayload[],
 	faq: [] as NewsPayload[],
 	disconnections: [] as NewsPayload[],
-	offices: [] as OfficesPayload[]
+	offices: [] as OfficesPayload[],
+	tariffs: null as TariffPayload | null,
 });
 
 
@@ -246,6 +239,8 @@ async function init() {
 		.then((res) => { if (res) pageData.disconnections = res; })
 	offices.fetch()
 		.then((res) => { if (res) pageData.offices = res; })
+	tariffs.fetch()
+		.then((res) => { if (res) pageData.tariffs = res; })
 }
 </script>
 

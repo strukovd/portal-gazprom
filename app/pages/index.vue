@@ -6,7 +6,7 @@
 
 		<main class="page-blocks">
 			<!-- Статистика -->
-			<section class="statistics" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
+			<section class="statistics">
 				<template
 					v-for="(item, index) of [
 						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: '0',					title: 'Открытых жалоб' },
@@ -14,14 +14,14 @@
 						{ bg: '#16a34a', 	color: '#16a34a', 		icon: 'mdi-check-circle-outline',		value: stats.readings,		title: 'Новые показания сегодня' },
 						{ bg: '#f3ac00', 	color: '#f3ac00', 		icon: 'mdi-newspaper-variant-outline',	value: stats.news,			title: 'Новостей за день' },
 					]" :key="index">
-					<BaseIsland :class="{'no-api': [0,1].includes(index)}" style="display:flex; flex-direction:column; gap:.6em; align-items:center; flex:1 1 200px; flex-wrap:nowrap;" :style="{ '--bg': item.bg, '--color': item.color }">
-						<section>
-							<div style="padding:1em; border-radius:12px; color: var(--color); background-color:color-mix(in srgb, var(--bg) 8%, #fff);">
+					<BaseIsland :class="['stat', {'no-api': [0,1].includes(index)}]" :style="{ '--bg': item.bg, '--color': item.color }">
+						<section class="icon">
+							<div class="box">
 								<BaseIcon :name="item.icon" :size="'1.5em'" :color="item.color"/>
 							</div>
 						</section>
-						<section style="text-align:center;">
-							<div style="font-size:1.6em; line-height:1.4em; font-weight:700;">
+						<section class="content">
+							<div class="value">
 								<template v-if="Number.isFinite(item.value)">
 									<Incrementator :value="Number(item.value)" />
 								</template>
@@ -29,7 +29,7 @@
 									{{ item.value }}
 								</template>
 							</div>
-							<div style="color:#737373; font-size:.9em;">{{ item.title }}</div>
+							<div class="title">{{ item.title }}</div>
 						</section>
 					</BaseIsland>
 				</template>
@@ -60,22 +60,15 @@
 			<section>
 				<section class="col-8">
 					<BaseIsland title="Срочные отключения газа" prependIcon="mdi-alert" class="urgent">
-						<template #actions>
-							<a href="#">Все новости</a>
-						</template>
-
 						<div class="outages">
-							<div :class="['outage', item.type]" v-for="(item, index) of [
-								{ title: 'Бишкекгаз: Ленинский район', text: 'ул. Гагарина, 12–48 · с 08:00 до 18:00', label: 'Аварийное', type: 'danger', },
-								{ title: 'Чуйгаз: г.Токмок', text: 'пр. Мира, 1–26 · с 09:00 до 15:00', label: 'Плановое', type: 'warning', },
-								{ title: 'Ошгаз: г.Кара-Суу', text: 'ул. Советская, 5–19 · с 10:00 до 14:00', label: 'Плановое', type: 'warning', },
-							]" :key="index">
+							<div :class="['outage', item.categoryType]" v-for="(item, index) of pageData.disconnections" :key="index">
 								<div>
 									<strong>{{ item.title }}</strong>
 									<span>{{ item.text }}</span>
 								</div>
 
-								<b>{{ item.label }}</b>
+								<!-- TODO: make label prettier -->
+								<b>{{ item.categoryType }}</b>
 							</div>
 						</div>
 					</BaseIsland>
@@ -84,14 +77,10 @@
 				<section class="col-4">
 					<BaseIsland title="Изменения FAQ" prependIcon="mdi-alert">
 						<div class="faq-list">
-							<div class="faq-item" v-for="(item, index) of [
-								{ title: 'Обновлен тариф на апрель 2026 г.', time: '2 часа назад', },
-								{ title: 'Новый раздел: подключение к газу', time: '5 часов назад', },
-								{ title: 'Правила подачи жалоб обновлены', time: 'Вчера',},
-							]" :key="index">
+							<div class="faq-item" v-for="(item, index) of pageData.faq" :key="index">
 								<div>
 									<strong>{{ item.title }}</strong>
-									<span>{{ item.time }}</span>
+									<span>{{ item.created }}</span>
 								</div>
 							</div>
 						</div>
@@ -152,11 +141,11 @@
 									<NuxtLink class="account" :to="`/profile/${item.facility.account}`">{{ item.facility.account }}</NuxtLink>
 									<span class="name">{{ item.facility.name }}</span>
 								</div>
-								<div class="reading">{{ item.reading }}</div>
+								<div class="value">{{ item.reading }}</div>
 								<div class="status" :class="item.success ? 'accepted' : 'error'">{{ item.success ? 'Принято' : 'Ошибка' }}</div>
 							</div>
 						</div>
-						<div v-else class="empty-state" style="display:flex; align-items:center; justify-self:center; opacity:.5; padding:1em 0; gap:.4em;">
+						<div v-else class="empty-state">
 							<BaseIcon name="mdi-account-search-outline" size="1.3em" />
 							<div class="title">Нет показаний</div>
 						</div>
@@ -228,9 +217,9 @@ definePageMeta({
 
 const pageData = reactive({
 	readings: [] as ReadingPayload[],
-	news: [] as any[],
-	faq: [] as any[],
-	disconnections: [] as any[],
+	news: [] as NewsPayload[],
+	faq: [] as NewsPayload[],
+	disconnections: [] as NewsPayload[],
 	offices: [] as OfficesPayload[]
 });
 
@@ -318,380 +307,444 @@ async function fetchTariffs(query: Partial<any> = {}): Promise<any[] | void> {
 
 <style lang="scss">
 #dashboard-page {
-	>.base-breadcrumbs {
-		grid-column: 1 / -1;
-	}
-
 	.page-blocks {
-		margin:1em 0;
+		margin: 1em 0;
 
-		>section, >div {
-			margin:0 0 1em 0;
+		>section,
+		>div {
+			margin: 0 0 1em 0;
 		}
-	}
 
+		.statistics {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1em;
+			margin-top: 1em;
 
-	:deep(.base-island) {
-		height: 100%;
-	}
+			.stat {
+				display: flex;
+				flex: 1 1 200px;
+				flex-direction: column;
+				flex-wrap: nowrap;
+				align-items: center;
+				gap: .6em;
 
-	.complaints {
-		display: grid;
-		gap: 10px;
-	}
+				.icon {
+					.box {
+						padding: 1em;
+						border-radius: 12px;
+						color: var(--color);
+						background-color: color-mix(in srgb, var(--bg) 8%, #fff);
+					}
+				}
 
-	.complaint {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 16px;
-		padding: 12px 14px;
-		border-radius: 8px;
-		background: #fff;
+				.content {
+					text-align: center;
 
-		div {
+					.value {
+						font-size: 1.6em;
+						font-weight: 700;
+						line-height: 1.4em;
+					}
+
+					.title {
+						color: #737373;
+						font-size: .9em;
+					}
+				}
+			}
+		}
+
+		.complaints {
 			display: grid;
-			gap: 3px;
-			min-width: 0;
+			gap: 10px;
+
+			.complaint {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				align-items: center;
+				gap: 16px;
+				padding: 12px 14px;
+				border-radius: 8px;
+				background: #fff;
+
+				div {
+					display: grid;
+					gap: 3px;
+					min-width: 0;
+				}
+
+				strong {
+					font-size: 14px;
+				}
+
+				a {
+					color: #2563eb;
+					font-size: 12px;
+					font-weight: 600;
+					text-decoration: none;
+				}
+
+				span {
+					color: #6b7280;
+					font-size: 12px;
+				}
+
+				b {
+					font-size: 12px;
+
+					&.new {
+						color: #2563eb;
+					}
+
+					&.expired {
+						color: #dc2626;
+					}
+
+					&.work {
+						color: #d97706;
+					}
+				}
+			}
 		}
 
-		strong {
-			font-size: 14px;
+		.outages {
+			display: grid;
+			gap: 10px;
+
+			.outage {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				align-items: center;
+				gap: 16px;
+				padding: 14px 16px;
+				border: 1px solid;
+				border-radius: 8px;
+
+				div {
+					display: grid;
+					gap: 5px;
+				}
+
+				strong {
+					font-size: 14px;
+				}
+
+				span {
+					color: #6b7280;
+					font-size: 12px;
+				}
+
+				b {
+					font-size: 12px;
+				}
+
+				&.EMERGENCY {
+					border-color: #fecaca;
+					background: #fff1f2;
+
+					b {
+						color: #dc2626;
+					}
+				}
+
+				&.PLANNED {
+					border-color: #fde68a;
+					background: #fffbeb;
+
+					b {
+						color: #c2410c;
+					}
+				}
+			}
+		}
+
+		.faq-list {
+			display: grid;
+			gap: 20px;
+			padding: 8px 0;
+
+			.faq-item {
+				display: grid;
+				grid-template-columns: auto minmax(0, 1fr);
+				gap: 10px;
+
+				i {
+					width: 8px;
+					height: 8px;
+					margin-top: 5px;
+					border-radius: 50%;
+					background: #22c55e;
+				}
+
+				div {
+					display: grid;
+					gap: 5px;
+				}
+
+				strong {
+					font-size: 12px;
+					font-weight: 600;
+				}
+
+				span {
+					color: #9ca3af;
+					font-size: 11px;
+				}
+			}
+		}
+
+		.tariffs {
+			display: grid;
+			gap: 12px;
+
+			div {
+				display: flex;
+				justify-content: space-between;
+				gap: 16px;
+			}
+
+			span {
+				color: #374151;
+				font-size: 13px;
+			}
+
+			strong {
+				font-size: 13px;
+				white-space: nowrap;
+			}
+		}
+
+		.offices {
+			display: grid;
+			gap: 8px;
+
+			>div {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				align-items: center;
+				gap: 10px;
+
+				>div {
+					display: flex;
+					gap: 10px;
+					font-size: 11px;
+					white-space: nowrap;
+				}
+			}
+
+			strong {
+				font-size: 13px;
+			}
+
+			span {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+			}
+
+			.work {
+				color: #16a34a;
+			}
+
+			.break {
+				color: #ef4444;
+			}
+		}
+
+		.readings {
+			display: flex;
+			flex-direction: column;
+			gap: .8em;
+
+			.reading {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto auto;
+				align-items: center;
+				gap: 10px;
+				font-size: .9em;
+
+				.facility {
+					display: grid;
+					gap: 3px;
+					min-width: 0;
+
+					>.account {
+						overflow: hidden;
+						color: #2563eb;
+						font-size: .9em;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						cursor: pointer;
+
+						&:hover {
+							color: #1d4ed8;
+							text-decoration: underline;
+						}
+					}
+
+					>.name {
+						overflow: hidden;
+						color: #6b7280;
+						font-size: .8em;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+				}
+
+				>.value {
+					font-size: .9em;
+					white-space: nowrap;
+				}
+
+				>.status {
+					font-style: normal;
+					font-weight: 700;
+
+					&.accepted {
+						color: #16a34a;
+					}
+
+					&.pending {
+						color: #d97706;
+					}
+
+					&.error {
+						color: #dc2626;
+					}
+				}
+			}
+		}
+
+		.empty-state {
+			display: flex;
+			align-items: center;
+			justify-self: center;
+			gap: .4em;
+			padding: 1em 0;
+			opacity: .5;
+		}
+
+		.villages {
+			display: grid;
+			gap: 12px;
+			max-width: 340px;
+			padding: 6px 0;
+
+			.village {
+				display: grid;
+				grid-template-columns: 140px 1fr 40px;
+				align-items: center;
+				gap: 12px;
+
+				span {
+					font-size: 13px;
+				}
+
+				b {
+					color: #6b7280;
+					font-size: 11px;
+					font-weight: 500;
+				}
+
+				.progress {
+					height: 8px;
+					overflow: hidden;
+					border-radius: 999px;
+					background: #e5e7eb;
+
+					i {
+						display: block;
+						height: 100%;
+						border-radius: inherit;
+						background: #22c55e;
+					}
+				}
+
+				&:nth-child(2) {
+					.progress {
+						i {
+							background: #f59e0b;
+						}
+					}
+				}
+
+				&:nth-child(3) {
+					.progress {
+						i {
+							background: #2563eb;
+						}
+					}
+				}
+			}
 		}
 
 		a {
 			color: #2563eb;
 			font-size: 12px;
-			font-weight: 600;
+			font-weight: 700;
 			text-decoration: none;
 		}
 
-		span {
-			color: #6b7280;
-			font-size: 12px;
-		}
-
-		b {
-			font-size: 12px;
-
-			&.new {
-				color: #2563eb;
+		@media (max-width: 1100px) {
+			.statistics {
+				.stat {
+					flex-basis: calc(50% - .5em);
+				}
 			}
 
-			&.expired {
-				color: #dc2626;
-			}
-
-			&.work {
-				color: #d97706;
-			}
-		}
-	}
-
-	.urgent {
-		:deep(.base-island__content) {
-			display: grid;
-			gap: 10px;
-		}
-	}
-
-	.outages {
-		display: grid;
-		gap: 10px;
-	}
-
-	.outage {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 16px;
-		padding: 14px 16px;
-		border: 1px solid;
-		border-radius: 8px;
-
-		div {
-			display: grid;
-			gap: 5px;
-		}
-
-		strong {
-			font-size: 14px;
-		}
-
-		span {
-			color: #6b7280;
-			font-size: 12px;
-		}
-
-		b {
-			font-size: 12px;
-		}
-
-		&.danger {
-			border-color: #fecaca;
-			background: #fff1f2;
-
-			b {
-				color: #dc2626;
+			.col-8,
+			.col-4 {
+				grid-column: span 12;
 			}
 		}
 
-		&.warning {
-			border-color: #fde68a;
-			background: #fffbeb;
-
-			b {
-				color: #c2410c;
+		@media (max-width: 768px) {
+			.statistics {
+				.stat {
+					flex-basis: 100%;
+				}
 			}
-		}
-	}
 
-	.faq-list {
-		display: grid;
-		gap: 20px;
-		padding: 8px 0;
-	}
+			.complaints {
+				.complaint {
+					grid-template-columns: 1fr;
+					align-items: start;
+				}
+			}
 
-	.faq-item {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 10px;
+			.outages {
+				.outage {
+					grid-template-columns: 1fr;
+					align-items: start;
+				}
+			}
 
-		i {
-			width: 8px;
-			height: 8px;
-			margin-top: 5px;
-			border-radius: 50%;
-			background: #22c55e;
-		}
+			.offices {
+				>div {
+					grid-template-columns: 1fr;
 
-		div {
-			display: grid;
-			gap: 5px;
-		}
-
-		strong {
-			font-size: 12px;
-			font-weight: 600;
-		}
-
-		span {
-			color: #9ca3af;
-			font-size: 11px;
-		}
-	}
-
-	.tariffs {
-		display: grid;
-		gap: 12px;
-
-		div {
-			display: flex;
-			justify-content: space-between;
-			gap: 16px;
-		}
-
-		span {
-			color: #374151;
-			font-size: 13px;
-		}
-
-		strong {
-			font-size: 13px;
-			white-space: nowrap;
-		}
-	}
-
-	.offices {
-		display: grid;
-		gap: 8px;
-
-		>div {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 10px;
-			align-items: center;
-		}
-
-		strong {
-			font-size: 13px;
-		}
-
-		div div {
-			display: flex;
-			gap: 10px;
-			font-size: 11px;
-			white-space: nowrap;
-		}
-
-		span {
-			display: flex;
-			align-items: center;
-			gap: 4px;
-		}
-
-		.work {
-			color: #16a34a;
-		}
-
-		.break {
-			color: #ef4444;
-		}
-	}
-
-	.readings {
-		display: flex;
-		flex-direction: column;
-		gap:.8em;
-
-		.reading {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) auto auto;
-			align-items: center;
-			gap: 10px;
-			font-size:.9em;
-
-			.facility {
-				display: grid;
-				gap: 3px;
-				min-width: 0;
-
-				>.account {
-					overflow: hidden;
-					color: #2563eb;
-					font-size:.9em;
-					text-overflow: ellipsis;
-					white-space: nowrap;
-					cursor: pointer;
-					&:hover {
-						text-decoration: underline;
-						color: #1d4ed8;
+					>div {
+						flex-wrap: wrap;
 					}
 				}
-				>.name {
-					overflow: hidden;
-					color: #6b7280;
-					font-size:.8em;
-					text-overflow: ellipsis;
-					white-space: nowrap;
+			}
+
+			.readings {
+				.reading {
+					grid-template-columns: 1fr;
+					align-items: start;
 				}
 			}
-			>.reading {
-				font-size:.9em;
-				white-space: nowrap;
-			}
 
-			>.status {
-				font-style: normal;
-				font-weight: 700;
+			.villages {
+				max-width: none;
 
-				&.accepted {
-					color: #16a34a;
-				}
-				&.pending {
-					color: #d97706;
-				}
-				&.error {
-					color: #dc2626;
+				.village {
+					grid-template-columns: 1fr;
+					gap: 6px;
 				}
 			}
-		}
-	}
-
-
-	.villages {
-		display: grid;
-		gap: 12px;
-		max-width: 340px;
-		padding: 6px 0;
-	}
-
-	.village {
-		display: grid;
-		grid-template-columns: 140px 1fr 40px;
-		align-items: center;
-		gap: 12px;
-
-		span {
-			font-size: 13px;
-		}
-
-		b {
-			color: #6b7280;
-			font-size: 11px;
-			font-weight: 500;
-		}
-
-		.progress {
-			height: 8px;
-			overflow: hidden;
-			border-radius: 999px;
-			background: #e5e7eb;
-
-			i {
-				display: block;
-				height: 100%;
-				border-radius: inherit;
-				background: #22c55e;
-			}
-		}
-
-		&:nth-child(2) .progress i {
-			background: #f59e0b;
-		}
-
-		&:nth-child(3) .progress i {
-			background: #2563eb;
-		}
-	}
-
-	a {
-		color: #2563eb;
-		font-size: 12px;
-		font-weight: 700;
-		text-decoration: none;
-	}
-
-	@media (max-width: 1100px) {
-		.stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-
-		.col-8,
-		.col-4 {
-			grid-column: span 12;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.stats {
-			grid-template-columns: 1fr;
-		}
-
-		.complaint,
-		.outage,
-		.reading {
-			grid-template-columns: 1fr;
-			align-items: start;
-		}
-
-		.offices {
-			>div {
-				grid-template-columns: 1fr;
-			}
-
-			div div {
-				flex-wrap: wrap;
-			}
-		}
-
-		.villages {
-			max-width: none;
-		}
-
-		.village {
-			grid-template-columns: 1fr;
-			gap: 6px;
 		}
 	}
 }

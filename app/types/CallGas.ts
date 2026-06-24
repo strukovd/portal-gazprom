@@ -1,3 +1,8 @@
+type NewsCategory = `DISCONNECTION` | `OFFICES` | `GASIFICATION` | `FAQ`;
+type NewsTypes = `EMERGENCY` | `PLANNED` | `STANDARD` | `OZP` | `HOLIDAY` | `WHITE_DOTS` | `INVESTMENT_PROGRAM` | `FAQ_ANY`;
+type NewsBranch = `BISHKEK` | `CHUI` | `OSH` | `JALALABAD`;
+type NewsLevel = `NORMAL` | `MIDDLE` | `HIGH`;
+type NewsSortFields = `created` | `updated` | `startDate` | `endDate`;
 export type NewsResponse = {
 	data: NewsPayload[];
 	total: number;
@@ -8,7 +13,7 @@ export type NewsResponse = {
 export type NewsPayload = {
 	id: number;
 	category: string;
-	categoryType: string;
+	categoryType: NewsTypes;
 	branch: string;
 	urgencyLevel: string;
 	title: string;
@@ -28,23 +33,23 @@ export type NewsCreatePayload = {
 	title: string;
 	text: string; // Основной текст
 	textForClient: string; // Текст для озвучивания абоненту
-	categoryType: `` | `EMERGENCY` | `PLANNED` | `STANDARD` | `OZP` | `HOLIDAY` | `WHITE_DOTS` | `INVESTMENT_PROGRAM` | `FAQ_ANY`;
-	branch: `` | `BISHKEK` | `CHUI` | `OSH` | `JALALABAD`;
-	urgencyLevel: `` | `NORMAL` | `MIDDLE` | `HIGH`;
+	categoryType: `` | NewsTypes;
+	branch: `` | NewsBranch;
+	urgencyLevel: `` | NewsLevel;
 	startDate: string;
 	endDate: string;
 };
 export type NewsGetQuery = {
 	title: string;
-	categoryFilter: `DISCONNECTION` | `OFFICES` | `GASIFICATION` | `FAQ`;
-	categoryTypeFilter: `EMERGENCY` | `PLANNED` | `STANDARD` | `OZP` | `HOLIDAY` | `WHITE_DOTS` | `INVESTMENT_PROGRAM` | `FAQ_ANY`;
-	branchFilter: `BISHKEK` | `CHUI` | `OSH` | `JALALABAD`;
-	urgencyLevelFilter: `NORMAL` | `MIDDLE` | `HIGH` | Array<`NORMAL` | `MIDDLE` | `HIGH`>;
+	categoryFilter: NewsCategory;
+	categoryTypeFilter: NewsTypes;
+	branchFilter: NewsBranch;
+	urgencyLevelFilter: NewsLevel | Array<NewsLevel>;
 	createdFilter: string;
 	startDateFilter: string;
 	endDateFilter: string;
-	sortField: `created` | `updated` | `startDate` | `endDate`;
+	sortField: NewsSortFields;
 	sortOrder: `ASC` | `DESC`;
 	page: number;
-	size: number
+	size: number;
 };

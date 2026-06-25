@@ -27,7 +27,7 @@ export default defineNuxtConfig({
 		},
 		baseURL: process.env.BASE_URL ?? '/',
 	},
-	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts', 'nuxt-echarts'],
+	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts', 'nuxt-echarts', 'nuxt-aos'],
 	runtimeConfig: {
 		public: {
 			API_TOKEN: process.env.NUXT_PUBLIC_API_TOKEN,

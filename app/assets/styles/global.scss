@@ -1,4 +1,13 @@
 :root {
+	section:has([data-aos]:not(.aos-animate)),
+	div:has(> [data-aos]:not(.aos-animate)) {
+		overflow: hidden; 
+	}
+	[data-aos].aos-animate {
+		transform: none !important;
+		will-change: auto !important; /* Отключаем оптимизацию, которая может держать отступ */
+	}
+
 	body {
 		background-color: #f6f7fb; //#e0f2fe;
 		font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

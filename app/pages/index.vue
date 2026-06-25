@@ -14,7 +14,7 @@
 						{ bg: '#16a34a', 	color: '#16a34a', 		icon: 'mdi-check-circle-outline',		value: stats.readings,		title: 'Новые показания сегодня' },
 						{ bg: '#f3ac00', 	color: '#f3ac00', 		icon: 'mdi-newspaper-variant-outline',	value: stats.news,			title: 'Новостей за день' },
 					]" :key="index">
-					<BaseIsland :class="['stat', {'no-api': [0,1].includes(index)}]" :style="{ '--bg': item.bg, '--color': item.color }">
+					<BaseIsland data-aos="zoom-in" :class="['stat', {'no-api': [0,1].includes(index)}]" :style="{ '--bg': item.bg, '--color': item.color }">
 						<section class="icon">
 							<div class="box">
 								<BaseIcon :name="item.icon" :size="'1.5em'" :color="item.color"/>
@@ -37,7 +37,7 @@
 
 			<!-- Жалобы -->
 			<section class="no-api">
-				<BaseIsland title="Жалобы" prependIcon="mdi-format-list-bulleted">
+				<BaseIsland title="Жалобы" prependIcon="mdi-format-list-bulleted" data-aos="fade-up">
 					<div class="complaints">
 						<div v-for="(item, index) of [
 							{ number: 4821, branch: 'Филиал: Бишкекгаз', description: 'Тамара Ефимова - Нет газа 3 дня', status: 'Новая', statusClass: 'new', },
@@ -58,7 +58,7 @@
 
 			<!-- Срочные отключения и изменения FAQ -->
 			<section>
-				<section class="col-8">
+				<section data-aos="fade-up" class="col-8">
 					<BaseIsland title="Срочные отключения газа" prependIcon="mdi-alert" class="urgent">
 						<div class="outages">
 							<div :class="['outage', item.categoryType]" v-for="(item, index) of pageData.disconnections" :key="index">
@@ -74,7 +74,7 @@
 					</BaseIsland>
 				</section>
 
-				<section class="col-4">
+				<section class="col-4" data-aos="fade-up">
 					<BaseIsland title="Изменения FAQ" prependIcon="mdi-alert">
 						<div class="faq-list">
 							<div class="faq-item" v-for="(item, index) of pageData.faq" :key="index">
@@ -90,23 +90,28 @@
 
 			<!-- Тарифы, режим работы, последние показания -->
 			<section>
-				<section class="col-4">
+				<section class="col-4" data-aos="fade-up">
 					<BaseIsland title="Актуальные тарифы" prependIcon="mdi-currency-usd">
 						<div class="tariffs">
-							<div v-for="(item, index) of pageData.tariffs" :key="index">
-								<span>{{ item.name }}</span>
+							<div v-for="(item, index) of [
+								{ title: 'Население', value: `${pageData.tariffs?.fizValue} сом/м³`, },
+								{ title: 'Население (Майлы-Суу)', value: '-', },
+								{ title: 'Юр. лица без налогов', value: `${pageData.tariffs?.ulValue} сом/м³`, },
+								{ title: 'Юр. лица с НДС-12% и НСП-8%', value: '-', },
+							]" :key="index">
+								<span>{{ item.title }}</span>
 								<strong>{{ item.value }}</strong>
 							</div>
 						</div>
 					</BaseIsland>
 				</section>
 
-				<section class="col-4">
+				<section class="col-4" data-aos="fade-up">
 					<BaseIsland title="Режим работы офисов" prependIcon="mdi-office-building">
+						<BaseTabs v-model="currentBranchId" :items="[{ value: 'Бишкекгаз', key: 1 }, { value: 'Чуйгаз', key: 2 }, { value: 'Ошгаз', key: 3 }, { value: 'Жалалабатгаз', key: 4 }]" />
 						<div class="offices">
-							<div v-for="(item, index) of pageData.offices" :key="index">
+							<div v-for="(item, index) of pageData.offices.filter((item) => item.branch === currentBranchId)" :key="index">
 								<strong>{{ item.name }}</strong>
-
 								<div>
 									<span class="work">
 										<BaseIcon name="mdi-clock-outline" />
@@ -123,7 +128,7 @@
 					</BaseIsland>
 				</section>
 
-				<section class="col-4">
+				<section class="col-4" data-aos="fade-up">
 					<BaseIsland title="Последние показания" prependIcon="mdi-check-circle-outline">
 						<div v-if="pageData.readings?.length" class="readings">
 							<div v-for="item of pageData.readings" :key="item.readingId" class="reading">
@@ -143,7 +148,7 @@
 				</section>
 			</section>
 
-			<section>
+			<section data-aos="fade-up">
 				<BaseIsland title="Газифицированные населенные пункты" prependIcon="mdi-map-marker">
 					<div class="villages">
 						<div v-for="(item, index) of [
@@ -164,7 +169,7 @@
 				</BaseIsland>
 			</section>
 
-			<section>
+			<section data-aos="fade-up">
 				<BaseIsland title="Планируемые для газификации населенные пункты" prependIcon="mdi-map-marker-outline">
 					<div class="villages">
 						<div v-for="(item, index) of [
@@ -200,6 +205,7 @@ import { readings } from '~/services/readings';
 import { news } from '~/services/news';
 import { offices } from '~/services/offices';
 import { tariffs } from '~/services/tariffs';
+import BaseTabs from '~/components/common/base/BaseTabs.vue';
 
 definePageMeta({
 	auth: true,
@@ -208,6 +214,7 @@ definePageMeta({
 });
 
 
+const currentBranchId = ref(1);
 const currentDay = (new Date().getDay() + 6) % 7;
 const pageData = reactive({
 	readings: [] as ReadingPayload[],
@@ -457,6 +464,7 @@ async function init() {
 		.offices {
 			display: grid;
 			gap: 8px;
+			margin-top: 1em;
 
 			>div {
 				display: grid;

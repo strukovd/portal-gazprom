@@ -2,10 +2,10 @@
 	<div class="reading-modal">
 		<main class="content">
 			<section class="summary">
-				<div class="item">
+				<!-- <div class="item">
 					<div class="label">Лицевой счет</div>
 					<div class="value">{{ payload?.account || 'Не указан' }}</div>
-				</div>
+				</div> -->
 				<div class="item">
 					<div class="label">Предыдущие показания</div>
 					<div class="value">{{ previousReadingText }}</div>
@@ -24,9 +24,34 @@
 		</main>
 
 		<footer class="footer">
+			<section>
+				<h3>Предпросмотр результата</h3>
+				<div class="preview">
+					<section class="col-6">
+						<div class="item">
+							<div class="label">Расчет потребления</div>
+							<div>{{ consumption }}</div>
+						</div>
+						<div class="item">
+							<div class="label">Тариф</div>
+							<div>{{ consumption }}</div>
+						</div>
+					</section>
+					<section class="col-6">
+						<div class="item">
+							<div class="label">Расчет потребления</div>
+							<div>{{ consumption }}</div>
+						</div>
+						<div class="item">
+							<div class="label">Сумма потребления</div>
+							<div>{{ consumption }}</div>
+						</div>
+					</section>
+				</div>
+			</section>
 			<div class="buttons">
 				<BaseButton prependIcon="mdi-check" :disabled="loading" @click="sendReading">{{ loading ? 'Отправка...' : 'Отправить' }}</BaseButton>
-				<BaseButton prependIcon="mdi-close" :disabled="loading" @click="close()" variant="secondary">Отмена</BaseButton>
+				<BaseButton prependIcon="mdi-close" :disabled="loading" @click="close()" variant="secondary">Закрыть</BaseButton>
 			</div>
 		</footer>
 	</div>
@@ -51,7 +76,6 @@ const props = defineProps<{
 
 const { $fetchPortal, $flags } = useNuxtApp();
 const accountStore = useAccountStore();
-
 const reading = ref('');
 const loading = ref(false);
 const message = reactive({
@@ -59,6 +83,7 @@ const message = reactive({
 	title: '',
 	text: '',
 });
+
 
 const previousReadingText = computed(() => {
 	return props.payload?.previousReading === null || props.payload?.previousReading === undefined
@@ -75,6 +100,7 @@ const consumption = computed(() => {
 	if (readingNumber.value === null || props.payload?.previousReading === null || props.payload?.previousReading === undefined) return null;
 	return readingNumber.value - props.payload.previousReading;
 });
+
 
 async function sendReading() {
 	if (loading.value) return;
@@ -94,17 +120,25 @@ async function sendReading() {
 			}
 		});
 
-		await accountStore.fetchAccountData({ force: true });
-		$flags.success('Показания приняты');
-		close(true);
+		// const res = await accountStore.fetchAccountData<{
+		// 	consumption: number;
+		// 	created: string;
+		// 	id: number;
+		// 	payAmount: number;
+		// 	reading: number;
+		// 	tariff: number;
+		// }>({ force: true });
+		showMsg('success', 'Показания приняты', '');
 	}
 	catch (error: any) {
 		const data = error?.data || error?.response?._data;
 		const text = data?.message || data?.error || data?.detail || error?.statusMessage || error?.message;
 
-		message.type = 'error';
-		message.title = 'Не удалось отправить показания';
-		message.text = Array.isArray(text) ? text.join('\n') : (text || 'Проверьте данные и попробуйте ещё раз.');
+		showMsg(
+			'error',
+			'Не удалось отправить показания',
+			Array.isArray(text) ? text.join('\n') : (text || 'Проверьте данные и попробуйте ещё раз.')
+		);
 	}
 	finally {
 		loading.value = false;
@@ -113,41 +147,37 @@ async function sendReading() {
 
 function validate() {
 	if (!props.payload?.account) {
-		message.type = 'error';
-		message.title = 'Не указан лицевой счет';
-		message.text = 'Закройте окно и попробуйте открыть приём показаний из карточки абонента.';
+		showMsg('error', 'Не указан лицевой счет', 'Закройте окно и попробуйте открыть приём показаний из карточки абонента.');
 		return false;
 	}
 
 	if (!reading.value.trim()) {
-		message.type = 'warning';
-		message.title = 'Введите показание';
-		message.text = 'Поле нового показания не должно быть пустым.';
+		showMsg('error', 'Введите показание', 'Поле нового показания не должно быть пустым.');
 		return false;
 	}
 
 	if (readingNumber.value === null) {
-		message.type = 'warning';
-		message.title = 'Показание должно быть числом';
-		message.text = 'Используйте только целые числа без пробелов и символов.';
+		showMsg('error', 'Показание должно быть числом', 'Используйте только целые числа без пробелов и символов.');
 		return false;
 	}
 
 	if (readingNumber.value < 0) {
-		message.type = 'warning';
-		message.title = 'Показание не может быть отрицательным';
-		message.text = 'Введите значение счетчика больше или равное нулю.';
+		showMsg('warning', 'Показание не может быть отрицательным', 'Введите значение счетчика больше или равное нулю.');
 		return false;
 	}
 
 	if (consumption.value !== null && consumption.value < 0) {
-		message.type = 'warning';
-		message.title = 'Показание меньше предыдущего';
-		message.text = `Новое показание не может быть меньше ${props.payload?.previousReading} м³.`;
+		showMsg('warning', 'Показание меньше предыдущего', `Новое показание не может быть меньше ${props.payload?.previousReading} м³.`);
 		return false;
 	}
 
 	return true;
+}
+
+function showMsg(type: MessageType, title: string, text: string) {
+	message.type = type;
+	message.title = title;
+	message.text = text;
 }
 
 function close(result = false) {

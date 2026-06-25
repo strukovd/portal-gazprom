@@ -1,8 +1,8 @@
-type NewsCategory = `DISCONNECTION` | `OFFICES` | `GASIFICATION` | `FAQ`;
-type NewsTypes = `EMERGENCY` | `PLANNED` | `STANDARD` | `OZP` | `HOLIDAY` | `WHITE_DOTS` | `INVESTMENT_PROGRAM` | `FAQ_ANY`;
-type NewsBranch = `BISHKEK` | `CHUI` | `OSH` | `JALALABAD`;
-type NewsLevel = `NORMAL` | `MIDDLE` | `HIGH`;
-type NewsSortFields = `created` | `updated` | `startDate` | `endDate`;
+export type NewsCategory = `DISCONNECTION` | `OFFICES` | `GASIFICATION` | `FAQ`;
+export type NewsTypes = `EMERGENCY` | `PLANNED` | `STANDARD` | `OZP` | `HOLIDAY` | `WHITE_DOTS` | `INVESTMENT_PROGRAM` | `FAQ_ANY`;
+export type NewsBranch = `BISHKEK` | `CHUI` | `OSH` | `JALALABAD`;
+export type NewsLevel = `NORMAL` | `MIDDLE` | `HIGH`;
+export type NewsSortFields = `created` | `updated` | `startDate` | `endDate`;
 export type NewsResponse = {
 	data: NewsPayload[];
 	total: number;

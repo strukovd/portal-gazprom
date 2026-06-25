@@ -1,163 +1,104 @@
 <template>
 	<section id="news-page">
+		<main class="page-blocks">
+			<section class="row-tools">
+				<BaseTabs v-model="form.tab" :items="[
+					{ value: 'Все', key: undefined },
+					{ value: 'Отключение', key: 'DISCONNECTION' },
+					{ value: 'Газификация', key: 'GASIFICATION' },
+				]"/>
+				<BaseButton prependIcon="mdi-plus" @click="openCreateNews">Создать новость</BaseButton>
+			</section>
 
-		<section class="row-tools">
-			<BaseTabs v-model="form.tab" :items="[
-				{ value: 'Все', key: undefined },
-				{ value: 'Отключение', key: 'gas-off' },
-				{ value: 'Газификация', key: 'gasification' },
-			]"/>
-			<BaseButton prependIcon="mdi-plus" @click="$modal.show('NewsCreate', { title: 'Создание новости', nonCloseable: true })">Создать новость</BaseButton>
-		</section>
-
-		<section v-if="!form.tab || form.tab === `gas-off`" class="row-outages">
-			<BaseIsland title="Отключение газа по районам" prependIcon="mdi-fire-alert">
-				<template #actions>
-					<div class="island-actions">
-						<span>3 активных</span>
-						<a href="#">К абоненту →</a>
-					</div>
-				</template>
-
-				<section class="filters">
-					<BaseAutocomplete model-value="Все районы" :items="['Все районы', 'Ленинский район', 'Октябрьский район', 'Аламединский район']" prepend-icon="mdi-navigation-variant-outline"/>
-					<BaseTextBox model-value="" type="date"/>
-					<BaseTextBox model-value="" placeholder="Улица..." prepend-icon="mdi-road-variant"/>
-					<BaseButton>Найти</BaseButton>
-				</section>
-
-				<section class="outage-list">
-					<article
-						v-for="(item, index) of [
-							{
-								type: 'danger',
-								priority: 'ВЫСОКИЙ',
-								publishedAt: '15.01.2026',
-								activeLabel: 'Действует до',
-								activeTo: '15.01.2026 18:00',
-								status: 'Актуально',
-								title: 'Бишкекгаз: Ленинский район, ул. Калинина от дома 12 до дома 225',
-								description: 'Аварийное отключение газа в связи с утечкой на распределительном узле. Ведутся восстановительные работы. Ориентировочный срок устранения — 48 часов',
-								voiceText: 'На данный момент на вашей улице ведутся аварийные работы. Ориентировочный срок восстановления — до 16 января. Следите за обновлениями на нашем сайте.',
-							},
-							{
-								type: 'warning',
-								priority: 'СРЕДНИЙ',
-								publishedAt: '14.01.2026',
-								activeLabel: 'Действует до',
-								activeTo: '16.01.2026 20:00',
-								status: 'Актуально',
-								title: 'Бишкекгаз: Октябрьский район — мкр. 10, д. 1–15',
-								description: 'Плановое отключение газоснабжения с 09:00 до 18:00 в связи с ремонтными работами на газопроводе. Подача газа будет возобновлена до конца рабочего дня.',
-								voiceText: 'Уважаемый абонент, на вашей улице сегодня проводятся плановые ремонтные работы. Подача газа будет восстановлена до 18:00. Приносим извинения за неудобства.',
-							},
-							{
-								type: 'default',
-								priority: 'ОБЫЧНЫЙ',
-								publishedAt: '13.01.2026',
-								activeLabel: 'Действует до',
-								activeTo: '17.01.2026 12:00',
-								status: 'Актуально',
-								title: 'Бишкекгаз: Ленинский район, ж/м Арча-Бешик — ул. Тулебаева, д. 100–130',
-								description: 'Плановая замена задвижки на газопроводе низкого давления. Работы продлятся 3 дня.',
-								voiceText: 'На улице Тулебаева ведутся плановые работы по замене оборудования. Подача газа будет восстановлена до 17 января.',
-							},
-							{
-								type: 'old',
-								priority: 'ОБЫЧНЫЙ',
-								publishedAt: '10.01.2026',
-								activeLabel: 'Действовало до',
-								activeTo: '12.01.2026',
-								status: 'Устарело',
-								title: 'Бишкекгаз: Аламединский район — ул. Жаштык, д. 20–35',
-								description: 'Завершённые плановые работы по модернизации газопровода. Газоснабжение восстановлено.',
-								voiceText: '',
-							},
-						]"
-						:key="index"
-						:class="['outage-card', item.type]"
-					>
-						<div class="meta">
-							<b>{{ item.priority }}</b>
-							<span>Опубликовано: {{ item.publishedAt }}</span>
-							<span>{{ item.activeLabel }}: {{ item.activeTo }}</span>
-							<strong :class="{ muted: item.status === 'Устарело' }">
-								{{ item.status }}
-							</strong>
+			<section v-if="!form.tab || form.tab === 'DISCONNECTION'" class="row-outages">
+				<BaseIsland title="Отключение газа по районам" prependIcon="mdi-fire-alert">
+					<template #actions>
+						<div class="island-actions">
+							<span>{{ activeDisconnections.length }} активных</span>
 						</div>
+					</template>
 
-						<h3>{{ item.title }}</h3>
+					<section class="filters">
+						<BaseAutocomplete model-value="Все районы" :items="['Все районы', 'Ленинский район', 'Октябрьский район', 'Аламединский район']" prepend-icon="mdi-navigation-variant-outline"/>
+						<BaseTextBox model-value="" type="date"/>
+						<BaseTextBox model-value="" placeholder="Улица..." prepend-icon="mdi-road-variant"/>
+						<BaseButton @click="loadNews">Найти</BaseButton>
+					</section>
 
-						<p>{{ item.description }}</p>
-
-						<div
-							v-if="item.voiceText"
-							class="voice-text"
+					<section class="outage-list">
+						<div v-if="loading" class="empty-state">Загрузка...</div>
+						<div v-else-if="!pageData.disconnections.length" class="empty-state">Нет отключений</div>
+						<article
+							v-for="item of pageData.disconnections"
+							:key="item.id"
+							:class="['outage-card', getNewsCardClass(item)]"
 						>
-							<div>
-								<BaseIcon name="mdi-microphone-outline"/>
-								<span>Текст для озвучивания:</span>
+							<div class="meta">
+								<b>{{ getUrgencyLabel(item.urgencyLevel) }}</b>
+								<span>Опубликовано: {{ formatDate(item.created) }}</span>
+								<span>{{ isNewsExpired(item) ? 'Действовало до' : 'Действует до' }}: {{ formatDateTime(item.endDate) || 'не указано' }}</span>
+								<strong :class="{ muted: isNewsExpired(item) }">
+									{{ isNewsExpired(item) ? 'Устарело' : 'Актуально' }}
+								</strong>
 							</div>
 
-							<p>«{{ item.voiceText }}»</p>
-						</div>
-					</article>
-				</section>
-			</BaseIsland>
-		</section>
+							<h3>{{ item.title }}</h3>
 
-		<section v-if="!form.tab || form.tab === 'gasification'" class="row-gasification">
-			<BaseIsland title="Газификация населённых пунктов" prependIcon="mdi-map-marker">
-				<template #actions>
-					<a href="#">2 обновления</a>
-				</template>
+							<p>{{ item.text }}</p>
 
-				<div class="gasification-list">
-					<article
-						v-for="(item, index) of [
-							{
-								title: 'с. Новопокровка — подключение завершено',
-								publishedAt: '10.01.2024',
-								region: 'Чуйгаз, Кантская ЭГС, Чуйская область',
-								description: 'Газификация села Новопокровка завершена. К газоснабжению подключены 3 539 домохозяйств. Приём заявок на подключение продолжается.',
-								voiceText: 'Село Новопокровка полностью газифицировано. Для подключения подайте заявку в ближайшем офисе обслуживания либо отправьте заявку через сайт или мобильное приложение.',
-							},
-							{
-								title: 'ж/м Биримдик — проектирование строительства газопровода',
-								publishedAt: '08.01.2025',
-								region: 'Бишкекгаз, Бишкек',
-								description: 'Ведутся проектно-изыскательные работы. Строительство газопровода среднего давления запланировано на 2 квартал 2027 г.',
-								voiceText: 'Ведутся проектно-изыскательные работы. Строительство газопровода среднего давления запланировано на 2 квартал 2027 г. Заявки на подключение можно подать после завершения строительно-монтажных работ.',
-							},
-						]"
-						:key="index"
-						class="gasification-card"
-					>
-						<div class="status">
-							<BaseIcon name="mdi-check-circle-outline"/>
-							<span>Актуально</span>
-						</div>
+							<div v-if="item.textForClient" class="voice-text">
+								<div>
+									<BaseIcon name="mdi-microphone-outline"/>
+									<span>Текст для озвучивания:</span>
+								</div>
 
-						<h3>{{ item.title }}</h3>
+								<p>«{{ item.textForClient }}»</p>
+							</div>
+						</article>
+					</section>
+				</BaseIsland>
+			</section>
 
-						<span class="date">
-							Опубликовано: {{ item.publishedAt }} · Территория: {{ item.region }}
-						</span>
+			<section v-if="!form.tab || form.tab === 'GASIFICATION'" class="row-gasification">
+				<BaseIsland title="Газификация населённых пунктов" prependIcon="mdi-map-marker">
+					<template #actions>
+						<a href="#">{{ pageData.gasification.length }} обновления</a>
+					</template>
 
-						<p>{{ item.description }}</p>
-
-						<div class="voice-text">
-							<div>
-								<BaseIcon name="mdi-microphone-outline"/>
-								<span>Текст для озвучивания:</span>
+					<div class="gasification-list">
+						<div v-if="loading" class="empty-state">Загрузка...</div>
+						<div v-else-if="!pageData.gasification.length" class="empty-state">Нет новостей по газификации</div>
+						<article
+							v-for="item of pageData.gasification"
+							:key="item.id"
+							class="gasification-card"
+						>
+							<div class="status" :class="{ muted: isNewsExpired(item) }">
+								<BaseIcon name="mdi-check-circle-outline"/>
+								<span>{{ isNewsExpired(item) ? 'Устарело' : 'Актуально' }}</span>
 							</div>
 
-							<p>«{{ item.voiceText }}»</p>
-						</div>
-					</article>
-				</div>
-			</BaseIsland>
-		</section>
+							<h3>{{ item.title }}</h3>
+
+							<span class="date">
+								Опубликовано: {{ formatDate(item.created) }} · Филиал: {{ getBranchLabel(item.branch) }}
+							</span>
+
+							<p>{{ item.text }}</p>
+
+							<div v-if="item.textForClient" class="voice-text">
+								<div>
+									<BaseIcon name="mdi-microphone-outline"/>
+									<span>Текст для озвучивания:</span>
+								</div>
+
+								<p>«{{ item.textForClient }}»</p>
+							</div>
+						</article>
+					</div>
+				</BaseIsland>
+			</section>
+		</main>
 
 	</section>
 </template>
@@ -169,6 +110,9 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
+import { news } from '~/services/news';
+import type { NewsCategory, NewsLevel, NewsPayload } from '~/types/CallGas';
+import { formatDate, formatDateTime } from '~/utils/format';
 
 definePageMeta({
 	auth: true,
@@ -176,134 +120,290 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-const form = reactive({}) as Record<string, string | number>;
+type NewsTab = Extract<NewsCategory, 'DISCONNECTION' | 'GASIFICATION'> | undefined;
+
+const { $modal } = useNuxtApp();
+const form = reactive<{ tab: NewsTab }>({
+	tab: undefined,
+});
+const loading = ref(false);
+const pageData = reactive({
+	disconnections: [] as NewsPayload[],
+	gasification: [] as NewsPayload[],
+});
+
+const activeDisconnections = computed(() => {
+	return pageData.disconnections.filter(item => !isNewsExpired(item));
+});
+
+watch(() => form.tab, () => {
+	loadNews();
+});
+
+onMounted(() => {
+	loadNews();
+});
+
+async function loadNews() {
+	loading.value = true;
+
+	if (!form.tab || form.tab === 'DISCONNECTION') {
+		pageData.disconnections = await news.fetch({
+			categoryFilter: 'DISCONNECTION',
+			sortField: 'created',
+			sortOrder: 'DESC',
+		}) || [];
+	}
+
+	if (!form.tab || form.tab === 'GASIFICATION') {
+		pageData.gasification = await news.fetch({
+			categoryFilter: 'GASIFICATION',
+			sortField: 'created',
+			sortOrder: 'DESC',
+		}) || [];
+	}
+
+	loading.value = false;
+}
+
+async function openCreateNews() {
+	const created = await $modal.show('NewsCreate', { title: 'Создание новости', nonCloseable: true });
+	if (created) loadNews();
+}
+
+function isNewsExpired(item: NewsPayload) {
+	return Boolean(item.endDate && new Date(item.endDate) < new Date());
+}
+
+function getNewsCardClass(item: NewsPayload) {
+	if (isNewsExpired(item)) return 'old';
+	if (item.urgencyLevel === 'HIGH') return 'danger';
+	if (item.urgencyLevel === 'MIDDLE') return 'warning';
+	return 'default';
+}
+
+function getUrgencyLabel(value: string) {
+	const labels: Record<NewsLevel, string> = {
+		HIGH: 'ВЫСОКИЙ',
+		MIDDLE: 'СРЕДНИЙ',
+		NORMAL: 'ОБЫЧНЫЙ',
+	};
+
+	return labels[value as NewsLevel] || value;
+}
+
+function getBranchLabel(value: string) {
+	const labels = {
+		BISHKEK: 'Бишкекгаз',
+		CHUI: 'Чуйгаз',
+		OSH: 'Ошгаз',
+		JALALABAD: 'Жалал-Абадгаз',
+	} as Record<string, string>;
+
+	return labels[value] || value || 'не указано';
+}
 
 </script>
 
 <style lang="scss">
 #news-page {
-	.row-tools {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		margin-bottom: 1em;
-
-		>.tabs {
-			margin: 0;
+	.page-blocks {
+		>section,
+		>div {
+			margin: 0 0 1em 0;
 		}
-	}
 
-	.row-outages {
-		width: 100%;
-
-		.island-actions {
+		.row-tools {
 			display: flex;
 			align-items: center;
-			gap: 24px;
+			justify-content: space-between;
+			gap: 1em;
 
-			span {
-				color: #dc2626;
-				font-size: 12px;
-				font-weight: 800;
-			}
-
-			a {
-				color: #2563eb;
-				font-size: 12px;
-				font-weight: 700;
-				text-decoration: none;
+			>.tabs {
+				margin: 0;
 			}
 		}
 
-		.filters {
-			display: grid;
-			grid-template-columns: 190px 180px minmax(240px, 1fr) 100px;
-			gap: 18px;
-			margin-bottom: 18px;
-		}
+		.row-outages {
+			width: 100%;
 
-		.outage-list {
-			display: grid;
-			gap: 14px;
-		}
-
-		.outage-card {
-			display: grid;
-			gap: 10px;
-			padding: 18px 22px;
-			border: 1px solid #e5e7eb;
-			border-radius: 14px;
-			background: #fff;
-
-			.meta {
-				display: grid;
-				grid-template-columns: 120px 1fr 1fr auto;
+			.island-actions {
+				display: flex;
 				align-items: center;
-				gap: 18px;
-				font-size: 12px;
-
-				b {
-					font-weight: 900;
-				}
+				gap: 24px;
 
 				span {
+					color: #dc2626;
+					font-size: 12px;
+					font-weight: 800;
+				}
+			}
+
+			.filters {
+				display: grid;
+				grid-template-columns: 190px 180px minmax(240px, 1fr) 100px;
+				gap: 18px;
+				margin-bottom: 18px;
+			}
+
+			.outage-list {
+				display: grid;
+				gap: 14px;
+
+				.empty-state {
+					padding: 1em 0;
 					color: #6b7280;
+					text-align: center;
+				}
+			}
+
+			.outage-card {
+				display: grid;
+				gap: 10px;
+				padding: 18px 22px;
+				border: 1px solid #e5e7eb;
+				border-radius: 14px;
+				background: #fff;
+
+				.meta {
+					display: grid;
+					grid-template-columns: 120px 1fr 1fr auto;
+					align-items: center;
+					gap: 18px;
+					font-size: 12px;
+
+					b {
+						font-weight: 900;
+					}
+
+					span {
+						color: #6b7280;
+					}
+
+					strong {
+						color: #059669;
+						font-size: 12px;
+						text-align: right;
+
+						&.muted {
+							color: #6b7280;
+						}
+					}
 				}
 
-				strong {
+				h3 {
+					margin: 0;
+					font-size: 15px;
+					font-weight: 800;
+				}
+
+				>p {
+					margin: 0;
+					color: #374151;
+					font-size: 14px;
+					line-height: 1.45;
+				}
+
+				.voice-text {
+					border: 1px solid rgba(229, 231, 235, .8);
+					background: rgba(255, 255, 255, .82);
+				}
+
+				&.danger {
+					border-color: #fecaca;
+					background: #fff1f2;
+
+					.meta {
+						b {
+							color: #dc2626;
+						}
+					}
+				}
+
+				&.warning {
+					border-color: #fde68a;
+					background: #fffbeb;
+
+					.meta {
+						b {
+							color: #f59e0b;
+						}
+					}
+				}
+
+				&.default {
+					.meta {
+						b {
+							color: #059669;
+						}
+					}
+				}
+
+				&.old {
+					opacity: .82;
+
+					.meta {
+						b {
+							color: #059669;
+						}
+					}
+				}
+			}
+		}
+
+		.row-gasification {
+			width: 100%;
+
+			.gasification-list {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 18px;
+
+				.empty-state {
+					grid-column: 1 / -1;
+					padding: 1em 0;
+					color: #6b7280;
+					text-align: center;
+				}
+			}
+
+			.gasification-card {
+				display: grid;
+				gap: 10px;
+				padding: 22px 26px;
+				border: 1px solid #e5e7eb;
+				border-radius: 14px;
+				background: #fff;
+
+				.status {
+					display: flex;
+					align-items: center;
+					gap: 6px;
 					color: #059669;
 					font-size: 12px;
-					text-align: right;
+					font-weight: 800;
 
 					&.muted {
 						color: #6b7280;
 					}
 				}
-			}
 
-			h3 {
-				margin: 0;
-				font-size: 15px;
-				font-weight: 800;
-			}
-
-			> p {
-				margin: 0;
-				color: #374151;
-				font-size: 14px;
-				line-height: 1.45;
-			}
-
-			&.danger {
-				border-color: #fecaca;
-				background: #fff1f2;
-
-				.meta b {
-					color: #dc2626;
+				h3 {
+					margin: 0;
+					font-size: 16px;
+					font-weight: 800;
 				}
-			}
 
-			&.warning {
-				border-color: #fde68a;
-				background: #fffbeb;
-
-				.meta b {
-					color: #f59e0b;
+				.date {
+					color: #6b7280;
+					font-size: 13px;
 				}
-			}
 
-			&.default {
-				.meta b {
-					color: #059669;
-				}
-			}
-
-			&.old {
-				opacity: .82;
-
-				.meta b {
-					color: #059669;
+				>p {
+					margin: 0;
+					color: #374151;
+					font-size: 14px;
+					line-height: 1.45;
 				}
 			}
 		}
@@ -311,227 +411,83 @@ const form = reactive({}) as Record<string, string | number>;
 		.voice-text {
 			display: grid;
 			gap: 8px;
-			margin-top: 12px;
+			margin-top: 8px;
 			padding: 14px 16px;
-			border: 1px solid rgba(229, 231, 235, .8);
 			border-radius: 10px;
-			background: rgba(255, 255, 255, .82);
+			background: #f9fafb;
 
 			div {
 				display: flex;
 				align-items: center;
-				gap: 7px;
+				gap: 6px;
 				color: #6b7280;
 				font-size: 12px;
 			}
 
 			p {
 				margin: 0;
-				color: #111827;
-				font-size: 14px;
+				color: #4b5563;
+				font-size: 13px;
 				line-height: 1.45;
 			}
 		}
 
+		a {
+			color: #2563eb;
+			font-size: 12px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+
 		@media (max-width: 900px) {
-			.filters {
-				grid-template-columns: 1fr 1fr;
+			.row-tools {
+				align-items: stretch;
+				flex-direction: column;
 			}
 
-			.outage-card {
-				.meta {
+			.row-outages {
+				.filters {
 					grid-template-columns: 1fr 1fr;
-					gap: 8px 14px;
+				}
 
-					strong {
-						text-align: left;
+				.outage-card {
+					.meta {
+						grid-template-columns: 1fr 1fr;
+						gap: 8px 14px;
+
+						strong {
+							text-align: left;
+						}
 					}
+				}
+			}
+
+			.row-gasification {
+				.gasification-list {
+					grid-template-columns: 1fr;
 				}
 			}
 		}
 
 		@media (max-width: 640px) {
-			.island-actions {
-				align-items: flex-start;
-				flex-direction: column;
-				gap: 6px;
-			}
+			.row-outages {
+				.island-actions {
+					align-items: flex-start;
+					flex-direction: column;
+					gap: 6px;
+				}
 
-			.filters {
-				grid-template-columns: 1fr;
-			}
-
-			.outage-card {
-				padding: 16px;
-
-				.meta {
+				.filters {
 					grid-template-columns: 1fr;
 				}
-			}
-		}
-	}
 
-	.row-gasification,
-	.row-faq-updates {
-		width: 100%;
-	}
+				.outage-card {
+					padding: 16px;
 
-	.gasification-list {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 18px;
-	}
-
-	.gasification-card {
-		display: grid;
-		gap: 10px;
-		padding: 22px 26px;
-		border: 1px solid #e5e7eb;
-		border-radius: 14px;
-		background: #fff;
-
-		.status {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			color: #059669;
-			font-size: 12px;
-			font-weight: 800;
-		}
-
-		h3 {
-			margin: 0;
-			font-size: 16px;
-			font-weight: 800;
-		}
-
-		.date {
-			color: #6b7280;
-			font-size: 13px;
-		}
-
-		> p {
-			margin: 0;
-			color: #374151;
-			font-size: 14px;
-			line-height: 1.45;
-		}
-	}
-
-	.voice-text {
-		display: grid;
-		gap: 8px;
-		margin-top: 8px;
-		padding: 14px 16px;
-		border-radius: 10px;
-		background: #f9fafb;
-
-		div {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			color: #6b7280;
-			font-size: 12px;
-		}
-
-		p {
-			margin: 0;
-			color: #4b5563;
-			font-size: 13px;
-			line-height: 1.45;
-		}
-	}
-
-	.faq-list {
-		display: grid;
-		gap: 10px;
-	}
-
-	.faq-card {
-		display: grid;
-		grid-template-columns: 80px minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 18px;
-		padding: 16px 18px;
-		border: 1px solid #e5e7eb;
-		border-radius: 8px;
-		background: #fff;
-
-		b {
-			font-size: 12px;
-			font-weight: 900;
-		}
-
-		div {
-			display: grid;
-			gap: 4px;
-			min-width: 0;
-		}
-
-		h3 {
-			margin: 0;
-			font-size: 14px;
-			font-weight: 800;
-		}
-
-		p {
-			margin: 0;
-			color: #6b7280;
-			font-size: 12px;
-
-			span:last-child {
-				color: #d97706;
-			}
-		}
-
-		.id {
-			color: #9ca3af;
-			font-size: 12px;
-			white-space: nowrap;
-		}
-
-		&.new {
-			border-color: #bcd3ff;
-			background: #eaf2ff;
-
-			b {
-				color: #16a34a;
-			}
-		}
-
-		&.updated {
-			border-color: #fde68a;
-			background: #fffbeb;
-
-			b {
-				color: #f97316;
-			}
-		}
-	}
-
-	a {
-		color: #2563eb;
-		font-size: 12px;
-		font-weight: 700;
-		text-decoration: none;
-	}
-
-	@media (max-width: 900px) {
-		.row-tools {
-			align-items: stretch;
-			flex-direction: column;
-		}
-
-		.gasification-list {
-			grid-template-columns: 1fr;
-		}
-
-		.faq-card {
-			grid-template-columns: 1fr;
-			gap: 6px;
-
-			.id {
-				white-space: normal;
+					.meta {
+						grid-template-columns: 1fr;
+					}
+				}
 			}
 		}
 	}

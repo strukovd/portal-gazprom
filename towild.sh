@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./version-up.sh
+
 set -euo pipefail
 
 APP_NAME="v2"

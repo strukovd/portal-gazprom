@@ -2,12 +2,12 @@
 	<section id="complaint-issue-list">
 		<BaseBreadcrumbs :breadcrumbs="[{ title: 'Главная', link: '/' }, { title: 'Жалобы' }]"/>
 
-		<header style="display:flex; align-items:center; justify-content:space-between; gap:1em;">
-			<section>
+		<header>
+			<section class="title">
 				<h2>Жалобы</h2>
 				<span>Управление обращениями и жалобами абонентов</span>
 			</section>
-			<section>
+			<section class="actions">
 				<BaseButton prependIcon="mdi-plus" @click="$modal.show('ComplaintCreate', { title: 'Регистрация жалобы' })">Создать жалобу</BaseButton>
 			</section>
 		</header>
@@ -15,7 +15,7 @@
 		<main class="page-blocks">
 			<!-- Статистика -->
 			<section class="stats no-api">
-				<BaseIsland class="col-4 stat-island" v-for="(item, index) of [
+				<BaseIsland class="col-4 stat" v-for="(item, index) of [
 					{ value: 12, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
 					{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
 					{ value: 87, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
@@ -23,9 +23,9 @@
 					<section v-if="item.icon" :class="['icon-circle', item.color]">
 						<BaseIcon :name="item.icon" size="1.6em"/>
 					</section>
-					<section>
-						<div style="font-size:1.6em; font-weight:700;">{{ item.value }}</div>
-						<div style="font-size:.8em; color: #6b728088;">{{ item.label }}</div>
+					<section class="content">
+						<div class="value">{{ item.value }}</div>
+						<div class="label">{{ item.label }}</div>
 					</section>
 				</BaseIsland>
 			</section>
@@ -44,32 +44,45 @@
 			<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline">
 				<BaseTable
 					:columns="[
-						{ key: 'key', label: 'Key' },
-						{ key: 'theme', label: 'Тема' },
-						{ key: 'date', label: 'Дата' },
+						{ key: 'id', label: 'ID' },
+						{ key: 'subscriber', label: 'Абонент' },
+						{ key: 'subject', label: 'Тема' },
+						{ key: 'created', label: 'Дата' },
 						{ key: 'status', label: 'Статус' },
 						{ key: 'sla', label: 'SLA' },
-						{ key: 'assignee', label: 'Исполнитель' },
+						{ key: 'userName', label: 'Исполнитель' },
 					]"
-					:rows="[
-						{ key: `ЖЛ-04187`, theme: 'Некорректные начисления', date: '12.06.2025', status: 'В работе', sla: '3 дня', assignee: 'Иванов И.И.' },
-						{ key: `ЖЛ-04188`, theme: 'Нет газа', date: '13.06.2025', status: 'Новое', sla: '1 день', assignee: 'Петров П.П.' },
-					]"
+					:rows="pageData.complaints"
 				>
-					<template #cell.key="{ value }">
+					<template #cell.id="{ value }">
 						<NuxtLink :to="`/complaints/${value}`">
-							<strong class="complaint-key">{{ value }}</strong>
+							<strong class="key">{{ value }}</strong>
 						</NuxtLink>
 					</template>
-	
+					<template #cell.subscriber="{ value, row }">
+						<div><b>{{ row.subscriberName }}</b></div>
+						<div><span style="color:#6CA3F7; line-height:1.6em;">{{ row.account }}</span></div>
+						<div><span style="color:#aaaabb;">{{ row.contactNumber }}</span></div>
+					</template>
+					<template #cell.subject="{ value, row }">
+						<div><span style="line-height:1.6em;">{{ value }}</span></div>
+						<div><span style="color:#aaaabb;">{{ row.branchName }}</span></div>
+					</template>
+					<template #cell.created="{ value, row }">
+						<div>
+							<span class="created" style="color:#374151; background:#f3f4f6;">
+								<BaseIcon name="mdi-clock-outline" size="1.2em" style="margin-right:.3em; opacity:.8;"/>
+								<span>{{ toLocaleDate(String(value)) }}</span>
+							</span>
+						</div>
+					</template>
 					<template #cell.status="{ value }">
-						<span :class="['status-pill', value === 'Новое' ? 'status-pill--new' : 'status-pill--progress']">
+						<span :class="['status', getStatusClass(value)]">
 							{{ value }}
 						</span>
 					</template>
-	
 					<template #cell.sla="{ value }">
-						<span class="sla-pill">{{ value }}</span>
+						<span class="sla">{{ value }} дн.</span>
 					</template>
 				</BaseTable>
 			</BaseIsland>
@@ -85,7 +98,8 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-const { $fetchCallGas } = useNuxtApp(); 
+import { complaints, type ComplaintsPayload } from '~/services/complaints';
+import { toLocaleDate } from '~/utils/format';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
@@ -99,91 +113,136 @@ const form = ref({
 	status: '',
 	description: '',
 });
+const pageData = reactive({
+	complaints: [] as ComplaintsPayload[],
+});
 
 
-async function fetchList() {
-	$fetchCallGas(`/complaints`, {
-		method: 'GET',
-		query: {
-			// account: '123456789',
-			// subject: 'Некорректные начисления',
-			// urgencyLevel: 'HIGH',
-			// status: 'OPEN',
-			// description: '',
-			createdFrom: '2024-01-01',
-			createdTo: '2027-12-31',
-			page: 1,
-			size: 10,
-		},
+init();
+async function init() {
+	complaints.fetch({
+		// createdDateFrom: '2026-06-24',
+		// createdDateTo: '2026-06-31',
+		page: 1,
+		size: 10,
 	})
-		.then((response) => {
-			console.log('Список жалоб:', response);
-		})
+		.then((res) => { if (res) pageData.complaints = res.data; })
 		.catch((error) => {
+			useNuxtApp().$flags.error(error, {
+				title: `Ошибка при получении списка жалоб`
+			})
 			console.error('Ошибка при получении списка жалоб:', error);
 		});
+}
+
+function getStatusClass(status: any) {
+	switch (String(status)) {
+		case 'Новая':
+			return 'new';
+		case 'В работе':
+			return 'in-progress';
+		case 'Просрочено':
+			return 'overdue';
+		case 'Закрыто':
+			return 'closed';
+		default:
+			return '';
+	}
 }
 </script>
 
 <style lang="scss">
 #complaint-issue-list {
-	.page-blocks {
-		margin:1em 0;
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
 
-		>section, >div {
-			margin:0 0 1em 0;
+		.title {
+			h2 {
+				margin: 0 0 .2em 0;
+			}
+
+			span {
+				color: #6b7280;
+			}
+		}
+	}
+
+	.page-blocks {
+		margin: 1em 0;
+
+		>section,
+		>div {
+			margin: 0 0 1em 0;
 		}
 
 		.stats {
-			.stat-island {
+			.stat {
 				display: flex;
 				align-items: center;
-				gap:1em;
-				/* margin:1em 0; */
-				padding-top:1.8em;
-				padding-bottom:1.8em;
-	
+				gap: 1em;
+				padding-top: 1.8em;
+				padding-bottom: 1.8em;
+
 				.icon-circle {
 					display: grid;
 					place-items: center;
 					width: 3em;
 					aspect-ratio: 1/1;
 					border-radius: 50%;
-	
+
 					&.red {
 						color: #ef4444;
 						background: #fee2e2;
 					}
+
 					&.blue {
 						color: #2563eb;
 						background: #dbeafe;
 					}
+
 					&.green {
 						color: #16a34a;
 						background: #dcfce7;
 					}
+
 					&.yellow {
 						color: #d97706;
 						background: #fef3c7;
 					}
 				}
+
+				.content {
+					.value {
+						font-size: 1.6em;
+						font-weight: 700;
+					}
+
+					.label {
+						color: #6b728088;
+						font-size: .8em;
+					}
+				}
 			}
 		}
-	
+
 		.filters {
 			.filter-tabs {
-				margin-top:.7em;
+				margin-top: .7em;
 			}
 		}
-	
+
 		.list {
-			.complaint-key {
+			.key {
 				color: #2563eb;
 				text-decoration: underline;
 				cursor: pointer;
 			}
-			.status-pill,
-			.sla-pill {
+
+			.status,
+			.created {
 				display: inline-flex;
 				align-items: center;
 				border-radius: 999px;
@@ -191,21 +250,37 @@ async function fetchList() {
 				font-size: .85em;
 				font-weight: 700;
 			}
-			.status-pill {
-				&--new {
+
+			.status {
+				&.new {
 					color: #166534;
 					background: #dcfce7;
 				}
-		
-				&--progress {
+				&.in-progress {
 					color: #1d4ed8;
 					background: #dbeafe;
 				}
+				&.overdue {
+					color: #d23438;
+					background: #fdf3f2;
+				}
+				&.closed {
+					color: #374151;
+					background: #f3f4f6;
+				}
 			}
-			.sla-pill {
+
+			.sla {
 				color: #92400e;
 				background: #fef3c7;
 			}
+		}
+	}
+
+	@media (max-width: 700px) {
+		header {
+			align-items: flex-start;
+			flex-direction: column;
 		}
 	}
 }

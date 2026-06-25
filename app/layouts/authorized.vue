@@ -1,7 +1,7 @@
 <template>
 	<section class="authorized-layout">
 		<header style="display:flex; align-items:center; gap:1em; padding:.5em 2em;">
-			<section class="logo">
+			<section class="logo" @click="navigateTo(`/`)">
 				<img height="20px" src="/img/logo.svg" alt="Логотип" />
 				<h2>CallGas</h2>
 			</section>
@@ -188,6 +188,7 @@ function initAutofocus() {
 			align-items:center;
 			gap:.6em;
 			margin-right:2em;
+			cursor:pointer;
 		}
 		.search {
 			flex: auto 1 0;
@@ -315,7 +316,7 @@ function initAutofocus() {
 
 		>.page-content {
 			flex: auto 1 1;
-			overflow-y: auto;
+			// overflow-y: auto;
 			padding: 2em;
 		}
 	}

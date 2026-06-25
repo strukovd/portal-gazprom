@@ -76,6 +76,7 @@ onBeforeUnmount(() => {
 	z-index:9999999;
 
 	.modal-window {
+		background-color: #ffffff;
 		min-width:600px;
 		max-width: 800px;
 		margin:auto;

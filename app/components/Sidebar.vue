@@ -67,20 +67,20 @@ const links = ref<SidebarLink[]>([
 		title: 'Оперативные новости',
 		link: '/news',
 		icon: 'mdi-newspaper',
-		children: [
-			{
-				title: 'Отключение газа',
-				link: '/gas-off',
-				icon: 'mdi-fire',
-				disabled: true
-			},
-			{
-				title: 'Газификация',
-				link: '/gasification',
-				icon: 'mdi-gas-burner',
-				disabled: true
-			},
-		]
+		// children: [
+		// 	{
+		// 		title: 'Отключение газа',
+		// 		link: '/gas-off',
+		// 		icon: 'mdi-fire',
+		// 		disabled: true
+		// 	},
+		// 	{
+		// 		title: 'Газификация',
+		// 		link: '/gasification',
+		// 		icon: 'mdi-gas-burner',
+		// 		disabled: true
+		// 	},
+		// ]
 	},
 	{
 		title: 'Тарифы',
@@ -100,11 +100,11 @@ const links = ref<SidebarLink[]>([
 		title: 'Данные абонента',
 		link: '/profile',
 		icon: 'mdi-account',
-		children: [
-			{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
-			// { title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
-			{ title: 'Показания', link: '/readings', icon: 'mdi-counter' },
-		]
+		// children: [
+		// 	{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
+		// 	{ title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
+		// 	{ title: 'Показания', link: '/readings', icon: 'mdi-counter' },
+		// ]
 	},
 	{
 		spacer: true,
@@ -115,28 +115,27 @@ const links = ref<SidebarLink[]>([
 		link: '/complaints',
 		icon: 'mdi-alert-circle'
 	},
-	{
-		title: 'Ответственные лица',
-		link: '/responsibles',
-		icon: 'mdi-account-group'
-	},
-	{
-		title: 'FAQ',
-		link: '/faq',
-		icon: 'mdi-help-circle-outline'
-	},
+	// {
+	// 	title: 'Ответственные лица',
+	// 	link: '/responsibles',
+	// 	icon: 'mdi-account-group'
+	// },
+	// {
+	// 	title: 'FAQ',
+	// 	link: '/faq',
+	// 	icon: 'mdi-help-circle-outline'
+	// },
 	{
 		spacer: true,
 		class: 'spacer',
 	},
 	{
 		title: 'Настройки',
-		link: '/settings',
+		// link: '/settings',
 		icon: 'mdi-cog'
 	},
 	{
 		title: 'Выход',
-		link: '/logout',
 		icon: 'mdi-logout'
 	}
 ]);

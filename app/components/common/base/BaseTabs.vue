@@ -100,6 +100,7 @@ export default defineComponent({
 		border-style: none;
 		cursor: pointer;
 		white-space: nowrap;
+		outline: none;
 
 		.tab-button-badge {
 			background-color:rgb(255 255 255 / .8);

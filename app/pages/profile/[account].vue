@@ -305,11 +305,11 @@ const dualLineChartOption = {
 };
 
 onMounted(() => {
-	syncAccountContext();
+	checkAccountParam();
 });
 
 watch(() => route.params.account, () => {
-	syncAccountContext();
+	checkAccountParam();
 });
 
 
@@ -335,15 +335,16 @@ const showCreateReading = () => {
 	});
 }
 
-function syncAccountContext() {
-	const routeAccount = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
-	if (!routeAccount) {
+function checkAccountParam() {
+	// Если в URL нет аккаунта, то переходим на страницу профиля
+	const account = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
+	if (!account) {
 		navigateTo('/profile');
 		return;
 	}
-
-	if (accountStore.account !== routeAccount) {
-		accountStore.setActiveAccount(routeAccount);
+	// Если аккаунт отличается от предыдущего
+	if (accountStore.account !== account) {
+		accountStore.setActiveAccount(account);
 		return;
 	}
 

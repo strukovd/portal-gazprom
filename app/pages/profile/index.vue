@@ -56,12 +56,9 @@ const { $flags } = useNuxtApp();
 const searchText = ref('');
 const foundList = ref<any[] | null>(null);
 
-onMounted(() => {
-	redirectToActiveAccount();
-});
-
+tryRedirectToActiveAccount();
 watch(() => accountStore.account, () => {
-	redirectToActiveAccount();
+	tryRedirectToActiveAccount();
 });
 
 async function findAccounts(text = searchText.value) {
@@ -75,7 +72,7 @@ function selectAccount(account: any) {
 	navigateTo(`/profile/${account.account}`);
 }
 
-function redirectToActiveAccount() {
+function tryRedirectToActiveAccount() {
 	if (accountStore.account) {
 		navigateTo(`/profile/${accountStore.account}`);
 	}

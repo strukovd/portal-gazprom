@@ -4,7 +4,6 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-
 const props = defineProps({
 	duration: { type: Number, default: 500, },
 	value: { type: Number, required: true, },
@@ -36,8 +35,8 @@ const startAnimation = () => {
 const handleIntersection = (entries: IntersectionObserverEntry[]) => {
 	entries.forEach((entry) => {
 		if (entry.isIntersecting) {
-		startAnimation(); // Начинаем анимацию, если элемент появился в области видимости
-		observer?.disconnect(); // Отключаем наблюдатель, чтобы анимация запускалась только один раз
+			startAnimation(); // Начинаем анимацию, если элемент появился в области видимости
+			observer?.disconnect(); // Отключаем наблюдатель, чтобы анимация запускалась только один раз
 		}
 	});
 };
@@ -45,8 +44,8 @@ const handleIntersection = (entries: IntersectionObserverEntry[]) => {
 onMounted(() => {
 	if (element.value) {
 		observer = new IntersectionObserver(handleIntersection, {
-		root: null, // Вся область просмотра
-		threshold: 0.1, // 10% элемента должно быть видно
+			root: null, // Вся область просмотра
+			threshold: 0.1, // 10% элемента должно быть видно
 		});
 		observer.observe(element.value); // Начинаем наблюдение за элементом
 	}

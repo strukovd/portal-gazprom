@@ -17,10 +17,12 @@
 			<!-- Статистика -->
 			<template v-if="[`ADMIN`, `CALLCENTER_MANAGER`].includes(userStore?.userData?.role ?? '')">
 				<section class="stats" v-if="pageData.stats?.all">
-					<BaseIsland class="col-4 stat" data-aos="zoom-in" v-for="(item, index) of [
-						{ value: pageData.stats?.all.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
-						{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
-						{ value: pageData.stats?.all.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+					<BaseIsland class="stat-tile" data-aos="zoom-in" v-for="(item, index) of [
+						{ value: pageData.stats?.all.total, label: 'Всего', icon: 'mdi-star-circle-outline', color: 'dark', },
+						{ value: pageData.stats?.all.new, label: 'Открытых', icon: 'mdi-plus-circle-outline', color: 'blue', },
+						{ value: pageData.stats?.all.expired, label: 'Просрочено', icon: 'mdi-close-circle-outline', color: 'red', },
+						{ value: pageData.stats?.all.inProgress, label: 'В работе', icon: 'mdi-clock-outline', color: 'yellow', },
+						{ value: pageData.stats?.all.closed, label: 'Закрыто', icon: 'mdi-check-circle-outline', color: 'green', },
 					]" :key="index">
 						<section v-if="item.icon" :class="['icon-circle', item.color]">
 							<BaseIcon :name="item.icon" size="1.6em"/>
@@ -76,7 +78,7 @@
 				<section class="stats" v-if="pageData.stats?.all">
 					<BaseIsland class="col-4 stat" data-aos="zoom-in" v-for="(item, index) of [
 						{ value: pageData.stats?.all.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
-						{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+						{ value: '-', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
 						{ value: pageData.stats?.all.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
 					]" :key="index">
 						<section v-if="item.icon" :class="['icon-circle', item.color]">
@@ -290,7 +292,12 @@ const itemsByType = computed(() => {
 		}
 
 		.stats {
-			.stat {
+			display: flex;
+			flex-wrap: wrap;
+			gap: .8em;
+
+			.stat-tile {
+				flex: auto 1 1;
 				display: flex;
 				align-items: center;
 				gap: 1em;
@@ -303,7 +310,10 @@ const itemsByType = computed(() => {
 					width: 3em;
 					aspect-ratio: 1/1;
 					border-radius: 50%;
-
+					&.dark {
+						color: #374151; // #545b64
+						background: #f3f4f6;
+					}
 					&.red {
 						color: #ef4444;
 						background: #fee2e2;

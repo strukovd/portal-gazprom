@@ -1,9 +1,17 @@
 import { defineStore } from 'pinia';
+type UserData = {
+	id: number;
+	login: string;
+	role: 'ADMIN' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CALLCENTER';
+	userName: null,
+	contractorId: unknown,
+	officeId: unknown
+}
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
 		token: import.meta.browser ? localStorage.getItem('token') : null as string | null,
-		userData: null as any,
+		userData: null as UserData | null,
 	}),
 
 	actions: {

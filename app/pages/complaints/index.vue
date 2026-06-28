@@ -8,40 +8,103 @@
 				<span>Управление обращениями и жалобами абонентов</span>
 			</section>
 			<section class="actions">
-				<BaseButton prependIcon="mdi-plus" @click="$modal.show('ComplaintCreate', { title: 'Регистрация жалобы' })">Создать жалобу</BaseButton>
+				<BaseButton prependIcon="mdi-plus" @click="showCreateModal">Создать жалобу</BaseButton>
 			</section>
 		</header>
 
 		<main class="page-blocks">
+			<!-- TODO: на беке лучше давать роли в виде массива, что бы не вести вереницу if-else -->
 			<!-- Статистика -->
-			<section class="stats no-api">
-				<BaseIsland class="col-4 stat" v-for="(item, index) of [
-					{ value: 12, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
-					{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
-					{ value: 87, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
-				]" :key="index">
-					<section v-if="item.icon" :class="['icon-circle', item.color]">
-						<BaseIcon :name="item.icon" size="1.6em"/>
-					</section>
-					<section class="content">
-						<div class="value">{{ item.value }}</div>
-						<div class="label">{{ item.label }}</div>
-					</section>
+			<template v-if="[`ADMIN`, `CALLCENTER_MANAGER`].includes(userStore?.userData?.role ?? '')">
+				<section class="stats" v-if="pageData.stats?.all">
+					<BaseIsland class="col-4 stat" data-aos="zoom-in" v-for="(item, index) of [
+						{ value: pageData.stats?.all.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
+						{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+						{ value: pageData.stats?.all.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+					]" :key="index">
+						<section v-if="item.icon" :class="['icon-circle', item.color]">
+							<BaseIcon :name="item.icon" size="1.6em"/>
+						</section>
+						<section class="content">
+							<div class="value">
+								<Incrementator v-if="Number.isFinite(item.value)" :value="Number(item.value)"/>
+								<span v-else>{{ item.value }}</span>
+							</div>
+							<div class="label">{{ item.label }}</div>
+						</section>
+					</BaseIsland>
+				</section>
+
+				<section class="branch-stats" v-if="Object.keys(pageData.stats).length">
+					<BaseIsland class="col-3 md-col-6 sm-col-12 stat" data-aos="zoom-in" v-for="branch of [
+						{  key: 'bishkek',		name: 'Бишкек',			color: '#267bf9' },
+						{  key: 'chui',			name: 'Чуй',			color: '#01ca4f' },
+						{  key: 'osh',			name: 'Ош',				color: '#fc6b05' },
+						{  key: 'jalalabad',	name: 'Джалал-Абад',	color: '#ac45f9' },
+					]" :key="branch.key">
+						<header style="margin-bottom:1em;">
+							<b><span class="circle" :style="{ color: branch.color, marginRight: '.3em' }">⏺</span> {{ branch.name }}</b>
+							<div style="font-size:.85em; background:#f3f4f6; color:#8d9099; padding:.2em .6em; border-radius:15px;">Всего: {{ pageData.stats[branch.key].total }}</div>
+						</header>
+						<main>
+							<div class="col-6" v-for="field of [
+								{ name: 'new', label: 'Новые' },
+								{ name: 'expired', label: 'Просроченные' },
+								{ name: 'inProgress', label: 'В работе' },
+								{ name: 'closed', label: 'Закрытые' }
+							]" :key="field.name">
+								<h2>{{ pageData.stats[branch.key][field.name] }}</h2>
+								<div style="color:#6b728088; font-size:.7em;">{{ field.label }}</div>
+							</div>
+						</main>
+					</BaseIsland>
+				</section>
+
+				<BaseIsland v-if="itemsByType.subjects.length" class="stats-by-types" title="Распределение по темам" prependIcon="mdi-format-list-bulleted-type" data-aos="zoom-in">
+					<div class="item" v-for="subject of itemsByType.subjects" :key="subject.subject">
+						<div class="subject">
+							<span>{{ subject.subject }}</span>
+						</div>
+						<div class="chart">
+							<BaseProgressBar :percent="subject.percent"/>
+							<div class="count">{{ subject.count }}</div>
+						</div>
+					</div>
 				</BaseIsland>
-			</section>
-	
-			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant">
-				<BaseTextBox v-model="form.description" @submit="" @change="" placeholder="Поиск по ключу, теме, ФИО..."/>
-				<BaseTabs class="filter-tabs no-api" v-model="form.status" :items="[
-					{ value: 'Все', key: '', badge: 12 },
-					{ value: 'Новые', key: 'open', badge: 5 },
-					{ value: 'В работе', key: 'in-progress', badge: 3 },
-					{ value: 'Просроченные', key: 'overdue', badge: 2 },
-					{ value: 'Закрытые', key: 'closed', badge: 10 },
+			</template>
+			<template v-else-if="[`CALLCENTER`].includes(userStore?.userData?.role ?? '')">
+				<section class="stats" v-if="pageData.stats?.all">
+					<BaseIsland class="col-4 stat" data-aos="zoom-in" v-for="(item, index) of [
+						{ value: pageData.stats?.all.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
+						{ value: '4:32', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+						{ value: pageData.stats?.all.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+					]" :key="index">
+						<section v-if="item.icon" :class="['icon-circle', item.color]">
+							<BaseIcon :name="item.icon" size="1.6em"/>
+						</section>
+						<section class="content">
+							<div class="value">
+								<Incrementator v-if="Number.isFinite(item.value)" :value="Number(item.value)"/>
+								<span v-else>{{ item.value }}</span>
+							</div>
+							<div class="label">{{ item.label }}</div>
+						</section>
+					</BaseIsland>
+				</section>
+			</template>
+
+			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="fade-up">
+				<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
+				<BaseTabs class="filter-tabs" v-model="form.status" :items="[
+					{ value: 'Все', key: '' },
+					{ value: 'Новые', key: 'Новая' },
+					{ value: 'В работе', key: 'В работе' },
+					{ value: 'Просроченные', key: 'Просрочено' },
+					{ value: 'Закрытые', key: 'Закрыто' },
 				]"/>
 			</BaseIsland>
-	
-			<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline">
+
+			<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline" data-aos="fade-up">
 				<BaseTable
 					:columns="[
 						{ key: 'id', label: 'ID' },
@@ -53,6 +116,7 @@
 						{ key: 'userName', label: 'Исполнитель' },
 					]"
 					:rows="pageData.complaints"
+					:loading="loading"
 				>
 					<template #cell.id="{ value }">
 						<NuxtLink :to="`/complaints/${value}`">
@@ -91,6 +155,7 @@
 </template>
 
 <script lang="ts" setup>
+import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
@@ -98,41 +163,67 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-import { complaints, type ComplaintsPayload } from '~/services/complaints';
+import Incrementator from '~/components/common/Incrementator.vue';
+import { complaints, type ComplaintsPayload, type ComplaintsQuery, type ComplaintsStatsQuery, type StatsResponse } from '~/services/complaints';
 import { toLocaleDate } from '~/utils/format';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
 	layout: 'authorized'
 });
+const userStore = useUserStore();
+const { $flags, $modal } = useNuxtApp();
 
-const form = ref({
-	account: '',
-	subject: '',
-	urgencyLevel: '',
-	status: '',
-	description: '',
+const form = reactive({
+	search: '',
+	status: '' as '' | ComplaintsQuery['status'],
 });
 const pageData = reactive({
 	complaints: [] as ComplaintsPayload[],
+	stats: {} as StatsResponse,
 });
+const loading = ref(false);
+
+watch(() => form.status, init);
 
 
 init();
 async function init() {
-	complaints.fetch({
-		// createdDateFrom: '2026-06-24',
-		// createdDateTo: '2026-06-31',
-		page: 1,
-		size: 10,
-	})
-		.then((res) => { if (res) pageData.complaints = res.data; })
-		.catch((error) => {
-			useNuxtApp().$flags.error(error, {
-				title: `Ошибка при получении списка жалоб`
-			})
-			console.error('Ошибка при получении списка жалоб:', error);
+	fetchList();
+	fetchStats();
+}
+
+
+async function fetchList(): Promise<ComplaintsPayload[] | void> {
+	loading.value = true;
+	const query: Partial<ComplaintsQuery> = {};
+	if( form.status ) query['status'] = form.status;
+	if( form.search ) query['description'] = form.search;
+	query['page'] = 1;
+	query['size'] = 10;
+
+	const response = await complaints.fetch(query)
+		.then(res => {
+			const items = res?.data || [];
+			pageData.complaints = items;
+		})
+		.finally(() => {
+			loading.value = false;
 		});
+}
+
+async function fetchStats(): Promise<void> {
+	const query: Partial<ComplaintsStatsQuery> = {};
+
+	const response = await complaints.fetchStats(query)
+		.then(res => {
+			pageData.stats = res;
+		});
+}
+
+async function showCreateModal() {
+	const created = await $modal.show('ComplaintCreate', { title: 'Регистрация жалобы', nonCloseable: true });
+	if (created) init();
 }
 
 function getStatusClass(status: any) {
@@ -149,6 +240,26 @@ function getStatusClass(status: any) {
 			return '';
 	}
 }
+
+const itemsByType = computed(() => {
+	if( pageData.stats?.all && Array.isArray(pageData.stats.all.subjects) ) {
+		const subjects = pageData.stats.all.subjects;
+		const maxCount = subjects.reduce((max, s) => s.count > max ? s.count : max, 0);
+		return {
+			maxCount,
+			subjects: subjects
+				.map(subject => ({
+					...subject,
+					percent: maxCount && subject.count ? Math.max((subject.count / maxCount) * 100, 3) : 0
+				}))
+				.sort((a, b) => b.count - a.count)
+		};
+	}
+	return {
+		maxCount: 0,
+		subjects: []
+	};
+});
 </script>
 
 <style lang="scss">
@@ -234,6 +345,52 @@ function getStatusClass(status: any) {
 			}
 		}
 
+		.stats-by-types {
+			.item {
+				display: grid;
+				grid-template-columns: minmax(14em, 1fr) minmax(18em, 2fr);
+				align-items: center;
+				gap: 1.2em;
+				padding: .8em 0;
+				border-bottom: 1px solid #f3f4f6;
+
+				&:last-child {
+					border-bottom: 0;
+					padding-bottom: 0;
+				}
+
+				&:first-of-type {
+					padding-top: 0;
+				}
+
+				.subject {
+					min-width: 0;
+
+					span {
+						display: block;
+						color: #374151;
+						font-size: .92em;
+						font-weight: 600;
+						line-height: 1.35;
+					}
+				}
+
+				.chart {
+					display: grid;
+					grid-template-columns: 1fr 3em;
+					align-items: center;
+					gap: .8em;
+
+					.count {
+						color: #172b4d;
+						font-size: .9em;
+						font-weight: 700;
+						text-align: right;
+					}
+				}
+			}
+		}
+
 		.list {
 			.key {
 				color: #2563eb;
@@ -281,6 +438,19 @@ function getStatusClass(status: any) {
 		header {
 			align-items: flex-start;
 			flex-direction: column;
+		}
+
+		.page-blocks {
+			.stats-by-types {
+				.item {
+					grid-template-columns: 1fr;
+					gap: .5em;
+
+					.chart {
+						grid-template-columns: 1fr auto;
+					}
+				}
+			}
 		}
 	}
 }

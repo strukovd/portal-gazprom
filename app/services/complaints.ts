@@ -1,4 +1,3 @@
-import type { TariffPayload } from "~/types/GapromAppService";
 export type ComplaintsQuery = {
 		account: string;
 		assigneeId: string;
@@ -12,6 +11,17 @@ export type ComplaintsQuery = {
 		createdDateTo: string;
 		page: number;
 		size: number;
+};
+export type ComplaintsStatsQuery = {
+		createdDateFrom: string;
+		createdDateTo: string;
+};
+export type ComplaintsBody = {
+		account: string;
+		subject: `Жалоба на БСГ` | `Жалоба на сотрудника` | `Прочее` | `Тарифы/Прейскурант цен` | `Не восстановили дорожное покрытие после газификации` | `Некорректные начисления` | `Не приносят квитанции` | `Перерасчет начислений` | `Повредили газопровод` | `Предоставление услуг:Разработка ЭЧ` | `Установка/Снятие/Замена БСГ` | `Предоставление услуг СМР, ПНР, Замена БСГ` | `Утечка/ Авария`;
+		urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
+		description: string;
+		contactNumber?: string;
 };
 export type ComplaintsResponse = {
 	data: ComplaintsPayload[];
@@ -35,20 +45,51 @@ export type ComplaintsPayload = {
 	branchName: string;
 	sla: number;
 };
+type StatsPayload = {
+	total: number;
+	new: number;
+	inProgress: number;
+	closed: number;
+	expired: number;
+	sla: number;
+	subjects: {
+		subject: string;
+		count: number;
+	}[]
+}
+export type StatsResponse = {
+	all: StatsPayload,
+	bishkek: StatsPayload,
+	chui: StatsPayload,
+	osh: StatsPayload,
+	jalalabad: StatsPayload
+}
 
 export const complaints = {
-	fetch(query: Partial<ComplaintsQuery> = {}): Promise<ComplaintsResponse | void> {
+	fetch(query: Partial<ComplaintsQuery> = {}): Promise<ComplaintsResponse> {
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<ComplaintsResponse>('/v1/call-gas/complaints', {
 			method: 'GET',
 			query
-		})
-			.then((resp) => {
-				return resp;
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при загрузке тарифов:', error);
-			});
+		});
+	},
+
+	fetchStats(query: Partial<ComplaintsStatsQuery> = {}): Promise<StatsResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<StatsResponse>('/v1/call-gas/complaints/statistics', {
+			method: 'GET',
+			query
+		});
+	},
+
+	create(body: ComplaintsBody): Promise<ComplaintsResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<ComplaintsResponse>('/v1/call-gas/complaints', {
+			method: 'POST',
+			body
+		});
 	}
 };

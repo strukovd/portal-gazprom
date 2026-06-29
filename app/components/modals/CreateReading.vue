@@ -1,20 +1,21 @@
 <template>
 	<div class="reading-modal">
 		<main class="content">
-			<section class="summary">
-				<!-- <div class="item">
+			<!-- <section class="summary">
+				<div class="item">
 					<div class="label">Лицевой счет</div>
 					<div class="value">{{ payload?.account || 'Не указан' }}</div>
-				</div> -->
+				</div>
 				<div class="item">
 					<div class="label">Предыдущие показания</div>
 					<div class="value">{{ previousReadingText }}</div>
 					<div v-if="payload?.previousReadingDate" class="hint">{{ formatDateTime(payload.previousReadingDate) }}</div>
 				</div>
-			</section>
+			</section> -->
 
 			<section class="form">
-				<BaseTextBox v-model="reading" autofocus label="Новое показание, м³" placeholder="Введите текущее показание" prependIcon="mdi-counter" @submit="sendReading"/>
+				<BaseTextBox v-model="previousReadingText" readonly disabled label="Предыдущее показание, м³"/>
+				<BaseTextBox v-model="reading" autofocus label="Новое показание, м³" placeholder="Введите новые показание" @submit="sendReading"/>
 				<div v-if="consumption !== null" class="consumption">
 					Расход: <b>{{ consumption }} м³</b>
 				</div>
@@ -24,29 +25,35 @@
 		</main>
 
 		<footer class="footer">
-			<section>
-				<h3>Предпросмотр результата</h3>
-				<div class="preview">
-					<section class="col-6">
-						<div class="item">
-							<div class="label">Расчет потребления</div>
-							<div>{{ consumption }}</div>
+			<section v-if="response" class="result-section">
+				<h3>Результат</h3>
+				<div class="result">
+					<section class="grid-parent">
+						<div class="item col-6">
+							<div class="label">Принятое показание</div>
+							<div>{{ number(response.reading) }} м³</div>
 						</div>
-						<div class="item">
+						<div class="item col-6">
+							<div class="label">Расход</div>
+							<div>{{ number(response.consumption) }} м³</div>
+						</div>
+						<div class="item col-6">
 							<div class="label">Тариф</div>
-							<div>{{ consumption }}</div>
+							<div>{{ money(response.tariff) }} / м³</div>
+						</div>
+						<div class="item col-6">
+							<div class="label">К начислению</div>
+							<div>{{ money(response.payAmount) }}</div>
 						</div>
 					</section>
-					<section class="col-6">
-						<div class="item">
-							<div class="label">Расчет потребления</div>
-							<div>{{ consumption }}</div>
-						</div>
-						<div class="item">
-							<div class="label">Сумма потребления</div>
-							<div>{{ consumption }}</div>
-						</div>
-					</section>
+					<div v-if="response?.created" class="created">
+						<BaseIcon name="mdi-clock-outline" size="18"/>
+						<span>Показание принято <span class="date">{{ formatDateTime(response.created) }}</span></span>
+					</div>
+					<div v-if="!response" class="item">
+						<div class="label">Расход после отправки</div>
+						<div>{{ consumption === null ? 'Будет рассчитан после ввода' : `${number(consumption)} м³` }}</div>
+					</div>
 				</div>
 			</section>
 			<div class="buttons">
@@ -60,6 +67,7 @@
 <script lang="ts" setup>
 import { formatDateTime } from '~/utils/format';
 import BaseButton from '../common/base/BaseButton.vue';
+import BaseIcon from '../common/base/BaseIcon.vue';
 import BaseTextBox from '../common/base/BaseTextBox.vue';
 import InfoBox from '../common/InfoBox.vue';
 
@@ -69,15 +77,23 @@ type Payload = {
 	previousReading?: number | null;
 	previousReadingDate?: string | null;
 }
+type ReadingResponse = {
+	id: number;
+	reading: number;
+	created: string;
+	consumption: number;
+	tariff: number;
+	payAmount: number;
+};
 
 const props = defineProps<{
 	payload?: Payload
 }>();
 
-const { $fetchPortal, $flags } = useNuxtApp();
-const accountStore = useAccountStore();
+const { $fetchPortal } = useNuxtApp();
 const reading = ref('');
 const loading = ref(false);
+const response = ref<ReadingResponse | null>(null);
 const message = reactive({
 	type: '' as MessageType,
 	title: '',
@@ -104,15 +120,14 @@ const consumption = computed(() => {
 
 async function sendReading() {
 	if (loading.value) return;
-
 	message.type = '';
+	response.value = null;
 
 	if (!validate()) return;
-
 	loading.value = true;
 
 	try {
-		await $fetchPortal('v1/portal/readings', {
+		response.value = await $fetchPortal<ReadingResponse>('v1/portal/readings', {
 			method: 'POST',
 			body: {
 				account: props.payload?.account,
@@ -120,14 +135,6 @@ async function sendReading() {
 			}
 		});
 
-		// const res = await accountStore.fetchAccountData<{
-		// 	consumption: number;
-		// 	created: string;
-		// 	id: number;
-		// 	payAmount: number;
-		// 	reading: number;
-		// 	tariff: number;
-		// }>({ force: true });
 		showMsg('success', 'Показания приняты', '');
 	}
 	catch (error: any) {
@@ -178,6 +185,20 @@ function showMsg(type: MessageType, title: string, text: string) {
 	message.type = type;
 	message.title = title;
 	message.text = text;
+}
+
+const numberFormatter = new Intl.NumberFormat('ru-RU');
+const moneyFormatter = new Intl.NumberFormat('ru-RU', {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2,
+});
+
+function number(value: number | null | undefined) {
+	return numberFormatter.format(Number(value || 0));
+}
+
+function money(value: number | null | undefined) {
+	return `${moneyFormatter.format(Number(value || 0))} сом`;
 }
 
 function close(result = false) {
@@ -238,7 +259,53 @@ function close(result = false) {
 	}
 
 	.footer {
-		.buttons {
+		display: grid;
+		gap: 1em;
+
+		h3 {
+			margin-bottom: .6em;
+			color: #172b4d;
+			font-size: 1rem;
+		}
+
+		.result {
+			display: grid;
+			gap: .75em;
+			.grid-parent {
+				.item {
+					padding: .8em .9em;
+					border: 1px solid #dbe5f7;
+					border-radius: 8px;
+					background: #f8fafc;
+
+					.label {
+						color: #64748b;
+						font-size: .78rem;
+					}
+
+					div:last-child {
+						margin-top: .2em;
+						color: #111827;
+						font-size: 1.05rem;
+						font-weight: 700;
+					}
+				}
+			}
+
+			>.created {
+				display: flex;
+				align-items: center;
+				gap: .4em;
+				color: #64748b;
+				font-size: .84rem;
+
+				.date {
+					color: #f12400;
+				}
+			}
+		}
+
+		>.buttons {
 			display: flex;
 			justify-content: flex-end;
 			gap: .5em;

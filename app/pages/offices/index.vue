@@ -1,8 +1,8 @@
 <template>
-	<section id="tariffs-page">
+	<section id="offices-page">
 
 		<section class="row-offices">
-			<BaseIsland title="Офисы обслуживания" prependIcon="mdi-office-building-outline">
+			<BaseIsland title="Офисы обслуживания" prependIcon="mdi-office-building-outline" data-aos="zoom-in">
 				<template #actions>
 					<a href="#">3 обновления</a>
 				</template>
@@ -12,6 +12,7 @@
 						v-for="(item, index) of offices"
 						:key="index"
 						:class="['office-card', item.type]"
+						data-aos="fade-up"
 					>
 						<div class="office-meta">
 							<span class="actual">Актуально</span>
@@ -91,7 +92,7 @@ const offices = [
 </script>
 
 <style lang="scss">
-#tariffs-page {
+#offices-page {
 	display: flex;
 	flex-direction: column;
 	gap: 18px;

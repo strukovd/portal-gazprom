@@ -13,7 +13,7 @@
 		</header>
 
 		<main class="page-blocks">
-			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="fade-up">
+			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="zoom-in">
 				<div>
 					<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
 				</div>

@@ -6,7 +6,7 @@
 			Загрузка данных абонента...
 		</BaseIsland>
 
-		<BaseIsland v-else-if="accountStore.error && !accountData" style="margin-top:1em;">
+		<BaseIsland v-else-if="accountStore.error && !accountData" style="margin-top:1em;" data-aos="zoom-in">
 			Не удалось загрузить данные абонента.
 		</BaseIsland>
 
@@ -40,6 +40,7 @@
 				<BaseIsland
 					style="display:flex; gap:1em; align-items:center; flex:1 1 200px; flex-wrap:nowrap;"
 					:style="{ '--bg': item.bg, '--color': item.color }"
+					data-aos="zoom-in"
 				>
 					<section>
 						<div style="padding:1em; border-radius:12px; color: var(--color); background-color:color-mix(in srgb, var(--bg) 8%, #fff);">
@@ -55,7 +56,7 @@
 		</section>
 
 		<section style="margin-top:1em;">
-			<BaseIsland title="Контактная информация" prependIcon="mdi-card-account-details" class="col-4">
+			<BaseIsland title="Контактная информация" prependIcon="mdi-card-account-details" class="col-4" data-aos="zoom-in">
 				 <table class="contact-info-table">
 					<tbody>
 						<tr>
@@ -123,7 +124,7 @@
 					</tbody>
 				 </table>
 			</BaseIsland>
-			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold" class="col-4">
+			<BaseIsland title="Финансовые данные" prependIcon="mdi-wallet-bifold" class="col-4" data-aos="zoom-in">
 				<section style="display:flex; gap:1em; flex-wrap:wrap;">
 					<div :class="[`tile`, { red: accountData.balance < 0 }]">
 						<div style="font-size:.9em;">Текущий баланс</div>
@@ -140,7 +141,7 @@
 					<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
 					<div v-if="!accountData.payments.length" style="font-weight:700; margin:2em 0 0 0; text-align:center; color:#737373; font-size:.9em;">Нет данных</div>
 					<section v-else style="max-height:350px; overflow:auto;">
-						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;">
+						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;" data-aos="fade-up">
 							<div style="flex:33% 1 1; text-align:center;">
 								<div style="font-weight:700; color:forestgreen;">{{ payment.amount }}</div>
 								<div style="font-size:.9em; color:#737373;">{{ toLocaleDate(payment.created) }}</div>
@@ -153,13 +154,13 @@
 					</section>
 				</section>
 			</BaseIsland>
-			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history" class="col-4">
+			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history" class="col-4" data-aos="zoom-in">
 				<section class="timeline">
 					<div v-if="timelineLoading" class="tm-state">Загрузка истории...</div>
 					<div v-else-if="timelineError" class="tm-state tm-error">Не удалось загрузить историю</div>
 					<div v-else-if="!timeline.length" class="tm-state">Нет данных</div>
 					<template v-else>
-						<div v-for="item of timeline" :key="item.id" class="tm-item">
+						<div v-for="item of timeline" :key="item.id" class="tm-item" data-aos="fade-up">
 							<aside>
 								<div class="tm-line"></div>
 								<div :class="[`tm-point`, getPointClass(item.type)]">
@@ -178,7 +179,7 @@
 		</section>
 
 		<section style="margin-top:1em;">
-			<BaseIsland v-if="accountData?.readings" title="История показаний" prependIcon="mdi-clipboard-list-outline" class="col-6">
+			<BaseIsland v-if="accountData?.readings" title="История показаний" prependIcon="mdi-clipboard-list-outline" class="col-6" data-aos="fade-up">
 				<section style="display:flex; flex-direction:column; gap:.5em;">
 					<div style="font-size:.9em; display:flex; gap:.6em;">
 						<div style="color:#737373;">Расчётный период:</div>
@@ -210,7 +211,7 @@
 					/>
 				</section>
 			</BaseIsland>
-			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6 no-api">
+			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6 no-api" data-aos="fade-up">
 				<section class="consumption-analytics">
 					<VChart :option="dualLineChartOption" class="chart-small"/>
 				</section>

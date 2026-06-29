@@ -11,7 +11,7 @@
 			</section>
 
 			<section v-if="!form.tab || form.tab === 'DISCONNECTION'" class="row-outages">
-				<BaseIsland title="Отключение газа по районам" prependIcon="mdi-fire-alert">
+				<BaseIsland title="Отключение газа по районам" prependIcon="mdi-fire-alert" data-aos="zoom-in">
 					<template #actions>
 						<div class="island-actions">
 							<span>{{ activeDisconnections.length }} активных</span>
@@ -32,6 +32,7 @@
 							v-for="item of pageData.disconnections"
 							:key="item.id"
 							:class="['outage-card', getNewsCardClass(item)]"
+							data-aos="fade-up"
 						>
 							<div class="meta">
 								<b>{{ getUrgencyLabel(item.urgencyLevel) }}</b>
@@ -60,7 +61,7 @@
 			</section>
 
 			<section v-if="!form.tab || form.tab === 'GASIFICATION'" class="row-gasification">
-				<BaseIsland title="Газификация населённых пунктов" prependIcon="mdi-map-marker">
+				<BaseIsland title="Газификация населённых пунктов" prependIcon="mdi-map-marker" data-aos="fade-up">
 					<template #actions>
 						<a href="#">{{ pageData.gasification.length }} обновления</a>
 					</template>
@@ -72,6 +73,7 @@
 							v-for="item of pageData.gasification"
 							:key="item.id"
 							class="gasification-card"
+							data-aos="fade-up"
 						>
 							<div class="status" :class="{ muted: isNewsExpired(item) }">
 								<BaseIcon name="mdi-check-circle-outline"/>

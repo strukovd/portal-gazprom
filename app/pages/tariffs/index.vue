@@ -1,7 +1,7 @@
 <template>
 	<section id="tariffs-page">
 		<section class="row-tariffs">
-			<BaseIsland title="Тариф природного газа" prependIcon="mdi-currency-usd">
+			<BaseIsland title="Тариф природного газа" prependIcon="mdi-currency-usd" data-aos="zoom-in">
 				<template #actions>
 					<div class="tariff-links">
 						<a href="#">Действующие</a>
@@ -14,6 +14,7 @@
 						v-for="(item, index) of tariffs"
 						:key="index"
 						:class="['tariff-card', item.accent]"
+						data-aos="zoom-in"
 					>
 						<div class="status">
 							<BaseIcon name="mdi-check-circle-outline"/>

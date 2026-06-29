@@ -26,7 +26,7 @@
 			<div style="margin-left:auto;"></div>
 
 			<BaseButton @click="showCreateReading" variant="primary">Принять показания</BaseButton>
-			<BaseButton variant="outlined">Новая жалоба</BaseButton>
+			<BaseButton variant="outlined" @click="showCreateComplaint">Новая жалоба</BaseButton>
 		</section>
 
 		<section class="statistics no-api" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
@@ -377,6 +377,19 @@ const showCreateReading = () => {
 			account: accountData.value.account,
 			previousReading: lastReading?.reading ?? null,
 			previousReadingDate: lastReading?.created ?? null,
+		}
+	});
+}
+
+const showCreateComplaint = () => {
+	if (!accountData.value) return;
+
+	$modal.show('ComplaintCreate', {
+		title: 'Регистрация жалобы',
+		nonCloseable: true,
+		payload: {
+			account: accountData.value.account,
+			name: accountData.value.name,
 		}
 	});
 }

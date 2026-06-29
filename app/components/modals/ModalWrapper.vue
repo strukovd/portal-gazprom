@@ -7,11 +7,9 @@
 					<span class="title">{{ visibleModal.options.title }}</span>
 				</h3>
 			</header>
-			<nav></nav>
 			<main class="main">
 				<component v-if="modalComponent" :is="modalComponent" :payload="visibleModal.options?.payload"></component>
 			</main>
-			<footer class="footer"></footer>
 		</div>
 	</div>
 </template>
@@ -101,7 +99,7 @@ onBeforeUnmount(() => {
 			}
 		}
 
-		.main {
+		>.main {
 			padding:.6em 1.8em 1em;
 			// overflow: auto;
 			max-height: 90vh;

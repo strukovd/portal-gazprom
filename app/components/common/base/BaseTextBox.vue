@@ -1,5 +1,5 @@
 <template>
-	<div class="base-text-box" :class="{ 'invalid': error }" @keydown.enter="onSubmit" >
+	<div class="base-text-box" :class="{ 'invalid': error, 'disabled': disabled }" @keydown.enter="onSubmit" >
 		<!-- FEATURES
 		- [+] label
 		- [+] placeholder
@@ -14,7 +14,7 @@
 		- [+] value
 		- [+] name
 		- [+] mask
-	
+
 			safari
 		-->
 		<label>
@@ -31,10 +31,10 @@
 
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
-					<input ref="input" :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
-					<BaseIcon @click="masked = !masked" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
+					<input ref="input" :disabled="disabled" :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
+					<BaseIcon @click="toggleMask" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
 					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
-					<BaseButton v-if="button" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
+					<BaseButton v-if="button" :disabled="disabled" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
 				</div>
 			</div>
 		</label>
@@ -60,6 +60,7 @@ export default defineComponent({
 		prependIcon: String,
 		appendIcon: String,
 		autofocus: Boolean,
+		disabled: Boolean,
 		placeholder: String,
 		type: {
 			type: String as () => 'text' | 'password' | 'color'
@@ -137,10 +138,12 @@ export default defineComponent({
 			return maskedValue;
 		},
 		onSubmit(event: KeyboardEvent) {
+			if (this.disabled) return;
 			const valueCopy = this.modelValue !== undefined ? this.modelValue : this.innerValue;
 			this.$emit('submit', valueCopy, event);
 		},
 		onInput(event: Event) {
+			if (this.disabled) return;
 			const val = (event.target as HTMLInputElement)?.value ?? '';
 			const masked = this.mask ? this.applyMask(val) : val;
 			if (this.mask && event.target) {
@@ -148,6 +151,10 @@ export default defineComponent({
 			}
 
 			this.valueProxy = this.type === 'number' && !this.mask ? Number(masked) : masked;
+		},
+		toggleMask() {
+			if (this.disabled) return;
+			this.masked = !this.masked;
 		}
 	},
 	created() {
@@ -234,6 +241,23 @@ export default defineComponent({
 			border-color: red;
 			border-style: dashed;
 			color: red;
+		}
+	}
+
+	&.disabled {
+		.text-box-area {
+			background: #f8fafc;
+			color: #94a3b8;
+			border-color: #cbd5e1;
+			cursor: not-allowed;
+
+			.append-icon, .prepend-icon {
+				color: #cbd5e1;
+			}
+
+			input {
+				pointer-events: none;
+			}
 		}
 	}
 }

@@ -51,22 +51,6 @@
 							class="small-preview-image"
 							:class="{ 'unstored': file.constructor.name === 'File' }"
 							draggable="true"
-							@contextmenu.prevent="/*$popup.show({
-								event:$event,
-								items:
-									tags.map(tag => {
-										return {
-											name: tag,
-											icon: `mdi-tag`,
-											fn: (item: any) => { file.tag = tag; selectedFiles = [...selectedFiles] }
-										} as PopupItem;
-									})
-										.concat([
-											{ name: 'Убрать тег', icon: 'mdi-tag-minus', fn: (item: any) => { delete file.tag; selectedFiles = [...selectedFiles]; } },
-											{ name: 'Удалить', icon: 'mdi-delete', fn: deleteImage.bind(null, file) },
-											{ name: 'Удалить все', icon: 'mdi-delete-alert', fn: deleteAll },
-										] as PopupItem[])
-							})*/"
 							@dragenter="handleDragEnter"
 							@dragover="handleDragOver"
 							@drop="handleDrop"
@@ -91,7 +75,7 @@
 				<section class="label-section">
 					<span>Перетащите изображения сюда или нажмите <br> «Добавить изображения».</span>
 				</section>
-				<BaseButton class="button" prependname="mdi-plus" @click="onClick" color="primary"><span>Добавить изображения</span></BaseButton>
+				<BaseButton class="button" prependIcon="mdi-plus" @click="onClick" color="primary"><span>Добавить изображения</span></BaseButton>
 			</div>
 			<input type="file" ref="fileInput" accept="image/*" multiple style="display:none;" @change="onSelectFile">
 		</main>

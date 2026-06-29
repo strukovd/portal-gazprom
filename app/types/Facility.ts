@@ -43,7 +43,41 @@ export type AccountData = {
 		typeOfActivity: string;
 	};
 	equipment: null;
-	bill: null;
+	bill: {
+		id: number;
+		account: string;
+		fullName: string;
+		address: string;
+		created: string;
+		updated: string;
+		removed: null;
+		fileName: string;
+		officeId: number;
+		branchId: number;
+		prevReadingsDate: string;
+		prevReadingsValue: number;
+		lastReadingsDate: string;
+		lastReadingsValue: number;
+		balanceAccrualGasValue: number;
+		balanceAccrualFineValue: number;
+		accrualGasValue: number;
+		accrualRecalculationValue: number;
+		accrualM3Value: number;
+		accrualFineValue: number;
+		tariff: number;
+		lastPayDate: string;
+		lastPayGasValue: number;
+		lastPayFineValue: number;
+		accrualMonth: string;
+		payGasValue: number;
+		payFineValue: number;
+		payValue: number;
+		payCurrentGasValue: number;
+		payCurrentFineValue: number;
+		overpayValue: number;
+		houseType: string;
+		section: string;
+	} | null;
 };
 
 

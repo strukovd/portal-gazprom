@@ -35,14 +35,14 @@
 					</header>
 					<div class="bm-rows">
 						<div class="bm-row">
-							<span>Предыдущие</span>
-							<strong>{{ bill.prevReadingsValue }} м³</strong>
-							<small>{{ formatDate(bill.prevReadingsDate) || 'Дата не указана' }}</small>
-						</div>
-						<div class="bm-row">
 							<span>Последние</span>
 							<strong>{{ bill.lastReadingsValue }} м³</strong>
 							<small>{{ formatDate(bill.lastReadingsDate) || 'Дата не указана' }}</small>
+						</div>
+						<div class="bm-row">
+							<span>Предыдущие</span>
+							<strong>{{ bill.prevReadingsValue }} м³</strong>
+							<small>{{ formatDate(bill.prevReadingsDate) || 'Дата не указана' }}</small>
 						</div>
 						<div class="bm-row">
 							<span>Расход</span>
@@ -59,16 +59,20 @@
 					</header>
 					<div class="bm-rows">
 						<div class="bm-row">
-							<span>Газ</span>
+							<span>Начислено</span>
 							<strong>{{ money(bill.balanceAccrualGasValue) }}</strong>
+							<small>на нач. месяц</small>
 						</div>
 						<div class="bm-row">
 							<span>Пеня</span>
 							<strong>{{ money(bill.balanceAccrualFineValue) }}</strong>
 						</div>
-						<div class="bm-row bm-total-row">
+						<div class="bm-row" :class="[{ 'bm-negative': debtValue > 0, 'bm-positive': debtValue <= 0 }]">
 							<span>Итого долг</span>
-							<strong>{{ debtValue > 0 ? money(debtValue) : 'нет' }}</strong>
+							<strong>
+								<span>{{ debtValue > 0 ? money(debtValue) : 'нет' }}</span>
+								<BaseIcon :name="debtValue > 0 ? `mdi-alert-circle-outline` : `mdi-check-circle-outline`" size="small" style="margin-left:.3em;"/>
+							</strong>
 						</div>
 					</div>
 				</section>
@@ -84,7 +88,7 @@
 							<strong>{{ money(bill.tariff) }} / м³</strong>
 						</div>
 						<div class="bm-row">
-							<span>Газ</span>
+							<span>Начислено</span>
 							<strong>{{ money(bill.accrualGasValue) }}</strong>
 						</div>
 						<div class="bm-row">
@@ -116,9 +120,12 @@
 							<span>Переплата</span>
 							<strong>{{ money(bill.overpayValue) }}</strong>
 						</div>
-						<div class="bm-row bm-total-row">
+						<div class="bm-row" :class="[{ 'bm-negative': bill.payValue > 0, 'bm-positive': bill.payValue <= 0 }]">
 							<span>Итого</span>
-							<strong>{{ money(bill.payValue) }}</strong>
+							<strong>
+								<span>{{ money(bill.payValue) }}</span>
+								<BaseIcon :name="bill.payValue > 0 ? `mdi-alert-circle-outline` : `mdi-check-circle-outline`" size="small" style="margin-left:.3em;"/>
+							</strong>
 						</div>
 					</div>
 				</section>
@@ -270,7 +277,7 @@ function close() {
 							border-bottom: 1px solid #f1f5f9;
 						}
 
-						span {
+						>span:first-child {
 							color: #64748b;
 						}
 
@@ -284,11 +291,15 @@ function close() {
 							color: #94a3b8;
 						}
 
-						&.bm-total-row {
-							background: #f8fafc;
-
+						&.bm-positive {
+							background: #e9f8f2;
 							strong {
-								color: #174ea6;
+								color: #3cc16d;
+							}
+						}
+						&.bm-negative {
+							strong {
+								color: #cf1818;
 							}
 						}
 					}
@@ -296,11 +307,6 @@ function close() {
 
 				&.bm-accent {
 					border-color: #bfdbfe;
-
-					bm-header,
-					.bm-total-row {
-						background: #eff6ff;
-					}
 				}
 			}
 		}

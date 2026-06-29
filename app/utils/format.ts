@@ -15,6 +15,10 @@ const dateTimeFormatter = new Intl.DateTimeFormat('ru-RU', {
 	minute: '2-digit',
 });
 
+const monthFormatter = new Intl.DateTimeFormat('ru-RU', {
+	month: 'long',
+});
+
 
 
 export function formatDate(value: DateValue) {
@@ -25,6 +29,11 @@ export function formatDate(value: DateValue) {
 export function formatDateTime(value: DateValue) {
 	const date = toDate(value);
 	return date ? dateTimeFormatter.format(date) : '';
+}
+
+export function formatMonth(value: DateValue) {
+	const date = toMonthDate(value);
+	return date ? monthFormatter.format(date) : '';
 }
 
 export function getMonthName(date: Date) {
@@ -48,6 +57,21 @@ function toDate(value: DateValue) {
 
 	const date = value instanceof Date ? value : new Date(value);
 	return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function toMonthDate(value: DateValue) {
+	if (!value) return null;
+
+	if (value instanceof Date || typeof value === 'number') return toDate(value);
+
+	const text = String(value);
+	const isoMonth = text.match(/^(\d{4})-(\d{2})$/);
+	if (isoMonth) return new Date(Number(isoMonth[1]), Number(isoMonth[2]) - 1, 1);
+
+	const shortMonth = text.match(/^(\d{2})\.(\d{4})$/);
+	if (shortMonth) return new Date(Number(shortMonth[2]), Number(shortMonth[1]) - 1, 1);
+
+	return toDate(text);
 }
 
 function toNumber(value: NumberValue) {

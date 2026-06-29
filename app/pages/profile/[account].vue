@@ -130,9 +130,9 @@
 						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">{{ accountData.balance ?? '0.00' }} сом</div>
 						<!-- <div style="font-size:.9em;">{{ accountData.balance > 0 ? `Долг` : `Предоплата` }}</div> -->
 					</div>
-					<div :class="[`tile`, { red: !accountData.bill}]">
+					<div :class="[`tile`, { red: !accountData.bill, clickable: accountData.bill }]" @click="showBillDetails">
 						<div style="font-size:1.4em; font-weight:700; line-height:1.6em;">Квитанция</div>
-						<div v-if="accountData.bill" style="font-size:.9em;">за {{ String(accountData.bill) }}</div>
+						<div v-if="accountData.bill" style="font-size:.9em;">за {{ billMonthText }}</div>
 						<div v-else style="font-size:.9em;">нету</div>
 					</div>
 				</section>
@@ -222,11 +222,15 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
-import { toLocaleDate } from '~/utils/format';
+import { formatMonth, toLocaleDate } from '~/utils/format';
 const route = useRoute();
 const { $modal } = useNuxtApp();
 const accountStore = useAccountStore();
 const accountData = computed(() => accountStore.accountData);
+const billMonthText = computed(() => {
+	const bill = accountData.value?.bill;
+	return bill ? (formatMonth(bill.accrualMonth) || bill.accrualMonth || 'период не указан') : '';
+});
 
 definePageMeta({
 	auth: true,
@@ -335,6 +339,17 @@ const showCreateReading = () => {
 	});
 }
 
+const showBillDetails = () => {
+	if (!accountData.value?.bill) return;
+
+	$modal.show('BillDetails', {
+		title: 'Детали квитанции',
+		payload: {
+			bill: accountData.value.bill,
+		}
+	});
+}
+
 function checkAccountParam() {
 	// Если в URL нет аккаунта, то переходим на страницу профиля
 	const account = Array.isArray(route.params.account) ? route.params.account[0] : route.params.account;
@@ -366,6 +381,17 @@ function checkAccountParam() {
 		padding:1em;
 		border-radius:12px;
 		text-align:center;
+
+		&.clickable {
+			cursor: pointer;
+			transition: opacity 200ms ease 0s, transform 200ms ease 0s;
+
+			&:hover {
+				opacity: .86;
+				transform: translateY(-1px);
+			}
+		}
+
 		&.red {
 			background:#fef2f2;
 			color:#dc2625;

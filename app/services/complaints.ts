@@ -72,6 +72,18 @@ export type CountsResponse = {
 	expired: number;
 	avgProcessingTime: number;
 }
+export type TimelineResponse = {
+	data: TimelinePayload[];
+	size: number;
+}
+export type TimelinePayload = {
+	id: number;
+	date: string;
+	type: string;
+	title: string;
+	comment: string;
+}
+
 
 export const complaints = {
 	fetch(query: Partial<ComplaintsQuery> = {}): Promise<ComplaintsResponse> {
@@ -96,6 +108,15 @@ export const complaints = {
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<CountsResponse>('/v1/call-gas/complaints/counts', {
+			method: 'GET',
+			query
+		});
+	},
+
+	fetchTimeline(query: Partial<Record<string, any>> = {}): Promise<TimelineResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<TimelineResponse>('/v1/call-gas/complaints/timeline', {
 			method: 'GET',
 			query
 		});

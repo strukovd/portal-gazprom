@@ -153,26 +153,27 @@
 					</section>
 				</section>
 			</BaseIsland>
-			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history" class="col-4 no-api">
-				<section style="display:flex; flex-direction:column; gap:.5em;">
-					<div v-for="(item, index) of [
-						{ date: '18.01.2024, 10:42', title: 'Плановое отключение в связи с техническим обслуживанием', description: 'Ожидаемое время восстановления: 3 часа.' },
-						{ date: '15.01.2024, 14:20', title: 'Оплата квитанции за март', description: 'Ожидаемое время восстановления: 3 часа.' },
-						{ date: '10.01.2024, 09:15', title: 'Получение показаний счетчика', description: 'Ожидаемое время восстановления: 3 часа.' },
-					]" :key="index" style="display:flex; gap:1em;">
-						<aside style="position:relative; top:0; bottom:0;">
-							<div style="position:absolute; top:0; bottom:-.5em; width:.5em; border-radius:3px; background-color:#e5e5e5;"></div>
-							<div style="position:absolute; top:0; bottom:0; margin-left:-.1em; width:.7em; height:.7em; border-radius:50%; background-color:#2563ea;"></div>
-						</aside>
-						<div style="padding-bottom:.2em;">
-							<div style="color:#a3a3a3; font-size:.9em;">{{ item.date }}</div>
-							<div style="color:#171717; font-weight:700;">{{ item.title }}</div>
-							<div style="color:#737373; font-size:.9em;">{{ item.description }}</div>
-							<a v-if="Math.random() > 0.5" href="#">Открыть жалобу →</a>
+			<BaseIsland title="Таймлайн взаимодействий" prependIcon="mdi-history" class="col-4">
+				<section class="timeline">
+					<div v-if="timelineLoading" class="tm-state">Загрузка истории...</div>
+					<div v-else-if="timelineError" class="tm-state tm-error">Не удалось загрузить историю</div>
+					<div v-else-if="!timeline.length" class="tm-state">Нет данных</div>
+					<template v-else>
+						<div v-for="item of timeline" :key="item.id" class="tm-item">
+							<aside>
+								<div class="tm-line"></div>
+								<div class="tm-point">
+									<BaseIcon :name="timelineIcon(item.type)" size="11px"/>
+								</div>
+							</aside>
+							<div class="tm-content">
+								<div class="tm-date">{{ formatDateTime(item.date) || item.date }}</div>
+								<div class="tm-title">{{ item.title || item.type }}</div>
+								<div class="tm-description">{{ item.comment || 'Без комментария' }}</div>
+							</div>
 						</div>
-					</div>
+					</template>
 				</section>
-
 			</BaseIsland>
 		</section>
 
@@ -222,15 +223,20 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
-import { formatMonth, toLocaleDate } from '~/utils/format';
+import { complaints, type TimelinePayload } from '~/services/complaints';
+import { formatDateTime, formatMonth, toLocaleDate } from '~/utils/format';
 const route = useRoute();
-const { $modal } = useNuxtApp();
+const { $modal, $flags } = useNuxtApp();
 const accountStore = useAccountStore();
 const accountData = computed(() => accountStore.accountData);
 const billMonthText = computed(() => {
 	const bill = accountData.value?.bill;
 	return bill ? (formatMonth(bill.accrualMonth) || bill.accrualMonth || 'период не указан') : '';
 });
+const timeline = ref<TimelinePayload[]>([]);
+const timelineLoading = ref(false);
+const timelineError = ref(false);
+let timelineRequestId = 0;
 
 definePageMeta({
 	auth: true,
@@ -316,6 +322,10 @@ watch(() => route.params.account, () => {
 	checkAccountParam();
 });
 
+watch(() => accountData.value?.account, (account) => { // при смене аккаунта, загружаем историю (timeline)
+	fetchTimeline(account);
+}, { immediate: true });
+
 
 const copy = async (text: string) => {
 	if (navigator.clipboard)
@@ -348,6 +358,58 @@ const showBillDetails = () => {
 			bill: accountData.value.bill,
 		}
 	});
+}
+
+async function fetchTimeline(account?: string | null) {
+	const requestId = ++timelineRequestId;
+	timeline.value = [];
+	timelineError.value = false;
+
+	if (!account) return;
+
+	timelineLoading.value = true;
+
+	try {
+		const requestedAccount = account;
+		const response = await complaints.fetchTimeline({
+			account,
+			page: 1,
+			size: 10,
+		});
+		if (requestId !== timelineRequestId || accountData.value?.account !== requestedAccount) return;
+		timeline.value = response.data || [];
+	}
+	catch (error: any) {
+		if (requestId !== timelineRequestId) return;
+		timelineError.value = true;
+		const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить историю действий.';
+		$flags.error(text, { title: 'Ошибка таймлайна' });
+	}
+	finally {
+		if (requestId === timelineRequestId) timelineLoading.value = false;
+	}
+}
+
+function timelineIcon(type: string) {
+	const value = String(type || '').toLowerCase();
+
+	if (value.includes('жалоба')) return 'mdi-account-alert';
+	if (value.includes('оплата')) return 'mdi-cash-check';
+	if (value.includes('показание')) return 'mdi-counter';
+	if (value.includes('квитанция')) return 'mdi-file-document';
+
+	return 'mdi-history';
+}
+
+function timelineTitle(type: string) {
+	const value = String(type || '').toLowerCase();
+
+	if (value.includes('complaint')) return 'Жалоба';
+	if (value.includes('payment')) return 'Оплата';
+	if (value.includes('reading')) return 'Показание';
+	if (value.includes('bill')) return 'Квитанция';
+
+	return 'Действие';
 }
 
 function checkAccountParam() {
@@ -419,6 +481,80 @@ function checkAccountParam() {
 			&:last-child {
 				color: #111827;
 				font-weight: 600;
+			}
+		}
+	}
+
+	.timeline {
+		display: flex;
+		flex-direction: column;
+		gap: .5em;
+
+		.tm-state {
+			padding: 2em 0;
+			color: #737373;
+			font-size: .9em;
+			font-weight: 700;
+			text-align: center;
+
+			&tm-.error {
+				color: #dc2625;
+			}
+		}
+
+		.tm-item {
+			display: flex;
+			gap: 1em;
+
+			aside {
+				position: relative;
+				top: 0;
+				bottom: 0;
+				width: .9em;
+				flex: 0 0 .9em;
+
+				.tm-line {
+					position: absolute;
+					top: 0;
+					bottom: -.5em;
+					width: .5em;
+					border-radius: 3px;
+					background-color: #e5e5e5;
+				}
+
+				.tm-point {
+					position: absolute;
+					top: 0;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					width: 1.2em;
+					height: 1.2em;
+					margin-left: -.35em;
+					border-radius: 50%;
+					background-color: #2563ea;
+					color: #fff;
+				}
+			}
+
+			.tm-content {
+				min-width: 0;
+				padding-bottom: .2em;
+
+				.tm-date {
+					color: #a3a3a3;
+					font-size: .9em;
+				}
+
+				.tm-title {
+					color: #171717;
+					font-weight: 700;
+				}
+
+				.tm-description {
+					color: #737373;
+					font-size: .9em;
+				}
 			}
 		}
 	}

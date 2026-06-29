@@ -31,7 +31,7 @@ export function getMonthName(date: Date) {
 	return date.toLocaleString('default', { month: 'long' });
 }
 
-export function toISODate(date: Date) {
+export function toISODate(date: Date | String) {
 	if(typeof date === 'string') date = new Date(date);
 	return (date as Date).toLocaleDateString('fr-CA');
 }

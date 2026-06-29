@@ -13,6 +13,22 @@
 		</header>
 
 		<main class="page-blocks">
+			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="fade-up">
+				<div>
+					<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
+				</div>
+				<div>
+					<DatePicker v-model="form.period" placeholder="Период создания"/>
+				</div>
+				<BaseTabs class="filter-tabs" v-model="form.status" :items="[
+					{ value: 'Все', key: '' },
+					{ value: 'Новые', key: 'Новая' },
+					{ value: 'В работе', key: 'В работе' },
+					{ value: 'Просроченные', key: 'Просрочено' },
+					{ value: 'Закрытые', key: 'Закрыто' },
+				]"/>
+			</BaseIsland>
+
 			<!-- TODO: на беке лучше давать роли в виде массива, что бы не вести вереницу if-else -->
 			<!-- Статистика -->
 			<template v-if="[`ADMIN`, `CALLCENTER_MANAGER`].includes(userStore?.userData?.role ?? '')">
@@ -95,17 +111,6 @@
 				</section>
 			</template>
 
-			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="fade-up">
-				<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
-				<BaseTabs class="filter-tabs" v-model="form.status" :items="[
-					{ value: 'Все', key: '' },
-					{ value: 'Новые', key: 'Новая' },
-					{ value: 'В работе', key: 'В работе' },
-					{ value: 'Просроченные', key: 'Просрочено' },
-					{ value: 'Закрытые', key: 'Закрыто' },
-				]"/>
-			</BaseIsland>
-
 			<BaseIsland class="list" title="Реестр жалоб" prependIcon="mdi-file-document-outline" data-aos="fade-up">
 				<BaseTable
 					:columns="[
@@ -121,9 +126,9 @@
 					:loading="loading"
 				>
 					<template #cell.id="{ value }">
-						<NuxtLink :to="`/complaints/${value}`">
+						<!-- <NuxtLink :to="`/complaints/${value}`"> -->
 							<strong class="key">{{ value }}</strong>
-						</NuxtLink>
+						<!-- </NuxtLink> -->
 					</template>
 					<template #cell.subscriber="{ value, row }">
 						<div><b>{{ row.subscriberName }}</b></div>
@@ -160,6 +165,7 @@
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
+import DatePicker from '~/components/common/base/DatePicker.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
@@ -179,6 +185,7 @@ const { $flags, $modal } = useNuxtApp();
 const form = reactive({
 	search: '',
 	status: '' as '' | ComplaintsQuery['status'],
+	period: null as Date[] | null,
 });
 const pageData = reactive({
 	complaints: [] as ComplaintsPayload[],
@@ -187,6 +194,7 @@ const pageData = reactive({
 const loading = ref(false);
 
 watch(() => form.status, init);
+watch(() => form.period, onCreatedDatesChanged);
 
 
 init();
@@ -201,10 +209,14 @@ async function fetchList(): Promise<ComplaintsPayload[] | void> {
 	const query: Partial<ComplaintsQuery> = {};
 	if( form.status ) query['status'] = form.status;
 	if( form.search ) query['description'] = form.search;
+	if( Array.isArray(form.period) && form.period.length === 2 ) {
+		query.createdDateFrom = toISODate(form.period[0]!);
+		query.createdDateTo = toISODate(form.period[1]!);
+	}
 	query['page'] = 1;
 	query['size'] = 10;
 
-	const response = await complaints.fetch(query)
+	complaints.fetch(query)
 		.then(res => {
 			const items = res?.data || [];
 			pageData.complaints = items;
@@ -216,12 +228,45 @@ async function fetchList(): Promise<ComplaintsPayload[] | void> {
 
 async function fetchStats(): Promise<void> {
 	const query: Partial<ComplaintsStatsQuery> = {};
+	if( Array.isArray(form.period) && form.period.length === 2 ) {
+		query.createdDateFrom = toISODate(form.period[0]!);
+		query.createdDateTo = toISODate(form.period[1]!);
+	}
 
-	const response = await complaints.fetchStats(query)
+	complaints.fetchStats(query)
 		.then(res => {
 			pageData.stats = res;
 		});
 }
+
+function onCreatedDatesChanged() {
+	if( !form.period || form.period.length === 0 || form.period.every(date => !date) ) {
+		init();
+		return;
+	}
+
+	if( Array.isArray(form.period)
+		&& form.period[0] instanceof Date
+		&& form.period[1] instanceof Date
+	) init();
+}
+
+// function isCompleteDateRange(dates: Date[] | null): dates is [Date, Date] {
+// 	return Array.isArray(dates)
+// 		&& dates[0] instanceof Date
+// 		&& dates[1] instanceof Date;
+// }
+
+// function getDateFilters() {
+// 	const query: Partial<ComplaintsStatsQuery> = {};
+// 	if( !Array.isArray(form.period) ) return query;
+
+// 	const [dateFrom, dateTo] = form.period;
+// 	if( dateFrom ) query.createdDateFrom = toISODate(dateFrom);
+// 	if( dateTo ) query.createdDateTo = toISODate(dateTo);
+
+// 	return query;
+// }
 
 async function showCreateModal() {
 	const created = await $modal.show('ComplaintCreate', { title: 'Регистрация жалобы', nonCloseable: true });
@@ -350,7 +395,7 @@ const itemsByType = computed(() => {
 		}
 
 		.filters {
-			.filter-tabs {
+			>div, >.filter-tabs {
 				margin-top: .7em;
 			}
 		}

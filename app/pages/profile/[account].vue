@@ -191,10 +191,10 @@
 						{ label: 'Расход', key: 'consumption' },
 						{ label: 'Источник', key: 'supplier.name' },
 						{ label: 'Статус', key: 'status' },
-					]" :rows="accountData?.readings">
+					]" :rows="readingsWithStatus">
 						<template #cell.created="{ row, column }">{{ toLocaleDate( String(row[column.key]) ) }}</template>
 						<template #cell.status="{ row, column }">
-							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#ee4444' : '#17a34a', fontWeight: '700' }">
+							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#b81c1d' : '#157f3d', fontWeight: '700' }">
 								{{ row.status }}
 							</div>
 							<div v-else>
@@ -202,7 +202,12 @@
 							</div>
 						</template>
 					</BaseTable>
-					<InfoBox type="warning" title="Внимание" message="Расход за январь (2 348 м³) превышает среднее значение на 162%. Необходимо проверить показания"/>
+					<InfoBox
+						v-if="abnormalReadings.length"
+						type="warning"
+						title="Внимание"
+						:message="`Найдено аномальных показаний: ${abnormalReadings.length}. Проверьте резкие скачки расхода.`"
+					/>
 				</section>
 			</BaseIsland>
 			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6 no-api">
@@ -232,6 +237,32 @@ const accountData = computed(() => accountStore.accountData);
 const billMonthText = computed(() => {
 	const bill = accountData.value?.bill;
 	return bill ? (formatMonth(bill.accrualMonth) || bill.accrualMonth || 'период не указан') : '';
+});
+const readingsWithStatus = computed(() => {
+	const readings = accountData.value?.readings || [];
+	let normalConsumptionSum = 0;
+	let normalConsumptionCount = 0;
+
+	return readings.map(reading => {
+		const consumption = Number(reading.consumption);
+		const averageConsumption = normalConsumptionCount
+			? normalConsumptionSum / normalConsumptionCount
+			: 0;
+		const isAbnormal = Number.isFinite(consumption) && averageConsumption > 0 && Math.abs(consumption - averageConsumption) > 200;
+
+		if (!isAbnormal && Number.isFinite(consumption) && consumption > 0) {
+			normalConsumptionSum += consumption;
+			normalConsumptionCount++;
+		}
+
+		return {
+			...reading,
+			status: isAbnormal ? 'Аномалия' : 'Норма',
+		};
+	});
+});
+const abnormalReadings = computed(() => {
+	return readingsWithStatus.value.filter(reading => reading.status === 'Аномалия');
 });
 const timeline = ref<TimelinePayload[]>([]);
 const timelineLoading = ref(false);

@@ -184,8 +184,7 @@ function close(result: boolean) {
 			}
 
 			.readonly {
-				width: 100%;
-				min-height: 2.8em;
+				// min-height: 2.8em;
 				border: 1px solid #cbd5e1;
 				border-radius: 7px;
 				display: flex;
@@ -193,7 +192,6 @@ function close(result: boolean) {
 				padding: 0 .8em;
 				background: #f8fafc;
 				color: #334155;
-				box-sizing: border-box;
 			}
 		}
 

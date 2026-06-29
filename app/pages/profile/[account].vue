@@ -162,7 +162,7 @@
 						<div v-for="item of timeline" :key="item.id" class="tm-item">
 							<aside>
 								<div class="tm-line"></div>
-								<div class="tm-point">
+								<div :class="[`tm-point`, getPointClass(item.type)]">
 									<BaseIcon :name="timelineIcon(item.type)" size="11px"/>
 								</div>
 							</aside>
@@ -373,8 +373,7 @@ async function fetchTimeline(account?: string | null) {
 		const requestedAccount = account;
 		const response = await complaints.fetchTimeline({
 			account,
-			page: 1,
-			size: 10,
+			size: 7,
 		});
 		if (requestId !== timelineRequestId || accountData.value?.account !== requestedAccount) return;
 		timeline.value = response.data || [];
@@ -392,24 +391,40 @@ async function fetchTimeline(account?: string | null) {
 
 function timelineIcon(type: string) {
 	const value = String(type || '').toLowerCase();
-
-	if (value.includes('жалоба')) return 'mdi-account-alert';
-	if (value.includes('оплата')) return 'mdi-cash-check';
-	if (value.includes('показание')) return 'mdi-counter';
-	if (value.includes('квитанция')) return 'mdi-file-document';
+	switch(value) {
+		case 'показание':
+			return 'mdi-counter';
+		case 'жалоба':
+			return 'mdi-account-alert';
+		case 'платеж':
+			return 'mdi-currency-usd';
+		case 'заявка':
+			return 'mdi-file-document';
+	}
 
 	return 'mdi-history';
 }
 
-function timelineTitle(type: string) {
+function getPointClass(type: string) {
 	const value = String(type || '').toLowerCase();
 
-	if (value.includes('complaint')) return 'Жалоба';
-	if (value.includes('payment')) return 'Оплата';
-	if (value.includes('reading')) return 'Показание';
-	if (value.includes('bill')) return 'Квитанция';
+	switch(value) {
+		case 'показание':
+			return 'blue';
+		case 'жалоба':
+			return 'red';
+		case 'платеж':
+			return 'green';
+		case 'заявка':
+			return 'purple';
+	}
 
-	return 'Действие';
+	if (value.includes('Показание')) return 'mdi-cash-check';
+	if (value.includes('Жалоба')) return 'mdi-account-alert';
+	if (value.includes('Платеж')) return 'mdi-counter';
+	if (value.includes('Заявка')) return 'mdi-file-document';
+
+	return 'mdi-history';
 }
 
 function checkAccountParam() {
@@ -506,6 +521,12 @@ function checkAccountParam() {
 			display: flex;
 			gap: 1em;
 
+			&:last-child {
+				.tm-line {
+					display: none;
+				}
+			}
+
 			aside {
 				position: relative;
 				top: 0;
@@ -532,8 +553,23 @@ function checkAccountParam() {
 					height: 1.2em;
 					margin-left: -.35em;
 					border-radius: 50%;
-					background-color: #2563ea;
+					background-color: #999;
 					color: #fff;
+					&.red {
+						background-color: #e74c4c;
+					}
+					&.green {
+						background-color: #16a34a;
+					}
+					&.blue {
+						background-color: #4371d3;
+					}
+					&.yellow {
+						background-color: #f59e0b;
+					}
+					&.purple {
+						background-color: #7854c9;
+					}
 				}
 			}
 

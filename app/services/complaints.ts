@@ -64,6 +64,14 @@ export type StatsResponse = {
 	osh: StatsPayload,
 	jalalabad: StatsPayload
 }
+export type CountsResponse = {
+	total: number;
+	new: number;
+	inProgress: number;
+	closed: number;
+	expired: number;
+	avgProcessingTime: number;
+}
 
 export const complaints = {
 	fetch(query: Partial<ComplaintsQuery> = {}): Promise<ComplaintsResponse> {
@@ -79,6 +87,15 @@ export const complaints = {
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<StatsResponse>('/v1/call-gas/complaints/statistics', {
+			method: 'GET',
+			query
+		});
+	},
+
+	fetchCounts(query: Partial<Record<string, any>> = {}): Promise<CountsResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<CountsResponse>('/v1/call-gas/complaints/counts', {
 			method: 'GET',
 			query
 		});

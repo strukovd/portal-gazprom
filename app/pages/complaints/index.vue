@@ -91,11 +91,11 @@
 				</BaseIsland>
 			</template>
 			<template v-else-if="[`CALLCENTER`].includes(userStore?.userData?.role ?? '')">
-				<section class="stats" v-if="pageData.stats?.all">
-					<BaseIsland class="col-4 stat" data-aos="zoom-in" v-for="(item, index) of [
-						{ value: pageData.stats?.all.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle', color: 'red', },
-						{ value: '-', label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
-						{ value: pageData.stats?.all.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
+				<section class="stats" v-if="pageData?.counts">
+					<BaseIsland class="stat-tile" data-aos="zoom-in" v-for="(item, index) of [
+						{ value: pageData.counts.inProgress, label: 'Открытых жалоб', icon: 'mdi-alert-circle-outline', color: 'red', },
+						{ value: pageData.counts.avgProcessingTime, label: 'Среднее время обработки', icon: 'mdi-clock-outline', color: 'blue', },
+						{ value: pageData.counts.new, label: 'Новых (не отработанных)', icon: 'mdi-check-circle-outline', color: 'green', }
 					]" :key="index">
 						<section v-if="item.icon" :class="['icon-circle', item.color]">
 							<BaseIcon :name="item.icon" size="1.6em"/>
@@ -172,7 +172,7 @@ import BaseTable from '~/components/common/base/BaseTable.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
-import { complaints, type ComplaintsPayload, type ComplaintsQuery, type ComplaintsStatsQuery, type StatsResponse } from '~/services/complaints';
+import { complaints, type ComplaintsPayload, type ComplaintsQuery, type ComplaintsStatsQuery, type CountsResponse, type StatsResponse } from '~/services/complaints';
 import { toLocaleDate } from '~/utils/format';
 definePageMeta({
 	auth: true,
@@ -190,6 +190,7 @@ const form = reactive({
 const pageData = reactive({
 	complaints: [] as ComplaintsPayload[],
 	stats: {} as StatsResponse,
+	counts: {} as CountsResponse
 });
 const loading = ref(false);
 
@@ -199,8 +200,18 @@ watch(() => form.period, onCreatedDatesChanged);
 
 init();
 async function init() {
+	const userRole = userStore?.userData?.role;
 	fetchList();
-	fetchStats();
+
+	switch(userRole) {
+		case `ADMIN`:
+		case `CALLCENTER_MANAGER`:
+			fetchStats();
+			break;
+		case `CALLCENTER`:
+			fetchCounts();
+			break;
+	}
 }
 
 
@@ -236,6 +247,13 @@ async function fetchStats(): Promise<void> {
 	complaints.fetchStats(query)
 		.then(res => {
 			pageData.stats = res;
+		});
+}
+
+async function fetchCounts(): Promise<void> {
+	complaints.fetchCounts()
+		.then(res => {
+			pageData.counts = res;
 		});
 }
 

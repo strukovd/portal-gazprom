@@ -123,9 +123,9 @@
 					:rows="pageData.complaints"
 					:loading="loading"
 				>
-					<template #cell.id="{ value }">
+					<template #cell.id="{ value, row }">
 						<!-- <NuxtLink :to="`/complaints/${value}`"> -->
-							<strong class="key">{{ value }}</strong>
+							<strong class="key" @click="showComplaint(row)">{{ value }}</strong>
 						<!-- </NuxtLink> -->
 					</template>
 					<template #cell.subscriber="{ value, row }">
@@ -287,6 +287,15 @@ function onCreatedDatesChanged() {
 async function showCreateModal() {
 	const created = await $modal.show('ComplaintCreate', { title: 'Регистрация жалобы', nonCloseable: true });
 	if (created) init();
+}
+
+function showComplaint(item: ComplaintsPayload) {
+	$modal.show('ComplaintDetails', {
+		title: `Жалоба #${item.id}`,
+		payload: {
+			complaint: item,
+		}
+	});
 }
 
 function getStatusClass(status: any) {

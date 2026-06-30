@@ -47,7 +47,7 @@
 						<div class="title">Нет жалоб</div>
 					</div>
 					<template v-else>
-						<div v-for="item of pageData.complaints" :key="item.id" class="complaint">
+						<div v-for="item of pageData.complaints" :key="item.id" class="complaint" @click="showComplaint(item)">
 							<div>
 								<strong>Жалоба #{{ item.id }}</strong>
 								<a>{{ item.branchName || 'Филиал не указан' }}</a>
@@ -211,6 +211,7 @@ import { offices } from '~/services/offices';
 import { tariffs } from '~/services/tariffs';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
+const { $flags, $modal } = useNuxtApp();
 
 definePageMeta({
 	auth: true,
@@ -260,14 +261,36 @@ async function init() {
 		.then((res) => { if (res) pageData.offices = res; })
 	tariffs.fetch()
 		.then((res) => { if (res) pageData.tariffs = res; })
+
+	complaintsLoading.value = true;
 	complaints.fetch({ page: 1, size: 3 })
 		.then((res) => { pageData.complaints = res?.data || []; })
+		.catch((error: any) => {
+			const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить жалобы.';
+			$flags.error(text, { title: 'Ошибка загрузки жалоб' });
+		})
+		.finally(() => {
+			complaintsLoading.value = false;
+		})
 	complaints.fetchCounts()
 		.then((res) => { pageData.complaintCounts = res; })
+		.catch((error: any) => {
+			const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить статистику жалоб.';
+			$flags.error(text, { title: 'Ошибка статистики жалоб' });
+		})
 }
 
 function complaintDescription(item: ComplaintsPayload) {
 	return `${item.subscriberName || 'Абонент'} - ${item.subject || item.description || 'Без темы'}`;
+}
+
+function showComplaint(item: ComplaintsPayload) {
+	$modal.show('ComplaintDetails', {
+		title: `Жалоба #${item.id}`,
+		payload: {
+			complaint: item,
+		}
+	});
 }
 
 function getComplaintStatusClass(status: string) {
@@ -348,6 +371,12 @@ function getComplaintStatusClass(status: string) {
 				padding: 12px 14px;
 				border-radius: 8px;
 				background: #fff;
+				cursor: pointer;
+				transition: background-color 200ms ease 0s;
+
+				&:hover {
+					background: #f8fafc;
+				}
 
 				div {
 					display: grid;

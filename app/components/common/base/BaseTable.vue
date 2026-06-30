@@ -32,6 +32,7 @@
 					v-for="(row, rowIndex) of rows"
 					:key="getRowKey(row, rowIndex)"
 					class="base-table-row"
+					@click="emit('row:click', row, rowIndex)"
 				>
 					<td v-for="column of columns" :key="column.key" :class="['base-table__cell', column.cellClass]">
 						<slot
@@ -71,6 +72,9 @@ const props = withDefaults(defineProps<{
 	loading: false,
 	rowKey: 'id',
 });
+const emit = defineEmits<{
+	'row:click': [row: TableRow, index: number];
+}>();
 
 function getValue(row: TableRow, key: string): unknown {
 	// Поддержка вложенных ключей через точку, например "user.name"

@@ -122,10 +122,11 @@
 					]"
 					:rows="pageData.complaints"
 					:loading="loading"
+					@row:click="showComplaint"
 				>
 					<template #cell.id="{ value, row }">
 						<!-- <NuxtLink :to="`/complaints/${value}`"> -->
-							<strong class="key" @click="showComplaint(row)">{{ value }}</strong>
+							<strong class="key">{{ value }}</strong>
 						<!-- </NuxtLink> -->
 					</template>
 					<template #cell.subscriber="{ value, row }">
@@ -289,11 +290,13 @@ async function showCreateModal() {
 	if (created) init();
 }
 
-function showComplaint(item: ComplaintsPayload) {
+function showComplaint(item: ComplaintsPayload | Record<string, unknown>) {
+	const complaint = item as ComplaintsPayload;
+
 	$modal.show('ComplaintDetails', {
-		title: `Жалоба #${item.id}`,
+		title: `Жалоба #${complaint.id}`,
 		payload: {
-			complaint: item,
+			complaint,
 		}
 	});
 }
@@ -472,6 +475,13 @@ const itemsByType = computed(() => {
 		}
 
 		.list {
+			.base-table-row {
+				cursor: pointer;
+				&:hover {
+					background: #f8fafc;
+				}
+			}
+
 			.key {
 				color: #2563eb;
 				text-decoration: underline;

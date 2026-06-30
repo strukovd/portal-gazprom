@@ -249,12 +249,10 @@ export default defineComponent({
 			background: #f8fafc;
 			color: #94a3b8;
 			border-color: #cbd5e1;
-			cursor: not-allowed;
 
 			.append-icon, .prepend-icon {
 				color: #cbd5e1;
 			}
-
 			input {
 				pointer-events: none;
 			}

@@ -1,5 +1,5 @@
 <template>
-	<div class="text-box" :class="{ 'invalid': error }">
+	<div class="text-box" :class="{ 'invalid': error, 'disabled': disabled }">
 		<label>
 			<div class="text-box-wrapper">
 				<header class="header" style="display:flex; align-items:start; padding-right:1em;">
@@ -13,7 +13,7 @@
 				</header>
 				<section class="text-box-section">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" :name="prependIcon"></BaseIcon>
-					<textarea :style="{ height, resize }" :type="type" :placeholder="placeholder" :value="modelValue" @input="onInput"></textarea>
+					<textarea :disabled="disabled" :style="{ height, resize }" :type="type" :placeholder="placeholder" :value="modelValue" @input="onInput"></textarea>
 					<BaseIcon v-if="appendIcon" class="append-icon" :name="appendIcon"></BaseIcon>
 				</section>
 			</div>
@@ -36,6 +36,7 @@ export default defineComponent({
 		prependIcon: String,
 		appendIcon: String,
 		placeholder: String,
+		disabled: Boolean,
 		height: String,
 		resize: { type: String as () => 'none' | 'both' | 'horizontal' | 'vertical', default: 'none' },
 		type: {
@@ -54,6 +55,7 @@ export default defineComponent({
 	},
 	methods: {
 		onInput(event: Event) {
+			if (this.disabled) return;
 			this.$emit('update:modelValue', (event.target as any)?.value ?? '');
 		}
 	},
@@ -141,6 +143,21 @@ export default defineComponent({
 
 			// outline:1px dashed red;
 			// color: red;
+		}
+	}
+
+	&.disabled {
+		.text-box-section {
+			background: #f8fafc;
+			color: #94a3b8;
+			border-color: #cbd5e1;
+
+			.append-icon, .prepend-icon {
+				color: #cbd5e1;
+			}
+			textarea {
+				pointer-events: none;
+			}
 		}
 	}
 }

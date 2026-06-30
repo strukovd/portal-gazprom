@@ -9,12 +9,12 @@
 			<section class="statistics">
 				<template
 					v-for="(item, index) of [
-						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: '0',					title: 'Открытых жалоб' },
-						{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-clock-outline',				value: '00:00',				title: 'Среднее время обработки' },
+						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: stats.openComplaints,	title: 'Открытых жалоб' },
+						{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-clock-outline',				value: stats.avgProcessingTime,	title: 'Среднее время обработки' },
 						{ bg: '#16a34a', 	color: '#16a34a', 		icon: 'mdi-check-circle-outline',		value: stats.readings,		title: 'Новые показания сегодня' },
 						{ bg: '#f3ac00', 	color: '#f3ac00', 		icon: 'mdi-newspaper-variant-outline',	value: stats.news,			title: 'Новостей за день' },
 					]" :key="index">
-					<BaseIsland data-aos="zoom-in" :class="['stat', {'no-api': [0,1].includes(index)}]" :style="{ '--bg': item.bg, '--color': item.color }">
+					<BaseIsland data-aos="zoom-in" class="stat" :style="{ '--bg': item.bg, '--color': item.color }">
 						<section class="icon">
 							<div class="box">
 								<BaseIcon :name="item.icon" :size="'1.5em'" :color="item.color"/>
@@ -36,25 +36,29 @@
 			</section>
 
 			<!-- Жалобы -->
-			<section class="no-api">
-				<BaseIsland title="Жалобы" prependIcon="mdi-format-list-bulleted" data-aos="fade-up">
-					<div class="complaints">
-						<div v-for="(item, index) of [
-							{ number: 4821, branch: 'Филиал: Бишкекгаз', description: 'Тамара Ефимова - Нет газа 3 дня', status: 'Новая', statusClass: 'new', },
-							{ number: 4815, branch: 'Филиал: Бишкекгаз', description: 'Ольга Дмитриевна - Нет квитанции', status: 'Просрочена', statusClass: 'expired', },
-							{ number: 4813, branch: 'Филиал: Чуйгаз', description: 'Виктор Полянский - Долгое подключение', status: 'В работе', statusClass: 'work', },
-						]" :key="index" class="complaint">
+			<BaseIsland title="Жалобы" prependIcon="mdi-format-list-bulleted" data-aos="fade-up">
+				<div class="complaints">
+					<div v-if="complaintsLoading" class="empty-state">
+						<BaseIcon name="mdi-loading" size="1.3em" />
+						<div class="title">Загрузка жалоб...</div>
+					</div>
+					<div v-else-if="!pageData.complaints.length" class="empty-state">
+						<BaseIcon name="mdi-alert-circle-outline" size="1.3em" />
+						<div class="title">Нет жалоб</div>
+					</div>
+					<template v-else>
+						<div v-for="item of pageData.complaints" :key="item.id" class="complaint">
 							<div>
-								<strong>Жалоба #{{ item.number }}</strong>
-								<a href="#">{{ item.branch }}</a>
-								<span>{{ item.description }}</span>
+								<strong>Жалоба #{{ item.id }}</strong>
+								<a>{{ item.branchName || 'Филиал не указан' }}</a>
+								<span>{{ complaintDescription(item) }}</span>
 							</div>
 
-							<b :class="item.statusClass">{{ item.status }}</b>
+							<b :class="getComplaintStatusClass(item.status)">{{ item.status }}</b>
 						</div>
-					</div>
-				</BaseIsland>
-			</section>
+					</template>
+				</div>
+			</BaseIsland>
 
 			<!-- Срочные отключения и изменения FAQ -->
 			<section>
@@ -206,10 +210,11 @@ import { news } from '~/services/news';
 import { offices } from '~/services/offices';
 import { tariffs } from '~/services/tariffs';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
+import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER'],
 	layout: 'authorized'
 });
 
@@ -223,11 +228,18 @@ const pageData = reactive({
 	disconnections: [] as NewsPayload[],
 	offices: [] as OfficesPayload[],
 	tariffs: null as TariffPayload | null,
+	complaints: [] as ComplaintsPayload[],
+	complaintCounts: null as CountsResponse | null,
 });
+const complaintsLoading = ref(false);
 
 
 const stats = computed(() => {
 	return {
+		openComplaints: (pageData.complaintCounts?.new || 0)
+			+ (pageData.complaintCounts?.inProgress || 0)
+			+ (pageData.complaintCounts?.expired || 0),
+		avgProcessingTime: pageData.complaintCounts?.avgProcessingTime || 0,
 		readings: pageData.readings.length,
 		news: pageData.news.length,
 	};
@@ -248,6 +260,29 @@ async function init() {
 		.then((res) => { if (res) pageData.offices = res; })
 	tariffs.fetch()
 		.then((res) => { if (res) pageData.tariffs = res; })
+	complaints.fetch({ page: 1, size: 3 })
+		.then((res) => { pageData.complaints = res?.data || []; })
+	complaints.fetchCounts()
+		.then((res) => { pageData.complaintCounts = res; })
+}
+
+function complaintDescription(item: ComplaintsPayload) {
+	return `${item.subscriberName || 'Абонент'} - ${item.subject || item.description || 'Без темы'}`;
+}
+
+function getComplaintStatusClass(status: string) {
+	switch (status) {
+		case 'Новая':
+			return 'new';
+		case 'Просрочено':
+			return 'expired';
+		case 'В работе':
+			return 'work';
+		case 'Закрыто':
+			return 'closed';
+		default:
+			return '';
+	}
 }
 </script>
 
@@ -349,6 +384,10 @@ async function init() {
 
 					&.work {
 						color: #d97706;
+					}
+
+					&.closed {
+						color: #16a34a;
 					}
 				}
 			}

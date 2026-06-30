@@ -16,8 +16,6 @@
 			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="zoom-in">
 				<div>
 					<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
-				</div>
-				<div>
 					<DatePicker v-model="form.period" placeholder="Период создания"/>
 				</div>
 				<BaseTabs class="filter-tabs" v-model="form.status" :items="[
@@ -176,7 +174,7 @@ import { complaints, type ComplaintsPayload, type ComplaintsQuery, type Complain
 import { toLocaleDate } from '~/utils/format';
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTRACTOR', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER'],
 	layout: 'authorized'
 });
 const userStore = useUserStore();

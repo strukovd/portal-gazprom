@@ -46,7 +46,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTROLLER'],
 	layout: 'authorized'
 });
 

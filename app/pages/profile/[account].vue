@@ -272,7 +272,7 @@ let timelineRequestId = 0;
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTRACTOR'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTROLLER'],
 	layout: 'authorized'
 });
 

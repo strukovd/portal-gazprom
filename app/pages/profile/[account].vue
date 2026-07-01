@@ -82,15 +82,18 @@
 						</tr>
 						<tr>
 							<td>Телефон</td>
-							<td>Не указан</td>
+							<td>{{ accountData.contacts.filter(c => c.type.toUpperCase().includes('PHONE')).map(c => c.value).join(', ') || 'Не указан' }}</td>
 						</tr>
 						<tr>
 							<td>Email</td>
-							<td>Не указан</td>
+							<td>{{ accountData.contacts.filter(c => c.type.toUpperCase().includes('EMAIL')).map(c => c.value).join(', ') || 'Не указан' }}</td>
 						</tr>
 						<tr>
 							<td>Счетчик</td>
-							<td>Не указан</td>
+							<td>
+								<div><span>Модель: </span><span>{{ accountData.equipment?.model || 'Не указана' }}</span></div>
+								<div><span>Номер: </span><span>{{ accountData.equipment?.number || 'Не указан' }}</span></div>
+							</td>
 						</tr>
 						<tr>
 							<td>Тип</td>

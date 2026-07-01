@@ -7,7 +7,11 @@ export type AccountData = {
 	district: string;
 	balance: number;
 	type: string;
-	contacts: never[];
+	contacts: {
+		created: string;
+		type: string;
+		value: string;
+	}[];
 	readings: { // показания
 		id: number;
 		reading: number;
@@ -42,7 +46,10 @@ export type AccountData = {
 		agreementNumber?: string;
 		typeOfActivity: string;
 	};
-	equipment: null;
+	equipment: {
+		model: string;
+		number: string;
+	} | null;
 	bill: {
 		id: number;
 		account: string;

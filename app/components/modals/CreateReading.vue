@@ -14,8 +14,10 @@
 			</section> -->
 
 			<section class="form">
-				<BaseTextBox v-model="previousReadingText" readonly disabled label="Предыдущее показание, м³"/>
-				<BaseTextBox v-model="reading" autofocus label="Новое показание, м³" placeholder="Введите новые показание" @submit="sendReading"/>
+				<section style="font-size:1.6em;">
+					<BaseTextBox v-model="previousReadingText" readonly disabled label="Предыдущее показание, м³"/>
+					<BaseTextBox v-model="reading" autofocus label="Новое показание, м³" placeholder="Введите новые показание" @submit="sendReading"/>
+				</section>
 				<div v-if="consumption !== null" class="consumption">
 					Расход: <b>{{ consumption }} м³</b>
 				</div>

@@ -197,7 +197,7 @@ export default defineComponent({
 			align-items: center;
 			white-space: nowrap;
 			text-wrap: nowrap;
-			font-size: 16px;
+			font-size: max(100%, 16px);
 			background: #FFFFFF;
 			border-radius: 7px;
 			border: 1px solid #d4d4d4;
@@ -219,7 +219,7 @@ export default defineComponent({
 				flex: auto 1 0;
 				color: inherit;
 				outline: none;
-				font-size: 16px;
+				font-size: max(100%, 16px);
 				box-sizing: border-box;
 				background: transparent;
 				// padding:.5em .7em;

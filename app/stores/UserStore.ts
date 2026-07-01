@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 type UserData = {
 	id: number;
 	login: string;
-	role: 'ADMIN' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CALLCENTER';
+	role: 'ADMIN' | 'CALLCENTER' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CONTROLLER';
 	userName: null,
 	contractorId: unknown,
 	officeId: unknown
@@ -55,6 +55,7 @@ export const useUserStore = defineStore('user', {
 		prettyRole: (state) => {
 			switch( state.userData?.role ) {
 				case 'CALLCENTER':
+				case 'CALLCENTER_MANAGER':
 					return 'Оператор колл-центра';
 				case 'CONTROLLER':
 					return 'Контролёр';

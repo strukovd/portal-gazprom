@@ -55,7 +55,7 @@ const iconMap = {
 	display: flex;
 	flex-direction: column;
 	gap: .6em;
-	z-index: 99999;
+	z-index: 2000;
 
 	.flag {
 		display: flex;

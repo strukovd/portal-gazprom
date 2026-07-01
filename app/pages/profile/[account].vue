@@ -549,6 +549,7 @@ function checkAccountParam() {
 		display: flex;
 		flex-direction: column;
 		gap: .5em;
+		overflow: visible;
 
 		.tm-state {
 			padding: 2em 0;

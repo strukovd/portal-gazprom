@@ -31,9 +31,9 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			API_TOKEN: process.env.NUXT_PUBLIC_API_TOKEN,
-			API_BASE_URL: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'https://api-test.gazprom.kg/api',
-			CALL_GAS_BASE_URL: process.env.NUXT_PUBLIC_CALL_GAS_BASE_URL ?? 'https://api-test.gazprom.kg/api',
-			PORTAL_BASE_URL: process.env.NUXT_PUBLIC_PORTAL_BASE_URL ?? 'https://api-test.gazprom.kg/api',
+			API_BASE_URL: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'https://api.gazprom.kg/api',
+			CALL_GAS_BASE_URL: process.env.NUXT_PUBLIC_CALL_GAS_BASE_URL ?? 'https://api.gazprom.kg/api',
+			PORTAL_BASE_URL: process.env.NUXT_PUBLIC_PORTAL_BASE_URL ?? 'https://api.gazprom.kg/api',
 		},
 	},
 	fonts: {

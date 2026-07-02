@@ -39,6 +39,7 @@ export type NewsCreatePayload = {
 	startDate: string;
 	endDate: string;
 };
+export type NewsUpdatePayload = NewsCreatePayload; 
 export type NewsGetQuery = {
 	title: string;
 	categoryFilter: NewsCategory;

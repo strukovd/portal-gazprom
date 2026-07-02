@@ -17,11 +17,18 @@ export type ComplaintsStatsQuery = {
 		createdDateTo: string;
 };
 export type ComplaintsBody = {
-		account: string;
-		subject: `Жалоба на БСГ` | `Жалоба на сотрудника` | `Прочее` | `Тарифы/Прейскурант цен` | `Не восстановили дорожное покрытие после газификации` | `Некорректные начисления` | `Не приносят квитанции` | `Перерасчет начислений` | `Повредили газопровод` | `Предоставление услуг:Разработка ЭЧ` | `Установка/Снятие/Замена БСГ` | `Предоставление услуг СМР, ПНР, Замена БСГ` | `Утечка/ Авария`;
-		urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
-		description: string;
-		contactNumber?: string;
+	account: string;
+	subject: `Жалоба на БСГ` | `Жалоба на сотрудника` | `Прочее` | `Тарифы/Прейскурант цен` | `Не восстановили дорожное покрытие после газификации` | `Некорректные начисления` | `Не приносят квитанции` | `Перерасчет начислений` | `Повредили газопровод` | `Предоставление услуг:Разработка ЭЧ` | `Установка/Снятие/Замена БСГ` | `Предоставление услуг СМР, ПНР, Замена БСГ` | `Утечка/ Авария`;
+	urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
+	description: string;
+	contactNumber?: string;
+};
+export type ComplaintsPutBody = {
+	urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
+	description: string;
+	contactNumber?: string;
+	files?: string[];
+	status: string;
 };
 export type ComplaintsResponse = {
 	data: ComplaintsPayload[];
@@ -129,5 +136,22 @@ export const complaints = {
 			method: 'POST',
 			body
 		});
-	}
+	},
+
+	update(id: number, body: ComplaintsPutBody): Promise<ComplaintsResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<ComplaintsResponse>(`/v1/call-gas/complaints/${id}`, {
+			method: 'PUT',
+			body
+		});
+	},
+
+	delete(id: number): Promise<ComplaintsResponse> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<ComplaintsResponse>(`/v1/call-gas/complaints/${id}`, {
+			method: 'DELETE'
+		});
+	},
 };

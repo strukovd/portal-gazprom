@@ -26,11 +26,11 @@
 			<BaseMemo v-model="form.text" height="110px" resize="vertical" label="Основной текст" placeholder="Введите текст новости"/>
 			<BaseMemo v-model="form.textForClient" height="90px" resize="vertical" label="Текст для озвучивания абоненту" placeholder="Введите текст для оператора"/>
 
-			<InfoBox v-if="errorMessage" type="error" title="Не удалось создать новость" :message="errorMessage"/>
+			<InfoBox v-if="errorMessage" type="error" :title="errorTitle" :message="errorMessage"/>
 
 			<footer class="footer">
 				<BaseButton prependIcon="mdi-check" :disabled="loading" @click="sendForm">
-					{{ loading ? 'Создание...' : 'Создать новость' }}
+					{{ submitText }}
 				</BaseButton>
 				<BaseButton prependIcon="mdi-close" variant="secondary" :disabled="loading" @click="close(false)">Отмена</BaseButton>
 			</footer>
@@ -39,13 +39,19 @@
 </template>
 
 <script lang="ts" setup>
-import type { NewsCreatePayload } from '~/types/CallGas';
 import BaseAutocomplete from '../common/base/BaseAutocomplete.vue';
 import BaseButton from '../common/base/BaseButton.vue';
 import BaseMemo from '../common/base/BaseMemo.vue';
 import BaseTabs from '../common/base/BaseTabs.vue';
 import BaseTextBox from '../common/base/BaseTextBox.vue';
 import InfoBox from '../common/InfoBox.vue';
+import { news, type NewsCategory, type NewsCreatePayload, type NewsPayload } from '~/services/news';
+
+const props = defineProps<{
+	payload?: {
+		news?: NewsPayload;
+	};
+}>();
 
 const categories = [
 	{ key: 'DISCONNECTION', value: 'Отключение газа', icon: 'mdi-fire-off', sub: [
@@ -77,11 +83,18 @@ const urgencyLevels = [
 	{ key: 'HIGH', value: 'Высокий', icon: 'mdi-alert-octagon' },
 ];
 
-const { $fetchCallGas, $flags } = useNuxtApp();
-const currentCategory = ref('DISCONNECTION');
+const { $flags } = useNuxtApp();
+const editingNews = computed(() => props.payload?.news || null);
+const isEdit = computed(() => Boolean(editingNews.value));
+const currentCategory = ref<NewsCategory>('DISCONNECTION');
 const subCategories = computed(() => categories.find(category => category.key === currentCategory.value)?.sub || []);
 const loading = ref(false);
 const errorMessage = ref('');
+const errorTitle = computed(() => isEdit.value ? 'Не удалось сохранить новость' : 'Не удалось создать новость');
+const submitText = computed(() => {
+	if (loading.value) return isEdit.value ? 'Сохранение...' : 'Создание...';
+	return isEdit.value ? 'Сохранить новость' : 'Создать новость';
+});
 const form = reactive<NewsCreatePayload>({
 	title: '',
 	text: '',
@@ -93,8 +106,13 @@ const form = reactive<NewsCreatePayload>({
 	endDate: '',
 });
 
+fillForm();
+
 watch(currentCategory, () => {
-	form.categoryType = (subCategories.value[0]?.key || '') as NewsCreatePayload['categoryType'];
+	const currentSubCategoryExists = subCategories.value.some(item => item.key === form.categoryType);
+	if (!currentSubCategoryExists) {
+		form.categoryType = (subCategories.value[0]?.key || '') as NewsCreatePayload['categoryType'];
+	}
 });
 
 async function sendForm() {
@@ -112,9 +130,16 @@ async function sendForm() {
 
 	loading.value = true;
 	try {
-		await $fetchCallGas('/news', { method: 'POST', body: form });
-		$flags.success('Новость создана');
-		close(true);
+		if (editingNews.value) {
+			await news.update(editingNews.value.id, form);
+			$flags.success('Новость сохранена');
+			close('updated');
+		}
+		else {
+			await news.create(form);
+			$flags.success('Новость создана');
+			close('created');
+		}
 	}
 	catch (error: any) {
 		const data = error?.data || error?.response?._data;
@@ -126,7 +151,22 @@ async function sendForm() {
 	}
 }
 
-function close(result: boolean) {
+function fillForm() {
+	const item = editingNews.value;
+	if (!item) return;
+
+	currentCategory.value = (item.category || 'DISCONNECTION') as NewsCategory;
+	form.title = item.title || '';
+	form.text = item.text || '';
+	form.textForClient = item.textForClient || '';
+	form.categoryType = item.categoryType || '';
+	form.branch = (item.branch || '') as NewsCreatePayload['branch'];
+	form.urgencyLevel = (item.urgencyLevel || '') as NewsCreatePayload['urgencyLevel'];
+	form.startDate = item.startDate ? item.startDate.slice(0, 10) : new Date().toISOString().slice(0, 10);
+	form.endDate = item.endDate ? item.endDate.slice(0, 10) : '';
+}
+
+function close(result: boolean | 'created' | 'updated') {
 	const modal = useAppStore().modals.pop();
 	if (modal?.resolve) modal.resolve(result);
 }

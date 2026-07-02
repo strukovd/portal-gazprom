@@ -43,6 +43,11 @@
 								</strong>
 							</div>
 
+							<div v-if="userStore.isPrivilegedUser" class="news-actions">
+								<BaseButton prependIcon="mdi-pencil-outline" variant="secondary" @click="openEditNews(item)">Редактировать</BaseButton>
+								<BaseButton prependIcon="mdi-delete-outline" color="#dc2626" @click="deleteNews(item)">Удалить</BaseButton>
+							</div>
+
 							<h3>{{ item.title }}</h3>
 
 							<p>{{ item.text }}</p>
@@ -86,6 +91,11 @@
 								Опубликовано: {{ formatDate(item.created) }} · Филиал: {{ getBranchLabel(item.branch) }}
 							</span>
 
+							<div v-if="userStore.isPrivilegedUser" class="news-actions">
+								<BaseButton prependIcon="mdi-pencil-outline" variant="secondary" @click="openEditNews(item)">Редактировать</BaseButton>
+								<BaseButton prependIcon="mdi-delete-outline" color="#dc2626" @click="deleteNews(item)">Удалить</BaseButton>
+							</div>
+
 							<p>{{ item.text }}</p>
 
 							<div v-if="item.textForClient" class="voice-text">
@@ -112,8 +122,7 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
-import { news } from '~/services/news';
-import type { NewsCategory, NewsLevel, NewsPayload } from '~/types/CallGas';
+import { news, type NewsCategory, type NewsLevel, type NewsPayload } from '~/services/news';
 import { formatDate, formatDateTime } from '~/utils/format';
 
 definePageMeta({
@@ -124,7 +133,8 @@ definePageMeta({
 
 type NewsTab = Extract<NewsCategory, 'DISCONNECTION' | 'GASIFICATION'> | undefined;
 
-const { $modal } = useNuxtApp();
+const { $flags, $modal } = useNuxtApp();
+const userStore = useUserStore();
 const form = reactive<{ tab: NewsTab }>({
 	tab: undefined,
 });
@@ -171,6 +181,32 @@ async function loadNews() {
 async function openCreateNews() {
 	const created = await $modal.show('NewsCreate', { title: 'Создание новости', nonCloseable: true });
 	if (created) loadNews();
+}
+
+async function openEditNews(item: NewsPayload) {
+	const updated = await $modal.show('NewsCreate', {
+		title: `Редактирование новости #${item.id}`,
+		nonCloseable: true,
+		payload: {
+			news: item,
+		}
+	});
+	if (updated) loadNews();
+}
+
+async function deleteNews(item: NewsPayload) {
+	if (!window.confirm(`Удалить новость "${item.title}"?`)) return;
+
+	try {
+		await news.delete(item.id);
+		$flags.success('Новость удалена');
+		loadNews();
+	}
+	catch (error: any) {
+		const data = error?.data || error?.response?._data;
+		const message = data?.message || data?.error || data?.detail || error?.message;
+		$flags.error(Array.isArray(message) ? message.join('\n') : (message || 'Не удалось удалить новость'));
+	}
 }
 
 function isNewsExpired(item: NewsPayload) {
@@ -293,6 +329,12 @@ function getBranchLabel(value: string) {
 					}
 				}
 
+				.news-actions {
+					display: flex;
+					justify-content: flex-end;
+					gap: .5em;
+				}
+
 				h3 {
 					margin: 0;
 					font-size: 15px;
@@ -399,6 +441,11 @@ function getBranchLabel(value: string) {
 				.date {
 					color: #6b7280;
 					font-size: 13px;
+				}
+
+				.news-actions {
+					display: flex;
+					gap: .5em;
 				}
 
 				>p {

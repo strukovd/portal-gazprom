@@ -11,6 +11,38 @@ export type NewsResponse = {
 	limit: number;
 	totalPages: number;
 };
+export type NewsCreateResponse = {
+	id: number;
+	category: string;
+	categoryType: string;
+	branch: string;
+	urgencyLevel: string;
+	title: string;
+	text: string;
+	textForClient: string;
+	startDate: string;
+	endDate: string;
+	user: {
+		id: number;
+		login: string;
+		name: null;
+	};
+	created: string;
+	updated: string;
+}
+export type NewsUpdateResponse = {
+	title: string;
+	text: string;
+	textForClient: string;
+	categoryType: string;
+	branch: string;
+	urgencyLevel: string;
+	startDate: string;
+	endDate: string;
+};
+export type NewsDeleteResponse = {
+	message: string;
+}
 export type NewsPayload = {
 	id: number;
 	category: string;
@@ -40,7 +72,7 @@ export type NewsCreatePayload = {
 	startDate: string;
 	endDate: string;
 };
-export type NewsUpdatePayload = NewsCreatePayload; 
+export type NewsUpdatePayload = NewsCreatePayload;
 export type NewsGetQuery = {
 	title: string;
 	categoryFilter: NewsCategory;
@@ -55,7 +87,6 @@ export type NewsGetQuery = {
 	page: number;
 	size: number;
 };
-
 
 export const news = {
 	fetch(query: Partial<NewsGetQuery> = {}): Promise<NewsPayload[] | void> {
@@ -73,47 +104,29 @@ export const news = {
 			});
 	},
 
-	create(body: Partial<NewsCreatePayload>): Promise<NewsPayload | void> {
+	create(body: Partial<NewsCreatePayload>): Promise<NewsCreateResponse> {
 		const { $fetchCallGas } = useNuxtApp();
 
-		return $fetchCallGas<NewsResponse>('/news', {
+		return $fetchCallGas<NewsCreateResponse>('/news', {
 			method: 'POST',
 			body
-		})
-			.then((resp) => {
-				return resp.data[0];
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при создании новости:', error);
-			});
+		});
 	},
 
-	update(id: number, body: Partial<NewsUpdatePayload>): Promise<NewsPayload | void> {
+	update(id: number, body: Partial<NewsUpdatePayload>): Promise<NewsUpdateResponse> {
 		const { $fetchCallGas } = useNuxtApp();
 
-		return $fetchCallGas<NewsResponse>(`/news/${id}`, {
+		return $fetchCallGas<NewsUpdateResponse>(`/news/${id}`, {
 			method: 'PATCH',
 			body
-		})
-			.then((resp) => {
-				return resp.data[0];
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при обновлении новости:', error);
-			});
+		});
 	},
 
-	delete(id: number): Promise<NewsPayload | void> {
+	delete(id: number): Promise<NewsDeleteResponse> {
 		const { $fetchCallGas } = useNuxtApp();
 
-		return $fetchCallGas<NewsResponse>(`/news/${id}`, {
+		return $fetchCallGas<NewsDeleteResponse>(`/news/${id}`, {
 			method: 'DELETE'
-		})
-			.then((resp) => {
-				return resp.data[0];
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при удалении новости:', error);
-			});
+		});
 	}
 };

@@ -52,6 +52,10 @@ export const useUserStore = defineStore('user', {
 	},
 
 	getters: {
+		isPrivilegedUser: (state) => {
+			return ['ADMIN', 'CALLCENTER_MANAGER'].includes(state.userData?.role ?? '');
+		},
+
 		prettyRole: (state) => {
 			switch( state.userData?.role ) {
 				case 'CALLCENTER':

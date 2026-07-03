@@ -1,14 +1,16 @@
 <template>
 	<button type="button"
 		class="base-button"
-		:class="[variant, { 'disabled': disabled }]"
+		:class="[variant, { 'disabled': isDisabled, 'loading': loading }]"
+		:disabled="isDisabled"
 		:style="{
-			color: !disabled && variant === 'secondary' && color ? color : '',
-			borderColor: !disabled && variant === 'secondary' && color ? color : '',
-			background: !disabled && variant !== 'secondary' && color ? color : ''
+			color: !isDisabled && variant === 'secondary' && color ? color : '',
+			borderColor: !isDisabled && variant === 'secondary' && color ? color : '',
+			background: !isDisabled && variant !== 'secondary' && color ? color : ''
 		}"
 	>
-		<BaseIcon v-if="prependIcon" fill="currentColor" size="1.2em" :name="prependIcon"/>
+		<BaseIcon v-if="loading" class="loading-icon" fill="currentColor" size="1.2em" name="mdi-loading"/>
+		<BaseIcon v-else-if="prependIcon" fill="currentColor" size="1.2em" :name="prependIcon"/>
 		<div class="button-text"><slot name="default"></slot></div>
 		<BaseIcon v-if="appendIcon" fill="currentColor" size="1.2em" :name="appendIcon"/>
 	</button>
@@ -25,14 +27,17 @@ export default defineComponent({
 		prependIcon: String,
 		appendIcon: String,
 		disabled: { type: Boolean, default: false },
+		loading: { type: Boolean, default: false },
 		color: String,
 		variant: {
 			type: String as () => 'primary' | 'secondary' | 'outlined' | 'light',
 			default: 'primary'
 		},
 	},
-	data() {
-		return {};
+	computed: {
+		isDisabled(): boolean {
+			return this.disabled || this.loading;
+		},
 	},
 	methods: {},
 });
@@ -40,6 +45,9 @@ export default defineComponent({
 
 <style lang="scss">
 .base-button {
+	display: inline-flex;
+	align-items: center;
+	gap: .3em;
 	font-size: .9em;
 	// background: #0079C1;
 	// color: #fff;
@@ -53,16 +61,13 @@ export default defineComponent({
 	user-select: none;
 	transition:all 300ms ease 0s;
 	border-style: none;
-	display: inline-flex;
-	align-items: center;
-	gap: .3em;
 
 	&.disabled {
 		background: #ffffff55;
 		color: #c5c5c5;
 		border: 1px solid #e5e5e5;
 		cursor: inherit;
-		pointer-events: none;
+		// pointer-events: none;
 	}
 
 	&:not(.disabled) {
@@ -111,6 +116,20 @@ export default defineComponent({
 		font-weight: 700;
 		text-align: center;
     	flex: auto 1 1;
+	}
+
+	.loading-icon {
+		animation: base-button-loading 1s linear infinite;
+	}
+}
+
+@keyframes base-button-loading {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
 	}
 }
 </style>

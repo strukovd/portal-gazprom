@@ -247,7 +247,7 @@ export default defineComponent({
 	&.disabled {
 		.text-box-area {
 			background: #f8fafc;
-			color: #94a3b8;
+			color: #4e617d; // #94a3b8;
 			border-color: #cbd5e1;
 
 			.append-icon, .prepend-icon {

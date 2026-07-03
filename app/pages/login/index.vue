@@ -55,7 +55,7 @@ async function signIn() {
 						break;
 					case 'CALLCENTER':
 					case 'CONTROLLER':
-						navigateTo('/readings');
+						navigateTo('/');
 						break;
 
 					default:

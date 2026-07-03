@@ -103,7 +103,6 @@ const links = ref<SidebarLink[]>([
 		// children: [
 		// 	{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
 		// 	{ title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
-		// 	{ title: 'Показания', link: '/readings', icon: 'mdi-counter' },
 		// ]
 	},
 	{

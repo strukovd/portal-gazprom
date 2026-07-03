@@ -71,7 +71,7 @@ const determinePathByRole = (role: string): string => {
 			return '/';
 		case 'CONTROLLER':
 		case 'CALLCENTER':
-			return '/readings';
+			return '/';
 
 		// Если токен не ошибочный и role не определена, или role неизвестна и не соответствует никакой странице
 		default:

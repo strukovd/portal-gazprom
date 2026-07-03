@@ -6,7 +6,7 @@
 
 		<main class="page-blocks">
 			<!-- Статистика -->
-			<section class="statistics">
+			<section v-if="[`CALLCENTER`, `CONTROLLER`].includes(userStore?.userData?.role ?? '')" class="statistics">
 				<template
 					v-for="(item, index) of [
 						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: stats.openComplaints,	title: 'Открытых жалоб' },
@@ -97,12 +97,7 @@
 				<section class="col-4" data-aos="fade-up">
 					<BaseIsland title="Актуальные тарифы" prependIcon="mdi-currency-usd">
 						<div class="tariffs">
-							<div v-for="(item, index) of [
-								{ title: 'Население', value: `${pageData.tariffs?.fizValue} сом/м³`, },
-								{ title: 'Население (Майлы-Суу)', value: '-', },
-								{ title: 'Юр. лица без налогов', value: `${pageData.tariffs?.ulValue} сом/м³`, },
-								{ title: 'Юр. лица с НДС-12% и НСП-8%', value: '-', },
-							]" :key="index">
+							<div v-for="(item, index) of dashboardTariffs" :key="index">
 								<span>{{ item.title }}</span>
 								<strong>{{ item.value }}</strong>
 							</div>
@@ -124,7 +119,7 @@
 
 									<span class="break">
 										<BaseIcon name="mdi-clock-remove-outline" />
-										{{ item.workDays[0]?.breakTime.join(' - ') }}
+										{{ item.workDays[currentDay]?.breakTime.join(' - ') }}
 									</span>
 								</div>
 							</div>
@@ -152,7 +147,7 @@
 				</section>
 			</section>
 
-			<section data-aos="fade-up">
+			<section class="no-api" data-aos="fade-up">
 				<BaseIsland title="Газифицированные населенные пункты" prependIcon="mdi-map-marker">
 					<div class="villages">
 						<div v-for="(item, index) of [
@@ -173,7 +168,7 @@
 				</BaseIsland>
 			</section>
 
-			<section data-aos="fade-up">
+			<section class="no-api" data-aos="fade-up">
 				<BaseIsland title="Планируемые для газификации населенные пункты" prependIcon="mdi-map-marker-outline">
 					<div class="villages">
 						<div v-for="(item, index) of [
@@ -212,6 +207,7 @@ import { tariffs } from '~/services/tariffs';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
 const { $flags, $modal } = useNuxtApp();
+const userStore = useUserStore();
 
 definePageMeta({
 	auth: true,
@@ -246,6 +242,19 @@ const stats = computed(() => {
 	};
 });
 
+const ulValueWithTaxes = computed(() => {
+	if (!pageData.tariffs) return null;
+
+	return Math.round((pageData.tariffs.ulValue + pageData.tariffs.ulNds + pageData.tariffs.ulNsp) * 100) / 100;
+});
+
+const dashboardTariffs = computed(() => [
+	{ title: 'Население', value: pageData.tariffs ? `${pageData.tariffs.fizValue} сом/м³` : '-' },
+	{ title: 'Население (Майлы-Суу)', value: pageData.tariffs ? `${pageData.tariffs.fizValue} сом/м³` : '-' },
+	{ title: 'Юр. лица без налогов', value: pageData.tariffs ? `${pageData.tariffs.ulValue} сом/м³` : '-' },
+	{ title: 'Юр. лица с НДС-12% и НСП-8%', value: ulValueWithTaxes.value !== null ? `${ulValueWithTaxes.value} сом/м³` : '-' },
+]);
+
 
 onMounted(() => { init(); });
 async function init() {
@@ -272,25 +281,30 @@ async function init() {
 		.finally(() => {
 			complaintsLoading.value = false;
 		})
-	complaints.fetchCounts()
-		.then((res) => { pageData.complaintCounts = res; })
-		.catch((error: any) => {
-			const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить статистику жалоб.';
-			$flags.error(text, { title: 'Ошибка статистики жалоб' });
-		})
+	// Только если опретор или контролёр
+	if( [`CALLCENTER`, `CONTROLLER`].includes(userStore?.userData?.role ?? '') ) {
+		complaints.fetchCounts()
+			.then((res) => { pageData.complaintCounts = res; })
+			.catch((error: any) => {
+				const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить статистику жалоб.';
+				$flags.error(text, { title: 'Ошибка статистики жалоб' });
+			})
+	}
 }
 
 function complaintDescription(item: ComplaintsPayload) {
 	return `${item.subscriberName || 'Абонент'} - ${item.subject || item.description || 'Без темы'}`;
 }
 
-function showComplaint(item: ComplaintsPayload) {
-	$modal.show('ComplaintDetails', {
+async function showComplaint(item: ComplaintsPayload) {
+	const result = await $modal.show('ComplaintDetails', {
 		title: `Жалоба #${item.id}`,
 		payload: {
 			complaint: item,
 		}
 	});
+
+	// if (result) init();
 }
 
 function getComplaintStatusClass(status: string) {

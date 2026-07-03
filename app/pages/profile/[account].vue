@@ -214,9 +214,10 @@
 					/>
 				</section>
 			</BaseIsland>
-			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6 no-api" data-aos="fade-up">
+			<BaseIsland title="Анализ потребления" prependIcon="mdi-chart-line" class="col-6" data-aos="fade-up">
 				<section class="consumption-analytics">
-					<VChart :option="dualLineChartOption" class="chart-small"/>
+					<div v-if="!consumptionDiagram.length" class="ca-state">Нет данных</div>
+					<VChart v-else :option="dualLineChartOption" class="chart-small"/>
 				</section>
 			</BaseIsland>
 		</section>
@@ -252,7 +253,7 @@ const readingsWithStatus = computed(() => {
 		const averageConsumption = normalConsumptionCount
 			? normalConsumptionSum / normalConsumptionCount
 			: 0;
-		const isAbnormal = Number.isFinite(consumption) && averageConsumption > 0 && Math.abs(consumption - averageConsumption) > 200;
+		const isAbnormal = Number.isFinite(consumption) && averageConsumption > 0 && Math.abs(consumption - averageConsumption) > 100;
 
 		if (!isAbnormal && Number.isFinite(consumption) && consumption > 0) {
 			normalConsumptionSum += consumption;
@@ -279,75 +280,80 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-const chartMonths = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-const monthlyConsumption = [2600, 2400, 2100, 1840, 1380, 920, 760, 720, 930, 1480, 1980, 2360];
-const monthlyTemperature = [-6, -2, 5, 11, 17, 23, 27, 26, 19, 11, 4, -1];
-const dualLineChartOption = {
-	tooltip: {
-		trigger: 'axis',
-		backgroundColor: '#171717',
-		borderWidth: 0,
-		textStyle: { color: '#ffffff' }
-	},
-	legend: {
-		top: 8,
-		textStyle: { color: '#525252' },
-		data: ['Расход', 'Температура']
-	},
-	grid: {
-		left: 18,
-		right: 18,
-		top: 48,
-		bottom: 24,
-		containLabel: true
-	},
-	xAxis: {
-		...{
+const consumptionDiagram = computed(() => {
+	return [...(accountData.value?.consumptionDiagram || [])].sort((a, b) => {
+		return new Date(a.date).getTime() - new Date(b.date).getTime();
+	});
+});
+const dualLineChartOption = computed(() => {
+	const dates = consumptionDiagram.value.map(item => formatMonth(item.date) || toLocaleDate(item.date) || item.date);
+	const consumption = consumptionDiagram.value.map(item => item.value);
+	const temperature = consumptionDiagram.value.map(item => item.temperature);
+
+	return {
+		tooltip: {
+			trigger: 'axis',
+			backgroundColor: '#171717',
+			borderWidth: 0,
+			textStyle: { color: '#ffffff' }
+		},
+		legend: {
+			top: 8,
+			textStyle: { color: '#525252' },
+			data: ['Расход', 'Температура']
+		},
+		grid: {
+			left: 18,
+			right: 18,
+			top: 48,
+			bottom: 24,
+			containLabel: true
+		},
+		xAxis: {
 			type: 'category',
-			boundaryGap: true,
-			data: chartMonths,
+			boundaryGap: false,
+			data: dates,
 			axisTick: { show: false },
 			axisLine: { lineStyle: { color: '#d4d4d4' } },
 			axisLabel: { color: '#737373' }
 		},
-		boundaryGap: false
-	},
-	yAxis: [
-		{
-			type: 'value',
-			axisLabel: { color: '#737373' },
-			splitLine: { lineStyle: { color: '#eef2ff' } }
-		},
-		{
-			type: 'value',
-			axisLabel: { color: '#737373', formatter: '{value}°' },
-			splitLine: { show: false }
-		}
-	],
-	series: [
-		{
-			name: 'Расход',
-			type: 'line',
-			data: monthlyConsumption,
-			smooth: true,
-			symbol: 'none',
-			lineStyle: { width: 4, color: '#2563ea' },
-			areaStyle: {
-				color: 'rgba(37, 99, 234, 0.10)'
+		yAxis: [
+			{
+				type: 'value',
+				axisLabel: { color: '#737373' },
+				splitLine: { lineStyle: { color: '#eef2ff' } }
+			},
+			{
+				type: 'value',
+				axisLabel: { color: '#737373', formatter: '{value}°' },
+				splitLine: { show: false }
 			}
-		},
-		{
-			name: 'Температура',
-			type: 'line',
-			yAxisIndex: 1,
-			data: monthlyTemperature,
-			smooth: true,
-			symbolSize: 7,
-			lineStyle: { width: 3, color: '#f97316', type: 'dashed' },
-			itemStyle: { color: '#f97316' }
-		}
-	]
-};
+		],
+		series: [
+			{
+				name: 'Расход',
+				type: 'line',
+				data: consumption,
+				smooth: true,
+				symbol: 'none',
+				lineStyle: { width: 4, color: '#2563ea' },
+				areaStyle: {
+					color: 'rgba(37, 99, 234, 0.10)'
+				}
+			},
+			{
+				name: 'Температура',
+				type: 'line',
+				yAxisIndex: 1,
+				data: temperature,
+				smooth: true,
+				symbolSize: 7,
+				lineStyle: { width: 3, color: '#f97316', type: 'dashed' },
+				itemStyle: { color: '#f97316' }
+			}
+		]
+	};
+});
 
 onMounted(() => {
 	checkAccountParam();
@@ -648,6 +654,14 @@ function checkAccountParam() {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+
+		.ca-state {
+			padding: 2em 0;
+			color: #737373;
+			font-size: .9em;
+			font-weight: 700;
+			text-align: center;
+		}
 
 		.chart-small {
 			width: 100%;

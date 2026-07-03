@@ -85,6 +85,11 @@ export type AccountData = {
 		houseType: string;
 		section: string;
 	} | null;
+	consumptionDiagram: {
+		date: string, // ISO 8601
+		value: number,
+		temperature: number,
+	}[]
 };
 
 

@@ -91,6 +91,7 @@ export const useAccountStore = defineStore('account', () => {
 					showContacts: true,
 					showBills: true,
 					showAgreementData: true,
+					showDiagram: true
 				}
 			});
 

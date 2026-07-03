@@ -39,6 +39,8 @@
 <script lang="ts" setup>
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
+import type { TariffPayload } from '~/types/GapromAppService';
+import { tariffs as tariffsService } from '~/services/tariffs';
 
 definePageMeta({
 	auth: true,
@@ -46,26 +48,32 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-const tariffs = [
+const tariff = ref<TariffPayload | null>(null);
+const tariffs = computed(() => [
 	{
 		title: 'Население',
-		price: '24,10',
+		price: tariff.value?.fizValue ?? '-',
 		accent: 'blue',
-		description: 'Текущий тариф для населения — 24 сом 10 тыйын за кубометр.',
+		description: `Текущий тариф для населения — ${tariff.value?.fizValue ?? '-'} сом/м³.`,
 	},
 	{
 		title: 'Население, г. Майлы-Суу',
-		price: '22,10',
+		price: tariff.value?.fizValue ?? '-',
 		accent: 'blue',
-		description: 'Льготный тариф для жителей г. Майлы-Суу — 22 сом 10 тыйын за кубометр.',
+		description: `Текущий тариф для жителей г. Майлы-Суу — ${tariff.value?.fizValue ?? '-'} сом/м³.`,
 	},
 	{
-		title: 'Юридические лица с НДС-12% и НСП-8%',
-		price: '22,10',
+		title: 'Юридические лица без налогов',
+		price: tariff.value?.ulValue ?? '-',
 		accent: 'orange',
-		description: 'Стоимость указана без учета налогов — 20,10 сом за кубометр.',
+		description: `Стоимость указана без учета налогов — ${tariff.value?.ulValue ?? '-'} сом/м³.`,
 	},
-];
+]);
+
+onMounted(() => {
+	tariffsService.fetch()
+		.then((res) => { if (res) tariff.value = res; });
+});
 </script>
 
 <style lang="scss">

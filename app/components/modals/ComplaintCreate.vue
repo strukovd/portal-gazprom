@@ -3,10 +3,7 @@
 		<form class="form" @submit.prevent="submit">
 			<section>
 				<AccountSearch class="col-6" v-model="form.account" label="Абонент" required :autofocus="!form.account" @select="onAccountSelect"/>
-				<div class="field col-6">
-					<label>ФИО клиента</label>
-					<div class="readonly">{{ customerName || 'Выберите абонента из поиска' }}</div>
-				</div>
+				<BaseTextBox class="col-6" v-model="customerName" label="ФИО клиента" placeholder="Введите ФИО клиента..." disabled/>
 			</section>
 
 			<BaseTextBox v-model="form.contactNumber" type="tel" prependIcon="mdi-phone-outline" label="Номер тел. клиента" placeholder="+996..."/>
@@ -181,17 +178,6 @@ function close(result: boolean) {
 				color: #4b5563;
 				font-size: .82rem;
 				font-weight: 700;
-			}
-
-			.readonly {
-				// min-height: 2.8em;
-				border: 1px solid #cbd5e1;
-				border-radius: 7px;
-				display: flex;
-				align-items: center;
-				padding: 0 .8em;
-				background: #f8fafc;
-				color: #334155;
 			}
 		}
 

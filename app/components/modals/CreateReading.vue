@@ -16,7 +16,7 @@
 			<section class="form">
 				<section style="font-size:1.6em;">
 					<BaseTextBox v-model="previousReadingText" readonly disabled label="Предыдущее показание, м³"/>
-					<BaseTextBox v-model="reading" autofocus label="Новое показание, м³" placeholder="Введите новые показание" @submit="sendReading"/>
+					<BaseTextBox v-model="reading" autofocus :disabled="loading || !!response" label="Новое показание, м³" placeholder="Введите новые показание" @submit="sendReading"/>
 				</section>
 				<div v-if="consumption !== null" class="consumption">
 					Расход: <b>{{ consumption }} м³</b>
@@ -59,7 +59,7 @@
 				</div>
 			</section>
 			<div class="buttons">
-				<BaseButton prependIcon="mdi-check" :disabled="loading" @click="sendReading">{{ loading ? 'Отправка...' : 'Отправить' }}</BaseButton>
+				<BaseButton v-if="!response" prependIcon="mdi-check" :loading="loading" @click="sendReading">Отправить</BaseButton>
 				<BaseButton prependIcon="mdi-close" :disabled="loading" @click="close()" variant="secondary">Закрыть</BaseButton>
 			</div>
 		</footer>
@@ -121,7 +121,7 @@ const consumption = computed(() => {
 
 
 async function sendReading() {
-	if (loading.value) return;
+	if (loading.value || response.value) return;
 	message.type = '';
 	response.value = null;
 

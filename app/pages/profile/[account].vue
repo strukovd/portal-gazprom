@@ -29,18 +29,14 @@
 			<BaseButton variant="outlined" @click="showCreateComplaint">Новая жалоба</BaseButton>
 		</section>
 
-		<section class="statistics no-api" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
+		<section class="statistics" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
 			<template
-				v-for="(item, index) of [
-					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-lightning-bolt',			value: 'Плановое 18.01 - ул. Ленина',		title: 'Отключение в районе' },
-					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-currency-usd',			value: 'Не указан',						title: 'Текущий тариф' },
-					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-calculator-variant',		value: 'Перерасчёт при смене счетчика',		title: 'Обновления FAQ' },
-					{ bg: '#2563ea', 	color: '#2863e4', 		icon: 'mdi-alert-box',				value: '1 жалоба в обработке',				title: 'Открытые жалобы' },
-				]" :key="index">
+				v-for="(item, index) of statsTiles" :key="index">
 				<BaseIsland
-					style="display:flex; gap:1em; align-items:center; flex:1 1 200px; flex-wrap:nowrap;"
+					:class="['statistic-tile', { clickable: item.action }]"
 					:style="{ '--bg': item.bg, '--color': item.color }"
 					data-aos="zoom-in"
+					@click="item.action?.()"
 				>
 					<section>
 						<div style="padding:1em; border-radius:12px; color: var(--color); background-color:color-mix(in srgb, var(--bg) 8%, #fff);">
@@ -49,7 +45,7 @@
 					</section>
 					<section>
 						<div style="color:#737373;">{{ item.title }}</div>
-						<div style="font-size:1.1em; font-weight:700;">{{ item.value }}</div>
+						<div style="font-size:1.1em; font-weight:700;">{{ item.text }}</div>
 					</section>
 				</BaseIsland>
 			</template>
@@ -144,7 +140,7 @@
 					<div style="font-weight:700; margin-top:1em;">Последние оплаты</div>
 					<div v-if="!accountData.payments.length" style="font-weight:700; margin:2em 0 0 0; text-align:center; color:#737373; font-size:.9em;">Нет данных</div>
 					<section v-else style="max-height:350px; overflow:auto;">
-						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;" data-aos="fade-up">
+						<div v-for="(payment, index) of accountData.payments" :key="index" style="display:flex; gap:.5em; margin-top:.5em; background:#fafafa; padding:1em; border-radius:12px;">
 							<div style="flex:33% 1 1; text-align:center;">
 								<div style="font-weight:700; color:forestgreen;">{{ payment.amount }}</div>
 								<div style="font-size:.9em; color:#737373;">{{ toLocaleDate(payment.created) }}</div>
@@ -237,8 +233,22 @@ import { complaints, type TimelinePayload } from '~/services/complaints';
 import { formatDateTime, formatMonth, toLocaleDate } from '~/utils/format';
 const route = useRoute();
 const { $modal, $flags } = useNuxtApp();
+const appStore = useAppStore();
 const accountStore = useAccountStore();
 const accountData = computed(() => accountStore.accountData);
+const applicationsText = computed(() => {
+	const count = accountData.value?.applications?.length || 0;
+	if (!count) return 'Нет заявок';
+	if (count === 1) return '1 заявка';
+	if (count > 1 && count < 5) return `${count} заявки`;
+	return `${count} заявок`;
+});
+const statsTiles = computed(() => [
+	{ bg: '#2563ea', color: '#2863e4', title: 'Отключение в районе', 	icon: 'mdi-lightning-bolt', 				text: 'Плановое 18.01 - ул. Ленина', },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Текущий тариф', 			icon: 'mdi-currency-usd', 					text: ``, },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Заявки', 				icon: 'mdi-file-document-multiple-outline', text: applicationsText.value, 			action: () => showApplications(), },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Открытые жалобы', 		icon: 'mdi-alert-box', 						text: '1 жалоба в обработке', },
+]);
 const billMonthText = computed(() => {
 	const bill = accountData.value?.bill;
 	return bill ? (formatMonth(bill.accrualMonth) || bill.accrualMonth || 'период не указан') : '';
@@ -414,6 +424,17 @@ const showBillDetails = () => {
 	});
 }
 
+const showApplications = () => {
+	if (!accountData.value?.applications?.length) return;
+
+	$modal.show('ApplicationsList', {
+		title: 'Заявки абонента',
+		payload: {
+			applications: accountData.value?.applications || [],
+		}
+	});
+}
+
 async function fetchTimeline(account?: string | null) {
 	const requestId = ++timelineRequestId;
 	timeline.value = [];
@@ -526,6 +547,26 @@ function checkAccountParam() {
 		&.red {
 			background:#fef2f2;
 			color:#dc2625;
+		}
+	}
+
+	.statistics {
+		.statistic-tile {
+			display: flex;
+			align-items: center;
+			flex: 1 1 200px;
+			flex-wrap: nowrap;
+			gap: 1em;
+
+			&.clickable {
+				cursor: pointer;
+				transition: opacity 200ms ease 0s, transform 200ms ease 0s;
+
+				&:hover {
+					opacity: .86;
+					transform: translateY(-1px);
+				}
+			}
 		}
 	}
 

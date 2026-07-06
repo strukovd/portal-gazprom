@@ -243,10 +243,11 @@ const applicationsText = computed(() => {
 	if (count > 1 && count < 5) return `${count} заявки`;
 	return `${count} заявок`;
 });
+const tariff = computed(() => appStore.getTariff(accountData.value?.account));
 const statsTiles = computed(() => [
 	{ bg: '#2563ea', color: '#2863e4', title: 'Отключение в районе', 	icon: 'mdi-lightning-bolt', 				text: 'Плановое 18.01 - ул. Ленина', },
-	{ bg: '#2563ea', color: '#2863e4', title: 'Текущий тариф', 			icon: 'mdi-currency-usd', 					text: ``, },
-	{ bg: '#2563ea', color: '#2863e4', title: 'Заявки', 				icon: 'mdi-file-document-multiple-outline', text: applicationsText.value, 			action: () => showApplications(), },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Текущий тариф', 			icon: 'mdi-currency-usd', 					text: tariff.value !== null ? `${tariff.value} сом/м³`: 'Не указан', },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Заявки', 				icon: 'mdi-file-document-multiple-outline', text: applicationsText.value, 			action: accountData.value?.applications?.length ? () => showApplications() : null, },
 	{ bg: '#2563ea', color: '#2863e4', title: 'Открытые жалобы', 		icon: 'mdi-alert-box', 						text: '1 жалоба в обработке', },
 ]);
 const billMonthText = computed(() => {

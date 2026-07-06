@@ -40,7 +40,7 @@
 					<BaseIcon name="mdi-hand-coin-outline"/>
 					<span> Тариф</span>
 				</div>
-				<h2 style="font-size:1.2em;">22,10</h2>
+				<h2 style="font-size:1.2em;">{{ tariffText }}</h2>
 			</section>
 		</section>
 
@@ -77,8 +77,13 @@ import BaseIcon from './common/base/BaseIcon.vue';
 import Avatar from './common/Avatar.vue';
 
 const accountStore = useAccountStore();
+const appStore = useAppStore();
 const route = useRoute();
 const accountData = computed(() => accountStore.accountData);
+const tariffText = computed(() => {
+	const tariff = appStore.getTariff(accountData.value?.account);
+	return tariff !== null ? `${tariff} сом/м³` : 'Не указан';
+});
 
 function clearContext() {
 	accountStore.clearAccount();

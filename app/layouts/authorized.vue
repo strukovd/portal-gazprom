@@ -57,6 +57,7 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import type { FindPayload } from '~/types/Facility';
 const s = useUserStore();
+const appStore = useAppStore();
 const accountStore = useAccountStore();
 const route = useRoute();
 const accountSearchInput = ref<any>(null);
@@ -65,6 +66,7 @@ const accountSearch = ref('');
 
 onMounted(() => {
 	checkAccountUrlParam();
+	appStore.ensureTariffs();
 	window.addEventListener('keydown', onSearchShortcut);
 });
 onBeforeUnmount(() => {

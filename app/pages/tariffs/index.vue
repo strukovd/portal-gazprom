@@ -39,8 +39,6 @@
 <script lang="ts" setup>
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
-import type { TariffPayload } from '~/types/GapromAppService';
-import { tariffs as tariffsService } from '~/services/tariffs';
 
 definePageMeta({
 	auth: true,
@@ -48,31 +46,30 @@ definePageMeta({
 	layout: 'authorized'
 });
 
-const tariff = ref<TariffPayload | null>(null);
+const appStore = useAppStore();
 const tariffs = computed(() => [
 	{
 		title: 'Население',
-		price: tariff.value?.fizValue ?? '-',
+		price: appStore.tariffs?.fizValue ?? '-',
 		accent: 'blue',
-		description: `Текущий тариф для населения — ${tariff.value?.fizValue ?? '-'} сом/м³.`,
+		description: `Текущий тариф для населения — ${appStore.tariffs?.fizValue ?? '-'} сом/м³.`,
 	},
 	{
 		title: 'Население, г. Майлы-Суу',
-		price: tariff.value?.fizValue ?? '-',
+		price: appStore.tariffs?.fizValue ?? '-',
 		accent: 'blue',
-		description: `Текущий тариф для жителей г. Майлы-Суу — ${tariff.value?.fizValue ?? '-'} сом/м³.`,
+		description: `Текущий тариф для жителей г. Майлы-Суу — ${appStore.tariffs?.fizValue ?? '-'} сом/м³.`,
 	},
 	{
 		title: 'Юридические лица без налогов',
-		price: tariff.value?.ulValue ?? '-',
+		price: appStore.tariffs?.ulValue ?? '-',
 		accent: 'orange',
-		description: `Стоимость указана без учета налогов — ${tariff.value?.ulValue ?? '-'} сом/м³.`,
+		description: `Стоимость указана без учета налогов — ${appStore.tariffs?.ulValue ?? '-'} сом/м³.`,
 	},
 ]);
 
 onMounted(() => {
-	tariffsService.fetch()
-		.then((res) => { if (res) tariff.value = res; });
+	appStore.ensureTariffs();
 });
 </script>
 

@@ -63,7 +63,7 @@
 			<!-- Срочные отключения и изменения FAQ -->
 			<section>
 				<section data-aos="fade-up" class="col-8">
-					<BaseIsland title="Срочные отключения газа" prependIcon="mdi-alert" class="urgent">
+					<BaseIsland title="Срочные отключения газа" prependIcon="mdi-alert-circle-outline" class="urgent">
 						<div class="outages">
 							<div :class="['outage', item.categoryType]" v-for="(item, index) of pageData.disconnections" :key="index">
 								<div>
@@ -79,7 +79,7 @@
 				</section>
 
 				<section class="col-4" data-aos="fade-up">
-					<BaseIsland title="Изменения FAQ" prependIcon="mdi-alert">
+					<BaseIsland title="Изменения FAQ" prependIcon="mdi-help-rhombus-outline">
 						<div class="faq-list">
 							<div class="faq-item" v-for="(item, index) of pageData.faq" :key="index">
 								<div>
@@ -199,15 +199,15 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import type { ReadingPayload } from '~/types/Portal';
 import Incrementator from '~/components/common/Incrementator.vue';
 import type { NewsPayload } from '~/types/CallGas';
-import type { OfficesPayload, TariffPayload } from '~/types/GapromAppService';
+import type { OfficesPayload } from '~/types/GapromAppService';
 import { readings } from '~/services/readings';
 import { news } from '~/services/news';
 import { offices } from '~/services/offices';
-import { tariffs } from '~/services/tariffs';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
 const { $flags, $modal } = useNuxtApp();
 const userStore = useUserStore();
+const appStore = useAppStore();
 
 definePageMeta({
 	auth: true,
@@ -224,7 +224,6 @@ const pageData = reactive({
 	faq: [] as NewsPayload[],
 	disconnections: [] as NewsPayload[],
 	offices: [] as OfficesPayload[],
-	tariffs: null as TariffPayload | null,
 	complaints: [] as ComplaintsPayload[],
 	complaintCounts: null as CountsResponse | null,
 });
@@ -243,15 +242,15 @@ const stats = computed(() => {
 });
 
 const ulValueWithTaxes = computed(() => {
-	if (!pageData.tariffs) return null;
+	if (!appStore.tariffs) return null;
 
-	return Math.round((pageData.tariffs.ulValue + pageData.tariffs.ulNds + pageData.tariffs.ulNsp) * 100) / 100;
+	return Math.round((appStore.tariffs.ulValue + appStore.tariffs.ulNds + appStore.tariffs.ulNsp) * 100) / 100;
 });
 
 const dashboardTariffs = computed(() => [
-	{ title: 'Население', value: pageData.tariffs ? `${pageData.tariffs.fizValue} сом/м³` : '-' },
-	{ title: 'Население (Майлы-Суу)', value: pageData.tariffs ? `${pageData.tariffs.fizValue} сом/м³` : '-' },
-	{ title: 'Юр. лица без налогов', value: pageData.tariffs ? `${pageData.tariffs.ulValue} сом/м³` : '-' },
+	{ title: 'Население', value: appStore.tariffs ? `${appStore.tariffs.fizValue} сом/м³` : '-' },
+	{ title: 'Население (Майлы-Суу)', value: appStore.tariffs ? `${appStore.tariffs.fizValue} сом/м³` : '-' },
+	{ title: 'Юр. лица без налогов', value: appStore.tariffs ? `${appStore.tariffs.ulValue} сом/м³` : '-' },
 	{ title: 'Юр. лица с НДС-12% и НСП-8%', value: ulValueWithTaxes.value !== null ? `${ulValueWithTaxes.value} сом/м³` : '-' },
 ]);
 
@@ -268,8 +267,7 @@ async function init() {
 		.then((res) => { if (res) pageData.disconnections = res; })
 	offices.fetch()
 		.then((res) => { if (res) pageData.offices = res; })
-	tariffs.fetch()
-		.then((res) => { if (res) pageData.tariffs = res; })
+	appStore.ensureTariffs();
 
 	complaintsLoading.value = true;
 	complaints.fetch({ page: 1, size: 3 })

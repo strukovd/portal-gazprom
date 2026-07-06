@@ -29,13 +29,12 @@
 			<BaseButton variant="outlined" @click="showCreateComplaint">Новая жалоба</BaseButton>
 		</section>
 
-		<section class="statistics" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;">
+		<section class="statistics" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;" data-aos="zoom-in">
 			<template
-				v-for="(item, index) of statsTiles" :key="index">
+				v-for="item of statsTiles" :key="item.title">
 				<BaseIsland
-					:class="['statistic-tile', { clickable: item.action }]"
+					:class="['statistic-tile', { clickable: item.action }, [item.classes || []]]"
 					:style="{ '--bg': item.bg, '--color': item.color }"
-					data-aos="zoom-in"
 					@click="item.action?.()"
 				>
 					<section>
@@ -229,7 +228,7 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
-import { complaints, type TimelinePayload } from '~/services/complaints';
+import { complaints, type ComplaintsPayload, type TimelinePayload } from '~/services/complaints';
 import { formatDateTime, formatMonth, toLocaleDate } from '~/utils/format';
 const route = useRoute();
 const { $modal, $flags } = useNuxtApp();
@@ -243,12 +242,20 @@ const applicationsText = computed(() => {
 	if (count > 1 && count < 5) return `${count} заявки`;
 	return `${count} заявок`;
 });
+const accountComplaints = ref<ComplaintsPayload[]>([]);
+const complaintsText = computed(() => {
+	const count = accountComplaints.value.length;
+	if (!count) return 'Нет открытых жалоб';
+	if (count === 1) return '1 жалоба в обработке';
+	if (count > 1 && count < 5) return `${count} жалобы в обработке`;
+	return `${count} жалоб в обработке`;
+});
 const tariff = computed(() => appStore.getTariff(accountData.value?.account));
 const statsTiles = computed(() => [
-	{ bg: '#2563ea', color: '#2863e4', title: 'Отключение в районе', 	icon: 'mdi-lightning-bolt', 				text: 'Плановое 18.01 - ул. Ленина', },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Отключение в районе', 	icon: 'mdi-lightning-bolt', 				text: 'Плановое 18.01 - ул. Ленина', classes: [`no-api`] },
 	{ bg: '#2563ea', color: '#2863e4', title: 'Текущий тариф', 			icon: 'mdi-currency-usd', 					text: tariff.value !== null ? `${tariff.value} сом/м³`: 'Не указан', },
 	{ bg: '#2563ea', color: '#2863e4', title: 'Заявки', 				icon: 'mdi-file-document-multiple-outline', text: applicationsText.value, 			action: accountData.value?.applications?.length ? () => showApplications() : null, },
-	{ bg: '#2563ea', color: '#2863e4', title: 'Открытые жалобы', 		icon: 'mdi-alert-box', 						text: '1 жалоба в обработке', },
+	{ bg: '#2563ea', color: '#2863e4', title: 'Открытые жалобы', 		icon: 'mdi-alert-box', 						text: complaintsText.value, 		action: accountComplaints.value.length ? () => showComplaints() : null, },
 ]);
 const billMonthText = computed(() => {
 	const bill = accountData.value?.bill;
@@ -376,6 +383,7 @@ watch(() => route.params.account, () => {
 
 watch(() => accountData.value?.account, (account) => { // при смене аккаунта, загружаем историю (timeline)
 	fetchTimeline(account);
+	fetchAccountComplaints(account);
 }, { immediate: true });
 
 
@@ -434,6 +442,35 @@ const showApplications = () => {
 			applications: accountData.value?.applications || [],
 		}
 	});
+}
+
+const showComplaints = () => {
+	if (!accountComplaints.value.length) return;
+
+	$modal.show('ComplaintsList', {
+		title: 'Жалобы абонента',
+		payload: {
+			complaints: accountComplaints.value,
+		}
+	});
+}
+
+async function fetchAccountComplaints(account?: string | null) {
+	accountComplaints.value = [];
+	if (!account) return;
+
+	try {
+		const response = await complaints.fetch({
+			account,
+			page: 1,
+			size: 100,
+		});
+		accountComplaints.value = response.data || [];
+	}
+	catch (error: any) {
+		const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить жалобы абонента.';
+		$flags.error(text, { title: 'Ошибка жалоб' });
+	}
 }
 
 async function fetchTimeline(account?: string | null) {

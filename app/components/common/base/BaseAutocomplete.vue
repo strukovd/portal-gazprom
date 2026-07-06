@@ -350,10 +350,15 @@ export default defineComponent({
 
 	label {
 		.caption {
-			font-size:14px;
-			opacity:.6;
+			// font-size:14px;
+			// opacity:.6;
 			line-height: 1.4em;
 			margin-bottom: .4em;
+
+			color: #4b5563;
+			font-size: 0.82rem;
+			font-weight: 700;
+			opacity:1;
 		}
 		.input-container {
 			// margin:0 0 .6em 0;

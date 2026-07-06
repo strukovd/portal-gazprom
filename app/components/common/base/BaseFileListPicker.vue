@@ -90,9 +90,14 @@ function emitValue() {
 		gap: 1em;
 
 		.caption {
-			font-size: 14px;
+			// font-size: 14px;
 			line-height: 1.4em;
-			opacity: .6;
+			// opacity: .6;
+
+			color: #4b5563;
+			font-size: 0.82rem;
+			font-weight: 700;
+			opacity:1;
 		}
 
 		.error {

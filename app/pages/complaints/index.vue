@@ -14,30 +14,32 @@
 
 		<main class="page-blocks">
 			<BaseIsland class="filters" title="Фильтр и поиск" prependIcon="mdi-filter-variant" data-aos="zoom-in">
-				<div>
-					<BaseTextBox v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
-					<DatePicker v-model="form.period" placeholder="Период создания"/>
+				<div style="display:flex; gap:1em; align-items:center; justify-content:space-between;">
+					<BaseTextBox style="flex:auto 1 1;" v-model="form.search" placeholder="Поиск по лицевому счету, теме или ФИО..." button="Найти" @submit="init"/>
 				</div>
-				<BaseTabs class="filter-tabs" v-model="form.status" :items="[
-					{ value: 'Все', key: '' },
-					{ value: 'Новые', key: 'Новая' },
-					{ value: 'В работе', key: 'В работе' },
-					{ value: 'Просроченные', key: 'Просрочено' },
-					{ value: 'Закрытые', key: 'Закрыто' },
-				]"/>
+				<div style="display:flex; gap:1em; align-items:center; justify-content:space-between;">
+					<DatePicker v-model="form.period" placeholder="Период создания"/>
+					<BaseTabs class="filter-tabs" v-model="form.status" :items="[
+						{ value: 'Все', key: '' },
+						{ value: 'Новые', key: 'Новая' },
+						{ value: 'В работе', key: 'В работе' },
+						{ value: 'Просроченные', key: 'Просрочено' },
+						{ value: 'Закрытые', key: 'Закрыто' },
+					]"/>
+				</div>
 			</BaseIsland>
 
 			<!-- TODO: на беке лучше давать роли в виде массива, что бы не вести вереницу if-else -->
 			<!-- Статистика -->
-			<template v-if="[`ADMIN`, `CALLCENTER_MANAGER`].includes(userStore?.userData?.role ?? '')">
+			<template v-if="userStore.isPrivilegedUser">
 				<section class="stats" v-if="pageData.stats?.all">
 					<BaseIsland class="stat-tile" data-aos="zoom-in" v-for="(item, index) of [
-						{ value: pageData.stats?.all.total, label: 'Всего', icon: 'mdi-star-circle-outline', color: 'dark', },
-						{ value: pageData.stats?.all.new, label: 'Открытых', icon: 'mdi-plus-circle-outline', color: 'blue', },
-						{ value: pageData.stats?.all.expired, label: 'Просрочено', icon: 'mdi-close-circle-outline', color: 'red', },
-						{ value: pageData.stats?.all.inProgress, label: 'В работе', icon: 'mdi-clock-outline', color: 'yellow', },
-						{ value: pageData.stats?.all.closed, label: 'Закрыто', icon: 'mdi-check-circle-outline', color: 'green', },
-					]" :key="index">
+						{ value: pageData.stats?.all.total, label: 'Всего', icon: 'mdi-star-circle-outline', color: 'dark', query: {} },
+						{ value: pageData.stats?.all.new, label: 'Открытых', icon: 'mdi-plus-circle-outline', color: 'blue', query: { status: 'Новая' } },
+						{ value: pageData.stats?.all.expired, label: 'Просрочено', icon: 'mdi-close-circle-outline', color: 'red', query: { status: 'Просрочено' } },
+						{ value: pageData.stats?.all.inProgress, label: 'В работе', icon: 'mdi-clock-outline', color: 'yellow', query: { status: 'В работе' } },
+						{ value: pageData.stats?.all.closed, label: 'Закрыто', icon: 'mdi-check-circle-outline', color: 'green', query: { status: 'Закрыто' } },
+					]" :key="index" @click="showComplaintsList(item.label, item.query)">
 						<section v-if="item.icon" :class="['icon-circle', item.color]">
 							<BaseIcon :name="item.icon" size="1.6em"/>
 						</section>
@@ -77,7 +79,7 @@
 				</section>
 
 				<BaseIsland v-if="itemsByType.subjects.length" class="stats-by-types" title="Распределение по темам" prependIcon="mdi-format-list-bulleted-type" data-aos="zoom-in">
-					<div class="item" v-for="subject of itemsByType.subjects" :key="subject.subject">
+					<div class="item" v-for="subject of itemsByType.subjects" :key="subject.subject" @click="showComplaintsList(subject.subject, { subject: subject.subject })">
 						<div class="subject">
 							<span>{{ subject.subject }}</span>
 						</div>
@@ -173,6 +175,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
 import { complaints, type ComplaintsPayload, type ComplaintsQuery, type ComplaintsStatsQuery, type CountsResponse, type StatsResponse } from '~/services/complaints';
 import { toLocaleDate } from '~/utils/format';
+import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER'],
@@ -216,13 +219,7 @@ async function init() {
 
 async function fetchList(): Promise<ComplaintsPayload[] | void> {
 	loading.value = true;
-	const query: Partial<ComplaintsQuery> = {};
-	if( form.status ) query['status'] = form.status;
-	if( form.search ) query['description'] = form.search;
-	if( Array.isArray(form.period) && form.period.length === 2 ) {
-		query.createdDateFrom = toISODate(form.period[0]!);
-		query.createdDateTo = toISODate(form.period[1]!);
-	}
+	const query = getFilters();
 	query['page'] = 1;
 	query['size'] = 10;
 
@@ -237,11 +234,7 @@ async function fetchList(): Promise<ComplaintsPayload[] | void> {
 }
 
 async function fetchStats(): Promise<void> {
-	const query: Partial<ComplaintsStatsQuery> = {};
-	if( Array.isArray(form.period) && form.period.length === 2 ) {
-		query.createdDateFrom = toISODate(form.period[0]!);
-		query.createdDateTo = toISODate(form.period[1]!);
-	}
+	const query: Partial<ComplaintsStatsQuery> = getFilters();
 
 	complaints.fetchStats(query)
 		.then(res => {
@@ -250,7 +243,7 @@ async function fetchStats(): Promise<void> {
 }
 
 async function fetchCounts(): Promise<void> {
-	complaints.fetchCounts()
+	complaints.fetchCounts(getFilters())
 		.then(res => {
 			pageData.counts = res;
 		});
@@ -290,15 +283,51 @@ async function showCreateModal() {
 	if (created) init();
 }
 
-function showComplaint(item: ComplaintsPayload | Record<string, unknown>) {
+async function showComplaint(item: ComplaintsPayload | Record<string, unknown>) {
 	const complaint = item as ComplaintsPayload;
 
-	$modal.show('ComplaintDetails', {
+	const result = await $modal.show('ComplaintDetails', {
 		title: `Жалоба #${complaint.id}`,
 		payload: {
 			complaint,
 		}
 	});
+
+	// if (result) init();
+}
+
+async function showComplaintsList(title: string, filter: Partial<ComplaintsQuery> = {}) {
+	const query: Partial<ComplaintsQuery> = {
+		...getFilters(),
+		...filter,
+		page: 1,
+		size: 100,
+	};
+
+	try {
+		const response = await complaints.fetch(query);
+		await $modal.show('ComplaintsList', {
+			title,
+			payload: {
+				complaints: response.data || [],
+			}
+		});
+	}
+	catch (error: any) {
+		const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить жалобы.';
+		$flags.error(text, { title: 'Ошибка жалоб' });
+	}
+}
+
+function getFilters() {
+	const query: Partial<ComplaintsQuery> = {};
+	if( form.status ) query.status = form.status;
+	if( form.search ) query.description = form.search;
+	if( Array.isArray(form.period) && form.period.length === 2 ) {
+		query.createdDateFrom = toISODate(form.period[0]!);
+		query.createdDateTo = toISODate(form.period[1]!);
+	}
+	return query;
 }
 
 function getStatusClass(status: any) {
@@ -376,6 +405,13 @@ const itemsByType = computed(() => {
 				gap: 1em;
 				padding-top: 1.8em;
 				padding-bottom: 1.8em;
+				cursor: pointer;
+				transition: opacity 200ms ease 0s, transform 200ms ease 0s;
+
+				&:hover {
+					opacity: .86;
+					transform: translateY(-1px);
+				}
 
 				.icon-circle {
 					display: grid;
@@ -436,6 +472,12 @@ const itemsByType = computed(() => {
 				gap: 1.2em;
 				padding: .8em 0;
 				border-bottom: 1px solid #f3f4f6;
+				cursor: pointer;
+				transition: opacity 200ms ease 0s;
+
+				&:hover {
+					opacity: .78;
+				}
 
 				&:last-child {
 					border-bottom: 0;

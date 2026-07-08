@@ -12,10 +12,7 @@ export type ComplaintsQuery = {
 		page: number;
 		size: number;
 };
-export type ComplaintsStatsQuery = {
-		createdDateFrom: string;
-		createdDateTo: string;
-};
+export type ComplaintsStatsQuery = Pick<ComplaintsQuery, 'createdDateFrom' | 'createdDateTo' | 'status' | 'description' | 'subject'>;
 export type ComplaintsBody = {
 	account: string;
 	subject: `Жалоба на БСГ` | `Жалоба на сотрудника` | `Прочее` | `Тарифы/Прейскурант цен` | `Не восстановили дорожное покрытие после газификации` | `Некорректные начисления` | `Не приносят квитанции` | `Перерасчет начислений` | `Повредили газопровод` | `Предоставление услуг:Разработка ЭЧ` | `Установка/Снятие/Замена БСГ` | `Предоставление услуг СМР, ПНР, Замена БСГ` | `Утечка/ Авария`;

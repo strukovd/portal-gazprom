@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 const props = defineProps({
 	duration: { type: Number, default: 500, },
 	value: { type: Number, required: true, },
@@ -53,5 +53,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
 	observer?.disconnect(); // Очищаем наблюдатель при удалении компонента
+});
+
+watch(() => props.value, () => {
+	startTime.value = null;
+	displayedValue.value = 0;
+	startAnimation();
 });
 </script>

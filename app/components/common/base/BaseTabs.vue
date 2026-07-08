@@ -97,7 +97,7 @@ export default defineComponent({
 		/* justify-content: center; */
 		overflow-x: auto;
 		align-items: center;
-		margin: 0 0 0.6em 0;
+		margin:.4em 0 .6em 0;
 		/* padding:.5em .7em; */
 		// background: #FFFFFF;
 		// backdrop-filter: blur(20px);

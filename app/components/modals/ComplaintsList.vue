@@ -1,7 +1,10 @@
 <template>
 	<div class="complaints-list-modal">
 		<main class="cl-content">
-			<div v-if="!complaints.length" class="cl-empty">Открытых жалоб нет</div>
+			<section v-if="!complaints.length" style="display: grid; place-items: center; padding: 2em 0;">
+				<img src="/images/complaints-empty.svg" width="160px"/>
+				<div class="cl-empty">Жалоб нет</div>
+			</section>
 
 			<section v-else class="cl-list">
 				<article v-for="complaint of complaints" :key="complaint.id" class="cl-complaint" @click="showComplaint(complaint)">
@@ -70,9 +73,9 @@ function close() {
 		padding-bottom: 1em;
 
 		.cl-empty {
-			padding: 2em 0;
-			color: #737373;
-			font-size: .9em;
+			padding: .4em 0;
+			color: #467cec;
+			font-size: 0.9em;
 			font-weight: 700;
 			text-align: center;
 		}

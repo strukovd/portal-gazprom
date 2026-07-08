@@ -7,11 +7,8 @@
 <script lang="ts" setup>
 const props = defineProps({
 	src: String,
-	name: String,
-	size: {
-		type: String,
-		default: '2em'
-	}
+	name: { type: String, default: '' },
+	size: { type: String, default: '2em' }
 });
 
 

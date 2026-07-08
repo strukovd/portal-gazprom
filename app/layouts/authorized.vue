@@ -1,7 +1,7 @@
 <template>
 	<section class="authorized-layout">
 		<header style="display:flex; align-items:center; gap:1em; padding:.5em 2em;">
-			<section class="logo" @click="navigateTo(`/`)">
+			<section class="logo" @click="openHome">
 				<img height="20px" src="/img/logo.svg" alt="Логотип" />
 				<h2>CallGas</h2>
 			</section>
@@ -20,9 +20,15 @@
 			</section> -->
 			<div class="flex-spacer"></div>
 			<section class="service-tools">
-				<BaseIcon name="mdi-bell" size="20" style="color:#525252;"/>
-				<BaseIcon name="mdi-help-circle-outline" size="20" style="color:#525252;"/>
-				<BaseIcon name="mdi-cog" size="20" style="color:#525252;"/>
+				<button type="button" class="st-button" title="Уведомления" @click="showNotifications">
+					<BaseIcon name="mdi-bell" size="20"/>
+				</button>
+				<button type="button" class="st-button" title="Помощь" @click="showHelp">
+					<BaseIcon name="mdi-help-circle-outline" size="20"/>
+				</button>
+				<button type="button" class="st-button" title="Настройки" @click="openSettings">
+					<BaseIcon name="mdi-cog" size="20"/>
+				</button>
 			</section>
 			<section class="user-box">
 				<!-- <img src="/img/user-avatar.png" alt="Аватар пользователя" /> -->
@@ -60,6 +66,7 @@ const s = useUserStore();
 const appStore = useAppStore();
 const accountStore = useAccountStore();
 const route = useRoute();
+const { $flags } = useNuxtApp();
 const accountSearchInput = ref<any>(null);
 const accountSearch = ref('');
 // if( !userStore.userData ) navigateTo('/login');
@@ -93,6 +100,22 @@ function selectAccount(account: FindPayload | null) {
 	accountStore.setActiveAccount(account.account);
 	accountSearch.value = '';
 	navigateTo(`/profile/${account.account}`);
+}
+
+function openHome() {
+	navigateTo('/');
+}
+
+function openSettings() {
+	navigateTo('/settings');
+}
+
+function showNotifications() {
+	$flags.info('Центр уведомлений пока не подключен');
+}
+
+function showHelp() {
+	$flags.info('Раздел помощи пока не подключен');
 }
 
 function onSearchShortcut(e: KeyboardEvent) {
@@ -152,7 +175,34 @@ function onSearchShortcut(e: KeyboardEvent) {
 		}
 		.service-tools {
 			display:flex;
-			gap:1em;
+			gap:.35em;
+
+			.st-button {
+				aspect-ratio: 1/1;
+				color: #525252;
+				background: transparent;
+				border: 1px solid transparent;
+				border-radius: 7px;
+				cursor: pointer;
+				transition: color 180ms ease 0s, background 180ms ease 0s, border-color 180ms ease 0s, transform 180ms ease 0s;
+
+				&:hover {
+					color: #2563ea;
+					background: #eff6ff;
+					border-color: #dbeafe;
+					transform: translateY(-1px);
+				}
+
+				&:active {
+					transform: translateY(0);
+				}
+
+				&:focus-visible {
+					outline: none;
+					border-color: #2563ea;
+					box-shadow: 0 0 0 2px #2563ea33;
+				}
+			}
 		}
 		.user-box {
 			display:flex;

@@ -10,7 +10,7 @@ REMOTE_TMP="/tmp/${ARCHIVE_NAME}"
 REMOTE_HOST="root@5.23.48.222"
 TARGET_DIR="/var/www/${APP_NAME}"
 
-npm run build
+npm run build-dev
 
 tar -czf "${ARCHIVE_NAME}" -C .output/public .
 

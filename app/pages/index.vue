@@ -6,7 +6,7 @@
 
 		<main class="page-blocks">
 			<!-- Статистика -->
-			<section v-if="[`CALLCENTER`, `CONTROLLER`].includes(userStore?.userData?.role ?? '')" class="statistics">
+			<section v-if="[`CALLCENTER`, `CONTROLLER`, `CALLCENTER_COMPLAINT_ASSIGNEE`].includes(userStore?.userData?.role ?? '')" class="statistics">
 				<template
 					v-for="(item, index) of [
 						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: stats.openComplaints,	title: 'Открытых жалоб' },
@@ -211,7 +211,7 @@ const appStore = useAppStore();
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
 	layout: 'authorized'
 });
 
@@ -280,7 +280,7 @@ async function init() {
 			complaintsLoading.value = false;
 		})
 	// Только если опретор или контролёр
-	if( [`CALLCENTER`, `CONTROLLER`].includes(userStore?.userData?.role ?? '') ) {
+	if( [`CALLCENTER`, `CONTROLLER`, `CALLCENTER_COMPLAINT_ASSIGNEE`].includes(userStore?.userData?.role ?? '') ) {
 		complaints.fetchCounts()
 			.then((res) => { pageData.complaintCounts = res; })
 			.catch((error: any) => {

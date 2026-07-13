@@ -17,12 +17,14 @@
 			</form>
 			<InfoBox type="protect" title="Защищённый доступ" :message="`Все данные абонентов передаются по шифрованному каналу. \nДоступ регулируется политикой безопасности компании.`"/>
 			<p style="font-size:.8em; color:#a3a3a3; text-align: center;">Вход доступен только для авторизованных сотрудников колл-центра.При возникновении проблем обратитесь в IT-поддержку</p>
+			<p style="font-size:.8em; color:#a3a3a3; text-align: center;">Version: {{ version }}</p>
 		</div>
 	</section>
 </template>
 
 <script lang="ts" setup>
 const { $fetchPortal } = useNuxtApp();
+import { version } from '../../../package.json';
 import type { FetchError } from 'ofetch';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
@@ -55,6 +57,8 @@ async function signIn() {
 						break;
 					case 'CALLCENTER':
 					case 'CONTROLLER':
+					case 'CALLCENTER_MANAGER':
+					case 'CALLCENTER_COMPLAINT_ASSIGNEE':
 						navigateTo('/');
 						break;
 

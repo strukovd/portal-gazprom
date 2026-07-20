@@ -167,7 +167,7 @@ async function saveMatrix() {
 	saving.value = true;
 
 	try {
-		matrix.value = await complaints.updateResponsibilityMatrix(matrix.value);
+		await complaints.updateResponsibilityMatrix(matrix.value);
 		$flags.success('Матрица ответственности сохранена');
 	}
 	catch (err: any) {

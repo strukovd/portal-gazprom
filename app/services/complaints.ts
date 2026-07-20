@@ -207,9 +207,9 @@ export const complaints = {
 		return $fetchApi<ResponsibilityMatrix>('/v1/call-gas/complaints/responsibilities');
 	},
 
-	updateResponsibilityMatrix(body: ResponsibilityMatrix): Promise<ResponsibilityMatrix> {
+	updateResponsibilityMatrix(body: ResponsibilityMatrix): Promise<void> {
 		const { $fetchApi } = useNuxtApp();
-		return $fetchApi<ResponsibilityMatrix>(`/v1/call-gas/complaints/responsibilities`, {
+		return $fetchApi<void>(`/v1/call-gas/complaints/responsibilities`, {
 			method: 'PUT',
 			body
 		});

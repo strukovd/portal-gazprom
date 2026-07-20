@@ -6,12 +6,12 @@ export default defineNuxtConfig({
 		port: 3000,
 	},
 	compatibilityDate: '2025-07-15',
-	devtools: { enabled: true },
+	devtools: { enabled: false },
 	css: [
 		'@mdi/font/css/materialdesignicons.min.css',
 		'~/assets/styles/global.scss'
 	],
-	nitro: { // Для генерации статических файлов
+	nitro: { // Для генерации статических файлов
 		preset: 'github-pages',
 	},
 	app: {
@@ -34,6 +34,7 @@ export default defineNuxtConfig({
 			API_BASE_URL: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'https://api.gazprom.kg/api',
 			CALL_GAS_BASE_URL: process.env.NUXT_PUBLIC_CALL_GAS_BASE_URL ?? 'https://api.gazprom.kg/api',
 			PORTAL_BASE_URL: process.env.NUXT_PUBLIC_PORTAL_BASE_URL ?? 'https://api.gazprom.kg/api',
+			NOTIFICATIONS_WS_URL: process.env.NUXT_PUBLIC_NOTIFICATIONS_WS_URL ?? 'wss://192.168.50.84:3333/notifications',
 		},
 	},
 	fonts: {

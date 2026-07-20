@@ -19,9 +19,10 @@
 				<BaseButton style="line-height:1.4em; text-align:center;" variant="outlined">Принять показания</BaseButton>
 			</section> -->
 			<div class="flex-spacer"></div>
-			<section class="service-tools">
-				<button type="button" class="st-button" title="Уведомления" @click="showNotifications">
+			<section ref="serviceTools" class="service-tools">
+				<button type="button" :class="['st-button', { active: notificationsOpen }]" title="Уведомления" @click="toggleNotifications">
 					<BaseIcon name="mdi-bell" size="20"/>
+					<span v-if="unreadNotifications" class="st-count">{{ unreadNotifications }}</span>
 				</button>
 				<button type="button" class="st-button" title="Помощь" @click="showHelp">
 					<BaseIcon name="mdi-help-circle-outline" size="20"/>
@@ -29,6 +30,12 @@
 				<button type="button" class="st-button" title="Настройки" @click="openSettings">
 					<BaseIcon name="mdi-cog" size="20"/>
 				</button>
+				<NotificationHub
+					v-if="notificationsOpen"
+					:notifications="notifications"
+					@read="readNotification"
+					@read-all="readAllNotifications"
+				/>
 			</section>
 			<section class="user-box">
 				<!-- <img src="/img/user-avatar.png" alt="Аватар пользователя" /> -->
@@ -62,6 +69,10 @@ import Avatar from '~/components/common/Avatar.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import Sidebar from '~/components/Sidebar.vue';
 import type { FindPayload } from '~/types/Facility';
+import { notifications as notificationsService, type NotificationsPayload } from '~/services/notifications';
+import type { Socket } from 'socket.io-client';
+import NotificationHub from '~/components/common/NotificationHub.vue';
+
 const s = useUserStore();
 const appStore = useAppStore();
 const accountStore = useAccountStore();
@@ -69,15 +80,25 @@ const route = useRoute();
 const { $flags } = useNuxtApp();
 const accountSearchInput = ref<any>(null);
 const accountSearch = ref('');
+const serviceTools = ref<HTMLElement | null>(null);
+const notificationsOpen = ref(false);
+const notifications = ref<NotificationsPayload[]>([]);
+const unreadNotifications = computed(() => notifications.value.filter(item => !item.readAt).length);
+let notificationsSocket: Socket | null = null;
 // if( !userStore.userData ) navigateTo('/login');
 
 onMounted(() => {
 	checkAccountUrlParam();
 	appStore.ensureTariffs();
+	fetchNotifications();
+	connectNotificationsSocket();
 	window.addEventListener('keydown', onSearchShortcut);
+	window.addEventListener('click', onDocumentClick);
 });
 onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onSearchShortcut);
+	window.removeEventListener('click', onDocumentClick);
+	notificationsSocket?.close();
 });
 
 watch(() => route.params.account, () => {
@@ -110,12 +131,111 @@ function openSettings() {
 	navigateTo('/settings');
 }
 
-function showNotifications() {
-	$flags.info('Центр уведомлений пока не подключен');
+function toggleNotifications() {
+	notificationsOpen.value = !notificationsOpen.value;
+}
+
+async function readNotification(id: number) {
+	const notification = notifications.value.find(item => item.id === id);
+	if (!notification || notification.readAt) return;
+
+	notification.readAt = new Date().toISOString();
+	try {
+		await notificationsService.markAsRead({ notificationIds: [id] });
+	}
+	catch (error: any) {
+		notification.readAt = '';
+		$flags.error(error?.message || 'Не удалось отметить уведомление прочитанным');
+	}
+}
+
+async function readAllNotifications() {
+	const ids = notifications.value.filter(item => !item.readAt).map(item => item.id);
+	if (!ids.length) return;
+
+	const readAt = new Date().toISOString();
+	notifications.value.forEach(item => {
+		if (ids.includes(item.id)) item.readAt = readAt;
+	});
+
+	try {
+		await notificationsService.markAsRead({ notificationIds: ids });
+	}
+	catch (error: any) {
+		notifications.value.forEach(item => {
+			if (ids.includes(item.id)) item.readAt = '';
+		});
+		$flags.error(error?.message || 'Не удалось отметить уведомления прочитанными');
+	}
 }
 
 function showHelp() {
 	$flags.info('Раздел помощи пока не подключен');
+}
+
+function onDocumentClick(event: MouseEvent) {
+	const target = event.target as Node | null;
+	if (target && serviceTools.value?.contains(target)) return;
+	notificationsOpen.value = false;
+}
+
+async function fetchNotifications() {
+	try {
+		const response = await notificationsService.fetch();
+		notifications.value = response || [];
+		markNotificationsAsReceived();
+	}
+	catch (error: any) {
+		$flags.error(error?.message || 'Не удалось загрузить уведомления');
+	}
+}
+
+async function markNotificationsAsReceived() {
+	const ids = notifications.value.filter(item => !item.receivedAt).map(item => item.id);
+	if (!ids.length) return;
+
+	const receivedAt = new Date().toISOString();
+	notifications.value.forEach(item => {
+		if (ids.includes(item.id)) item.receivedAt = receivedAt;
+	});
+
+	try {
+		await notificationsService.markAsReceived({ notificationIds: ids });
+	}
+	catch {
+		notifications.value.forEach(item => {
+			if (ids.includes(item.id)) item.receivedAt = '';
+		});
+	}
+}
+
+function connectNotificationsSocket() {
+	if (notificationsSocket?.connected || notificationsSocket?.active) return;
+
+	notificationsSocket = notificationsService.connectSocket({
+		onOpen() {
+			console.info('Сокет уведомлений подключен');
+		},
+		onMessage(notification) {
+			if (!notification?.id) return;
+			console.info('Получено уведомление из сокета:', notification);
+			notifications.value = [
+				notification,
+				...notifications.value.filter(item => item.id !== notification.id),
+			];
+			markNotificationsAsReceived();
+		},
+		onClose() {
+			console.info('Сокет уведомлений закрыт');
+		},
+		onError() {
+			console.warn('Не удалось подключиться к сокету уведомлений');
+		},
+	});
+
+	if (!notificationsSocket) {
+		console.warn('Сокет уведомлений не создан');
+	}
 }
 
 function onSearchShortcut(e: KeyboardEvent) {
@@ -126,6 +246,11 @@ function onSearchShortcut(e: KeyboardEvent) {
 	if (e.key === 'Escape' && accountSearchInput.value.hasFocus()) {
 		accountSearchInput.value.clear();
 		accountSearchInput.value.blur(); // Убираем фокус
+		return;
+	}
+
+	if (e.key === 'Escape' && notificationsOpen.value) {
+		notificationsOpen.value = false;
 		return;
 	}
 
@@ -176,6 +301,7 @@ function onSearchShortcut(e: KeyboardEvent) {
 		.service-tools {
 			display:flex;
 			gap:.35em;
+			position: relative;
 
 			.st-button {
 				aspect-ratio: 1/1;
@@ -184,6 +310,7 @@ function onSearchShortcut(e: KeyboardEvent) {
 				border: 1px solid transparent;
 				border-radius: 7px;
 				cursor: pointer;
+				position: relative;
 				transition: color 180ms ease 0s, background 180ms ease 0s, border-color 180ms ease 0s, transform 180ms ease 0s;
 
 				&:hover {
@@ -202,7 +329,30 @@ function onSearchShortcut(e: KeyboardEvent) {
 					border-color: #2563ea;
 					box-shadow: 0 0 0 2px #2563ea33;
 				}
+
+				&.active {
+					color: #2563ea;
+					background: #eff6ff;
+					border-color: #dbeafe;
+				}
+
+				.st-count {
+					position: absolute;
+					top: -.25em;
+					right: -6px;
+					text-align: center;
+					padding:.3em .5em .2em .6em;
+					box-sizing: border-box;
+					color: #fff;
+					background: #ef4444;
+					border: 2px solid #f3f3f3;
+					border-radius: 999px;
+					font-size: .7em;
+					font-weight: 400;
+					line-height: 1.1em;
+				}
 			}
+
 		}
 		.user-box {
 			display:flex;

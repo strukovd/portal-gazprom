@@ -2,15 +2,15 @@
 	<section class="notifications-dropdown">
 		<header class="nd-header">
 			<div class="nd-title">Уведомления</div>
-			<button type="button" class="nd-action" @click="$emit('read-all')">Прочитать все</button>
+			<button type="button" class="nd-action" @click="notificationStore.markAllAsRead">Прочитать все</button>
 		</header>
 
 		<main class="nd-list">
 			<article
-				v-for="item of notifications"
+				v-for="item of notificationStore.items"
 				:key="item.id"
-				:class="['nd-item', { unread: !item.readAt }]"
-				@click="$emit('read', item.id)"
+				:class="['nd-item', { unread: !notificationStore.isRead(item) }]"
+				@click="notificationStore.markAsRead(item.id)"
 			>
 				<div :class="['nd-icon', notificationColor(item)]">
 					<BaseIcon :name="notificationIcon(item)" size="1.15em"/>
@@ -21,7 +21,7 @@
 					<div class="nd-time">{{ notificationTime(item) }}</div>
 				</div>
 			</article>
-			<div v-if="!notifications.length" class="nd-empty">Уведомлений нет</div>
+			<div v-if="!notificationStore.items.length" class="nd-empty">Уведомлений нет</div>
 		</main>
 	</section>
 </template>
@@ -30,14 +30,7 @@
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import type { NotificationsPayload } from '~/services/notifications';
 
-defineProps<{
-	notifications: NotificationsPayload[];
-}>();
-
-defineEmits<{
-	read: [id: number];
-	'read-all': [];
-}>();
+const notificationStore = useNotificationStore();
 
 function notificationText(notification: NotificationsPayload) {
 	return notification.comment || notification.data?.subject || 'Без описания';

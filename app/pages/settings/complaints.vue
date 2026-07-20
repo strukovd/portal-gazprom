@@ -57,7 +57,7 @@
 								<td class="scp-cell scp-type-cell">
 									{{ complaints.resolveComplaintName(type) }}
 								</td>
-								<td v-for="branch of branches" :key="branch.branchKey" class="scp-cell">
+								<td v-for="branch of branches" :key="branch.branchKey" class="scp-cell" @click="openAssigneeModal(branch.branchKey, type)">
 									<div v-if="getResponsibles(branch.branchKey, type).length" class="scp-users">
 										<UserBadge
 											v-for="user of getResponsibles(branch.branchKey, type)"
@@ -68,18 +68,7 @@
 											@remove="removeAssignee(branch.branchKey, type, user.id)"
 										/>
 									</div>
-									<div v-else class="scp-empty-cell">Не назначено</div>
-
-									<BaseAutocomplete
-										class="scp-assignee-search"
-										:modelValue="selectedAssignees[cellKey(branch.branchKey, type)]"
-										:items="availableAssignees(branch.branchKey, type)"
-										:loading="assigneesLoading"
-										fieldKey="id"
-										fieldValue="name"
-										placeholder="Добавить исполнителя"
-										@change="addAssignee(branch.branchKey, type, $event)"
-									/>
+									<div v-else class="scp-empty-cell">Добавить исполнителя</div>
 								</td>
 							</tr>
 						</tbody>
@@ -92,7 +81,6 @@
 
 <script lang="ts" setup>
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
-import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
@@ -115,12 +103,10 @@ type MatrixRow = {
 	branchName: string;
 };
 
-const { $flags } = useNuxtApp();
+const { $flags, $modal } = useNuxtApp();
 const matrix = ref<ResponsibilityMatrix>({});
 const assignees = ref<AssigneePayload[]>([]);
-const selectedAssignees = reactive<Record<string, string | number | undefined>>({});
 const loading = ref(true);
-const assigneesLoading = ref(false);
 const saving = ref(false);
 const error = ref('');
 
@@ -152,7 +138,6 @@ onMounted(fetchData);
 
 async function fetchData() {
 	loading.value = true;
-	assigneesLoading.value = true;
 	error.value = '';
 
 	try {
@@ -169,7 +154,6 @@ async function fetchData() {
 	}
 	finally {
 		loading.value = false;
-		assigneesLoading.value = false;
 	}
 }
 
@@ -204,12 +188,20 @@ function availableAssignees(branchKey: string, complaintType: string) {
 	return assignees.value.filter(user => !selectedIds.has(user.id));
 }
 
-function addAssignee(branchKey: string, complaintType: string, assigneeId: string | number | undefined) {
-	if (!assigneeId) return;
+async function openAssigneeModal(branchKey: string, complaintType: string) {
+	const assignee = await $modal.show('AssigneeSelect', {
+		title: 'Выбор исполнителя',
+		payload: {
+			assignees: availableAssignees(branchKey, complaintType),
+		},
+	});
 
-	const assignee = assignees.value.find(user => String(user.id) === String(assigneeId));
 	if (!assignee) return;
 
+	addAssignee(branchKey, complaintType, assignee);
+}
+
+function addAssignee(branchKey: string, complaintType: string, assignee: AssigneePayload) {
 	let branch = matrix.value[branchKey];
 	if (!branch) {
 		branch = {};
@@ -223,7 +215,6 @@ function addAssignee(branchKey: string, complaintType: string, assigneeId: strin
 		login: assignee.login,
 		name: assignee.name,
 	});
-	selectedAssignees[cellKey(branchKey, complaintType)] = undefined;
 }
 
 function removeAssignee(branchKey: string, complaintType: string, assigneeId: number) {
@@ -234,9 +225,6 @@ function removeAssignee(branchKey: string, complaintType: string, assigneeId: nu
 	branch[complaintType] = cell.filter(user => user.id !== assigneeId);
 }
 
-function cellKey(branchKey: string, complaintType: string) {
-	return `${branchKey}:${complaintType}`;
-}
 </script>
 
 <style lang="scss">
@@ -337,6 +325,15 @@ function cellKey(branchKey: string, complaintType: string) {
 									background: #fcfcfd;
 								}
 							}
+
+							.scp-cell:not(.scp-type-cell) {
+								cursor: pointer;
+								transition: background 180ms ease 0s;
+
+								&:hover {
+									background: #eff6ff;
+								}
+							}
 						}
 					}
 
@@ -386,22 +383,9 @@ function cellKey(branchKey: string, complaintType: string) {
 							}
 
 							.scp-empty-cell {
-								color: #a3a3a3;
+								color: #2563eb;
 								font-size: .86em;
 								font-weight: 700;
-							}
-
-							.scp-assignee-search {
-								margin: .55em 0 0 0;
-
-								.input-container {
-									font-size: .86em;
-									padding: .05em .3em .05em .45em;
-								}
-
-								.dropdown {
-									min-width: 16em;
-								}
 							}
 						}
 					}

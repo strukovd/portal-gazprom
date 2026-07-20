@@ -1,9 +1,13 @@
 <template>
 	<div class="user-badge" :style="{ '--ub-bg': badgeColor.background, '--ub-color': badgeColor.color, '--ub-border': badgeColor.border }">
+		<BaseIcon v-if="prependIcon" class="ub-icon" :name="prependIcon" size="1.2em"/>
+
 		<div class="ub-info">
 			<div class="ub-name">{{ name || login }}</div>
 			<div v-if="login" class="ub-login">{{ login }}</div>
 		</div>
+
+		<BaseIcon v-if="appendIcon" class="ub-icon" :name="appendIcon" size="1.2em"/>
 
 		<button v-if="removable" type="button" class="ub-remove" title="Удалить исполнителя" @click.stop="emit('remove')">
 			<BaseIcon name="mdi-close" size="1em"/>
@@ -21,6 +25,8 @@ const emit = defineEmits<{
 const props = defineProps<{
 	name?: string;
 	login?: string;
+	prependIcon?: string;
+	appendIcon?: string;
 	removable?: boolean;
 }>();
 
@@ -55,9 +61,15 @@ const badgeColor = computed(() => {
 	border-radius: 7px;
 	background: var(--ub-bg);
 
+	.ub-icon {
+		flex: 0 0 auto;
+		color: var(--ub-color);
+	}
+
 	.ub-info {
 		display: grid;
 		gap: .15em;
+		flex: 1 1 auto;
 		min-width: 0;
 
 		.ub-name {

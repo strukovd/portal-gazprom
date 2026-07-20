@@ -5,16 +5,15 @@
 		</section>
 
 		<section class="asm-list">
-			<button
+			<UserBadge
 				v-for="user of filteredAssignees"
 				:key="user.id"
-				type="button"
 				class="asm-user"
+				:name="user.name"
+				:login="user.login"
+				appendIcon="mdi-plus"
 				@click="close(user)"
-			>
-				<UserBadge :name="user.name" :login="user.login"/>
-				<BaseIcon name="mdi-plus" size="1.25em"/>
-			</button>
+			/>
 
 			<div v-if="!filteredAssignees.length" class="asm-empty">Нет доступных исполнителей</div>
 		</section>
@@ -27,7 +26,6 @@
 
 <script lang="ts" setup>
 import BaseButton from '~/components/common/base/BaseButton.vue';
-import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import UserBadge from '~/components/common/UserBadge.vue';
 import type { AssigneePayload } from '~/services/complaints';
@@ -71,16 +69,6 @@ function close(result: AssigneePayload | null) {
 		padding-right: .2em;
 
 		.asm-user {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: .8em;
-			width: 100%;
-			padding: .75em;
-			border: 1px solid #e5e7eb;
-			border-radius: 8px;
-			color: #2563eb;
-			background: #fff;
 			cursor: pointer;
 			transition: border-color 180ms ease 0s, background 180ms ease 0s, transform 180ms ease 0s;
 

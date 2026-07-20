@@ -30,10 +30,10 @@ export type UsersQuery = {
 export type UserPayload = {
 	id: number;
 	login: string;
-	name: null;
-	phone: null;
-	role: string;
-	isActive: true;
+	name?: string;
+	phone?: string;
+	role: UserRoles | string;
+	isActive: boolean;
 	contractorId: null;
 	created: string;
 }
@@ -98,7 +98,7 @@ export const portal = {
 		});
 	},
 
-	fetchUserList(query: UsersQuery) {
+	fetchUserList(query: Partial<UsersQuery> = {}) {
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<UsersResponse>('/v1/portal/users', {
@@ -138,6 +138,15 @@ export const portal = {
 
 		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}`, {
 			method: 'PATCH',
+			body
+		});
+	},
+
+	setPassword(id: number, body: { newPassword: string }) {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}`, {
+			method: 'PUT',
 			body
 		});
 	},

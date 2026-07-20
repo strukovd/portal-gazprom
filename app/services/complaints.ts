@@ -103,6 +103,13 @@ export type ResponsibilityMatrix = {
     }[]
   }
 };
+export type ResponsibilityMatrixUpdateResponse = {
+	message: string;
+	created: number;
+	updated: number;
+	removed: number;
+	validationErrors: string[];
+};
 
 
 export const complaints = {
@@ -207,9 +214,9 @@ export const complaints = {
 		return $fetchApi<ResponsibilityMatrix>('/v1/call-gas/complaints/responsibilities');
 	},
 
-	updateResponsibilityMatrix(body: ResponsibilityMatrix): Promise<void> {
+	updateResponsibilityMatrix(body: ResponsibilityMatrix): Promise<ResponsibilityMatrixUpdateResponse> {
 		const { $fetchApi } = useNuxtApp();
-		return $fetchApi<void>(`/v1/call-gas/complaints/responsibilities`, {
+		return $fetchApi<ResponsibilityMatrixUpdateResponse>(`/v1/call-gas/complaints/responsibilities`, {
 			method: 'PUT',
 			body
 		});

@@ -69,6 +69,7 @@ const determinePathByRole = (role: string): string => {
 			return '/issues';
 		case 'ADMIN':
 			return '/';
+		case 'CALLCENTER_COMPLAINT_ASSIGNEE':
 		case 'CONTROLLER':
 		case 'CALLCENTER':
 			return '/';

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 type UserData = {
 	id: number;
 	login: string;
-	role: 'ADMIN' | 'CALLCENTER' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CONTROLLER';
+	role: 'ADMIN' | 'CALLCENTER' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CONTROLLER' | 'CALLCENTER_COMPLAINT_ASSIGNEE';
 	userName: null,
 	contractorId: unknown,
 	officeId: unknown
@@ -61,6 +61,8 @@ export const useUserStore = defineStore('user', {
 				case 'CALLCENTER':
 				case 'CALLCENTER_MANAGER':
 					return 'Оператор колл-центра';
+				case 'CALLCENTER_COMPLAINT_ASSIGNEE':
+					return 'Исполнитель жалоб';
 				case 'CONTROLLER':
 					return 'Контролёр';
 				case 'ADMIN':

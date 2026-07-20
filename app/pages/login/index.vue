@@ -36,7 +36,7 @@ import { type UserData } from '~/types/UserData';
 const login = ref('');
 const password = ref('');
 const error = ref('');
-const rememberMe = ref(false);
+const rememberMe = ref(true);
 
 
 async function signIn() {

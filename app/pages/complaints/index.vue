@@ -8,6 +8,7 @@
 				<span>Управление обращениями и жалобами абонентов</span>
 			</section>
 			<section class="actions">
+				<BaseButton prependIcon="mdi-download" color="#16a34a" @click="downloadReport">Выгрузить отчет</BaseButton>
 				<BaseButton prependIcon="mdi-plus" @click="showCreateModal">Создать жалобу</BaseButton>
 			</section>
 		</header>
@@ -283,6 +284,24 @@ async function showCreateModal() {
 	if (created) init();
 }
 
+async function downloadReport() {
+	try {
+		const blob = await complaints.downloadExcelReport(getFilters());
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+
+		link.href = url;
+		link.download = `complaints-report-${new Date().toISOString().slice(0, 10)}.xlsx`;
+		document.body.appendChild(link);
+		link.click();
+		link.remove();
+		URL.revokeObjectURL(url);
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.message || 'Не удалось выгрузить отчет');
+	}
+}
+
 async function showComplaint(item: ComplaintsPayload | Record<string, unknown>) {
 	const complaint = item as ComplaintsPayload;
 
@@ -382,6 +401,11 @@ const itemsByType = computed(() => {
 			span {
 				color: #6b7280;
 			}
+		}
+		.actions {
+			display: flex;
+			align-items: center;
+			gap: .6em;
 		}
 	}
 

@@ -87,6 +87,22 @@ export type TimelinePayload = {
 	title: string;
 	comment: string;
 }
+export type AssigneePayload = {
+	id: number;
+	login: string;
+	name: string;
+	role: string;
+};
+export type AssigneesResponse = AssigneePayload[];
+export type ResponsibilityMatrix = {
+  [branchKey: string]: {
+    [complaintType: string]: {
+      id: number;
+      login: string;
+      name: string;
+    }[]
+  }
+};
 
 
 export const complaints = {
@@ -151,4 +167,62 @@ export const complaints = {
 			method: 'DELETE'
 		});
 	},
+
+	resolveComplaintName(key: string): string {
+		const complaintNames: Record<string, string> = {
+			BSG_COMPLAINT: 'Жалоба на БСГ',
+			EMPLOYEE_COMPLAINT: 'Жалоба на сотрудника',
+			OTHER: 'Прочее',
+			TARIFFS_PRICE_LIST: 'Тарифы/Прейскурант цен',
+			ROAD_NOT_RESTORED: 'Не восстановили дорожное покрытие после газификации',
+			WRONG_CHARGES: 'Некорректные начисления',
+			NO_RECEIPTS: 'Не приносят квитанции',
+			RECALCULATION_CHARGES: 'Перерасчет начислений',
+			DAMAGED_GAS_PIPELINE: 'Повредили газопровод',
+			SERVICE_DEVELOPMENT_ECH: 'Предоставление услуг:Разработка ЭЧ',
+			INSTALL_REMOVE_REPLACE_BSG: 'Установка/Снятие/Замена БСГ',
+			SERVICE_CONSTRUCTION_INSTALLATION_COMMISSIONING_REPLACE_BSG: 'Предоставление услуг СМР, ПНР, Замена БСГ',
+			LEAK_ACCIDENT: 'Утечка/ Авария',
+		};
+		return complaintNames[key] || 'Неизвестная жалоба';
+	},
+
+	resolveBranchName(key: string): string {
+		const branchNames: Record<string, string> = {
+			"OSH": "Ош",
+			"CHUI": "Чуй",
+			"JALALABAD": "Джалал-Абад",
+			"BISHKEK": "Бишкек"
+		};
+		return branchNames[key] || 'Неизвестный филиал';
+	},
+
+	fetchAssignees(): Promise<AssigneesResponse> {
+		const { $fetchApi } = useNuxtApp();
+		return $fetchApi<AssigneesResponse>('/v1/call-gas/complaints/assignees');
+	},
+
+	fetchResponsibilityMatrix(): Promise<ResponsibilityMatrix> {
+		const { $fetchApi } = useNuxtApp();
+		return $fetchApi<ResponsibilityMatrix>('/v1/call-gas/complaints/responsibilities');
+	},
+
+	updateResponsibilityMatrix(body: ResponsibilityMatrix): Promise<ResponsibilityMatrix> {
+		const { $fetchApi } = useNuxtApp();
+		return $fetchApi<ResponsibilityMatrix>(`/v1/call-gas/complaints/responsibilities`, {
+			method: 'PUT',
+			body
+		});
+	},
+
+	downloadExcelReport(query: Partial<ComplaintsQuery> = {}): Promise<Blob> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<Blob>('/v1/call-gas/complaints/export/excel', {
+			method: 'GET',
+			query,
+			responseType: 'blob'
+		});
+	},
+
 };

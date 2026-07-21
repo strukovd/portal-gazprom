@@ -95,6 +95,32 @@
 					</article>
 				</section>
 			</BaseIsland>
+
+			<BaseIsland v-if="userStore.userData?.role === 'ADMIN' || userStore.isPrivilegedUser" class="sp-admin" title="Администрирование" prependIcon="mdi-shield-crown-outline" data-aos="fade-up">
+				<section class="sp-admin-list">
+					<NuxtLink v-if="userStore.userData?.role === 'ADMIN'" to="/settings/users" class="sp-admin-link">
+						<div class="sp-admin-icon">
+							<BaseIcon name="mdi-account-key-outline" size="1.4em"/>
+						</div>
+						<div class="sp-admin-body">
+							<div class="sp-admin-title">Пользователи и права</div>
+							<div class="sp-admin-text">Создание пользователей, роли, доступы и учетные данные</div>
+						</div>
+						<BaseIcon name="mdi-chevron-right" size="1.4em"/>
+					</NuxtLink>
+
+					<NuxtLink v-if="userStore.isPrivilegedUser" to="/settings/complaints" class="sp-admin-link">
+						<div class="sp-admin-icon">
+							<BaseIcon name="mdi-account-multiple-check-outline" size="1.4em"/>
+						</div>
+						<div class="sp-admin-body">
+							<div class="sp-admin-title">Ответственные по жалобам</div>
+							<div class="sp-admin-text">Матрица исполнителей по филиалам и типам обращений</div>
+						</div>
+						<BaseIcon name="mdi-chevron-right" size="1.4em"/>
+					</NuxtLink>
+				</section>
+			</BaseIsland>
 		</main>
 	</section>
 </template>
@@ -110,7 +136,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
 	layout: 'authorized'
 });
 
@@ -312,6 +338,58 @@ const integrations = [
 				}
 			}
 		}
+
+		.sp-admin {
+			.sp-admin-list {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: .8em;
+
+				.sp-admin-link {
+					display: grid;
+					grid-template-columns: auto minmax(0, 1fr) auto;
+					align-items: center;
+					gap: .8em;
+					padding: 1em;
+					border: 1px solid #e5e7eb;
+					border-radius: 8px;
+					background: #fff;
+					transition: opacity 180ms ease 0s, transform 180ms ease 0s;
+
+					&:hover {
+						opacity: .86;
+						transform: translateY(-1px);
+					}
+
+					.sp-admin-icon {
+						display: grid;
+						place-items: center;
+						width: 2.6em;
+						aspect-ratio: 1/1;
+						border-radius: 8px;
+						color: #2563eb;
+						background: #eff6ff;
+					}
+
+					.sp-admin-body {
+						display: grid;
+						gap: .25em;
+						min-width: 0;
+
+						.sp-admin-title {
+							color: #111827;
+							font-weight: 800;
+						}
+
+						.sp-admin-text {
+							color: #737373;
+							font-size: .86em;
+							line-height: 1.35;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@media (max-width: 900px) {
@@ -327,6 +405,12 @@ const integrations = [
 
 			.sp-integrations {
 				.sp-integrations-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.sp-admin {
+				.sp-admin-list {
 					grid-template-columns: 1fr;
 				}
 			}

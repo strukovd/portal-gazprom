@@ -8,7 +8,15 @@
 			>
 				<div v-if="link.spacer" :class="link.class">{{ link.title ?? '' }}</div>
 				<template v-else>
-					<NuxtLink
+					<button v-if="link.action"
+						type="button"
+						:class="['link-row', { 'disabled': link.disabled }]"
+						@click="link.action?.()"
+					>
+						<BaseIcon :name="link.icon!" size="20" style="margin-right:.6em;"/>
+						{{ link.title }}
+					</button>
+					<NuxtLink v-else
 						:to="link.link"
 						:class="['link-row', { 'active': isActiveLink(link), 'disabled': link.disabled }]"
 						@click="handleDisabledLink(link, $event)"
@@ -49,6 +57,7 @@ type SidebarLink = {
 	title?: string
 	link?: string
 	icon?: string
+	action?: () => void
 	disabled?: boolean
 	spacer?: boolean
 	class?: string
@@ -57,6 +66,7 @@ type SidebarLink = {
 
 
 const route = useRoute();
+const userStore = useUserStore();
 const links = ref<SidebarLink[]>([
 	{
 		title: 'Панель правления',
@@ -130,12 +140,13 @@ const links = ref<SidebarLink[]>([
 	},
 	{
 		title: 'Настройки',
-		// link: '/settings',
-		icon: 'mdi-cog'
+		link: '/settings',
+		icon: 'mdi-cog',
 	},
 	{
 		title: 'Выход',
-		icon: 'mdi-logout'
+		action: userStore.logout,
+		icon: 'mdi-logout',
 	}
 ]);
 
@@ -173,7 +184,7 @@ function handleDisabledLink(link: SidebarLink, event: Event) {
 			line-height: 3em;
 			border-radius:7px;
 			&:has(.spacer) {
-				flex:auto 1 1;
+				flex:1 1 auto;
 			}
 
 			.splitter {
@@ -187,6 +198,15 @@ function handleDisabledLink(link: SidebarLink, event: Event) {
 				text-decoration: none;
 				font-size:1.1rem;
 				padding:0 1em;
+				&:is(button) {
+					display: block;
+					width: 100%;
+					text-align: left;
+					background: transparent;
+					border: 0;
+					line-height: inherit;
+					cursor: pointer;
+				}
 
 				&:hover,
 				&.active {

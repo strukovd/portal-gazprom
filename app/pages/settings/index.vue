@@ -5,96 +5,38 @@
 		<header class="sp-header">
 			<section class="sp-heading">
 				<div class="sp-title">Настройки</div>
-				<div class="sp-subtitle">Параметры рабочего места, уведомлений и обработки обращений</div>
+				<div class="sp-subtitle">Профиль пользователя, пароль и административные разделы</div>
 			</section>
 
 			<section class="sp-actions">
-				<BaseButton variant="secondary" prependIcon="mdi-restore">Сбросить</BaseButton>
-				<BaseButton prependIcon="mdi-content-save-outline">Сохранить</BaseButton>
+				<BaseButton variant="secondary" prependIcon="mdi-refresh" :loading="loading" @click="fetchProfile">Обновить</BaseButton>
+				<BaseButton prependIcon="mdi-content-save-outline" :loading="saving" @click="saveProfile">Сохранить</BaseButton>
 			</section>
 		</header>
 
 		<main class="page-blocks">
 			<section class="sp-grid">
-				<BaseIsland class="sp-profile" title="Профиль оператора" prependIcon="mdi-account-cog-outline" data-aos="fade-up">
+				<BaseIsland class="sp-profile" title="Профиль пользователя" prependIcon="mdi-account-cog-outline" data-aos="fade-up">
 					<section class="sp-form">
-						<BaseTextBox v-model="form.name" label="Имя пользователя"/>
-						<BaseTextBox v-model="form.email" label="Email" type="email"/>
+						<BaseTextBox v-model="form.login" label="Логин" disabled/>
+						<BaseTextBox v-model="form.name" label="ФИО"/>
 						<BaseTextBox v-model="form.phone" label="Телефон" type="tel"/>
-						<BaseTabs v-model="form.interfaceSize" label="Размер интерфейса" :items="[
-							{ key: 'compact', value: 'Компактный' },
-							{ key: 'normal', value: 'Обычный' },
-							{ key: 'large', value: 'Крупный' },
-						]"/>
+						<BaseTextBox :modelValue="userStore.prettyRole" label="Роль" disabled/>
 					</section>
 				</BaseIsland>
 
-				<BaseIsland class="sp-panel" title="Уведомления" prependIcon="mdi-bell-outline" data-aos="fade-up">
-					<section class="sp-checks">
-						<BaseCheckbox v-model="form.notifications.newComplaints" label="Новые жалобы"/>
-						<BaseCheckbox v-model="form.notifications.overdueComplaints" label="Просроченные жалобы"/>
-						<BaseCheckbox v-model="form.notifications.readings" label="Новые показания"/>
-						<BaseCheckbox v-model="form.notifications.system" label="Системные сообщения"/>
-					</section>
-
-					<section class="sp-notice">
-						<BaseIcon name="mdi-information-outline" size="1.3em"/>
-						<div class="sp-notice-text">Уведомления пока сохраняются только в интерфейсе.</div>
-					</section>
-				</BaseIsland>
-			</section>
-
-			<section class="sp-grid">
-				<BaseIsland class="sp-panel" title="Обработка обращений" prependIcon="mdi-format-list-checks" data-aos="fade-up">
+				<BaseIsland class="sp-password" title="Смена пароля" prependIcon="mdi-shield-lock-outline" data-aos="fade-up">
 					<section class="sp-form">
-						<BaseTabs v-model="form.queueMode" label="Режим очереди" :items="[
-							{ key: 'all', value: 'Все' },
-							{ key: 'mine', value: 'Мои' },
-							{ key: 'branch', value: 'Филиал' },
-						]"/>
-						<BaseTextBox v-model="form.defaultSla" label="SLA по умолчанию, дней" type="number"/>
-						<BaseTextBox v-model="form.rowsPerPage" label="Строк в таблицах" type="number"/>
+						<BaseTextBox v-model="passwordForm.oldPassword" label="Текущий пароль" type="password"/>
+						<BaseTextBox v-model="passwordForm.newPassword" label="Новый пароль" type="password"/>
+						<BaseTextBox v-model="passwordForm.repeatPassword" label="Повторите пароль" type="password"/>
 					</section>
 
-					<section class="sp-checks">
-						<BaseCheckbox v-model="form.autoOpenAccount" label="Открывать карточку абонента после выбора"/>
-						<BaseCheckbox v-model="form.confirmDangerActions" label="Подтверждать удаление и закрытие"/>
-					</section>
-				</BaseIsland>
-
-				<BaseIsland class="sp-panel" title="Безопасность" prependIcon="mdi-shield-lock-outline" data-aos="fade-up">
-					<section class="sp-statuses">
-						<div v-for="item of securityItems" :key="item.title" class="sp-status">
-							<div :class="['sp-status-icon', item.color]">
-								<BaseIcon :name="item.icon" size="1.25em"/>
-							</div>
-							<div class="sp-status-body">
-								<div class="sp-status-title">{{ item.title }}</div>
-								<div class="sp-status-text">{{ item.text }}</div>
-							</div>
-						</div>
+					<section class="sp-password-actions">
+						<BaseButton variant="secondary" prependIcon="mdi-lock-reset" :loading="passwordSaving" @click="changePassword">Изменить пароль</BaseButton>
 					</section>
 				</BaseIsland>
 			</section>
-
-			<BaseIsland class="sp-integrations" title="Интеграции" prependIcon="mdi-connection" data-aos="fade-up">
-				<section class="sp-integrations-grid">
-					<article v-for="item of integrations" :key="item.title" class="sp-integration">
-						<div class="sp-integration-icon">
-							<BaseIcon :name="item.icon" size="1.4em"/>
-						</div>
-
-						<div class="sp-integration-body">
-							<div class="sp-integration-title">{{ item.title }}</div>
-							<div class="sp-integration-text">{{ item.text }}</div>
-						</div>
-
-						<div :class="['status', item.enabled ? 'status-green' : 'status-red']">
-							{{ item.enabled ? 'Активно' : 'Отключено' }}
-						</div>
-					</article>
-				</section>
-			</BaseIsland>
 
 			<BaseIsland v-if="userStore.userData?.role === 'ADMIN' || userStore.isPrivilegedUser" class="sp-admin" title="Администрирование" prependIcon="mdi-shield-crown-outline" data-aos="fade-up">
 				<section class="sp-admin-list">
@@ -128,11 +70,10 @@
 <script lang="ts" setup>
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
-import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
-import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import { portal, type UserPayload, type UserRoles } from '~/services/portal';
 
 definePageMeta({
 	auth: true,
@@ -141,35 +82,98 @@ definePageMeta({
 });
 
 const userStore = useUserStore();
+const { $flags } = useNuxtApp();
+const loading = ref(false);
+const saving = ref(false);
+const passwordSaving = ref(false);
+const profile = ref<UserPayload | null>(null);
 const form = reactive({
-	name: userStore.userData?.userName || 'Оператор',
-	email: 'operator@gazprom.kg',
-	phone: '+996 555 000 000',
-	interfaceSize: 'normal',
-	queueMode: 'all',
-	defaultSla: 3,
-	rowsPerPage: 10,
-	autoOpenAccount: true,
-	confirmDangerActions: true,
-	notifications: {
-		newComplaints: true,
-		overdueComplaints: true,
-		readings: false,
-		system: true,
-	},
+	login: userStore.userData?.login || '',
+	name: '',
+	phone: '',
+});
+const passwordForm = reactive({
+	oldPassword: '',
+	newPassword: '',
+	repeatPassword: '',
 });
 
-const securityItems = [
-	{ title: 'Роль', text: userStore.prettyRole || 'Не указана', icon: 'mdi-account-key-outline', color: 'blue' },
-	{ title: 'Сессия', text: 'Активна, вход выполнен сегодня', icon: 'mdi-check-decagram-outline', color: 'green' },
-	{ title: 'Доступ', text: 'Права наследуются от роли пользователя', icon: 'mdi-lock-check-outline', color: 'dark' },
-];
+onMounted(fetchProfile);
 
-const integrations = [
-	{ title: 'CallGas API', text: 'Жалобы, таймлайн и статистика обращений', icon: 'mdi-phone-in-talk-outline', enabled: true },
-	{ title: 'Портал абонента', text: 'Карточки абонентов, заявки и показания', icon: 'mdi-account-box-outline', enabled: true },
-	{ title: 'Сервис уведомлений', text: 'SMS и email-рассылки абонентам', icon: 'mdi-message-processing-outline', enabled: false },
-];
+async function fetchProfile() {
+	if (!userStore.userData?.id) return;
+
+	loading.value = true;
+	try {
+		const response = await portal.fetchUser({ id: userStore.userData.id });
+		profile.value = response.data;
+		form.login = response.data.login || userStore.userData.login || '';
+		form.name = response.data.name || '';
+		form.phone = response.data.phone || '';
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить профиль');
+	}
+	finally {
+		loading.value = false;
+	}
+}
+
+async function saveProfile() {
+	if (!userStore.userData?.id) return;
+	if (!form.name.trim()) {
+		$flags.warn('Укажите ФИО пользователя');
+		return;
+	}
+
+	saving.value = true;
+	try {
+		await portal.updateUser(userStore.userData.id, {
+			name: form.name,
+			phone: form.phone,
+			role: (profile.value?.role || userStore.userData.role) as UserRoles,
+			isActive: profile.value?.isActive ?? true,
+		});
+		$flags.success('Профиль сохранен');
+		fetchProfile();
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось сохранить профиль');
+	}
+	finally {
+		saving.value = false;
+	}
+}
+
+async function changePassword() {
+	if (!userStore.userData?.id) return;
+	if (!passwordForm.oldPassword || !passwordForm.newPassword) {
+		$flags.warn('Укажите текущий и новый пароль');
+		return;
+	}
+	if (passwordForm.newPassword !== passwordForm.repeatPassword) {
+		$flags.warn('Новый пароль и повтор не совпадают');
+		return;
+	}
+
+	passwordSaving.value = true;
+	try {
+		await portal.changePassword(userStore.userData.id, {
+			oldPassword: passwordForm.oldPassword,
+			newPassword: passwordForm.newPassword,
+		});
+		passwordForm.oldPassword = '';
+		passwordForm.newPassword = '';
+		passwordForm.repeatPassword = '';
+		$flags.success('Пароль изменен');
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось изменить пароль');
+	}
+	finally {
+		passwordSaving.value = false;
+	}
+}
 </script>
 
 <style lang="scss">
@@ -218,125 +222,10 @@ const integrations = [
 			gap: .9em;
 		}
 
-		.sp-checks {
-			display: grid;
-			gap: .8em;
-		}
-
-		.sp-notice {
+		.sp-password-actions {
 			display: flex;
-			align-items: center;
-			gap: .6em;
+			justify-content: flex-end;
 			margin: 1em 0 0 0;
-			padding: .85em 1em;
-			border-radius: 8px;
-			color: #2563ea;
-			background: #eff6ff;
-
-			.sp-notice-text {
-				color: #334155;
-				font-size: .9em;
-			}
-		}
-
-		.sp-statuses {
-			display: grid;
-			gap: .85em;
-
-			.sp-status {
-				display: flex;
-				align-items: center;
-				gap: .8em;
-				padding: .85em;
-				border: 1px solid #e5e7eb;
-				border-radius: 8px;
-				background: #fff;
-
-				.sp-status-icon {
-					display: grid;
-					place-items: center;
-					flex: 0 0 2.4em;
-					width: 2.4em;
-					aspect-ratio: 1/1;
-					border-radius: 8px;
-
-					&.blue {
-						color: #2563eb;
-						background: #dbeafe;
-					}
-
-					&.green {
-						color: #16a34a;
-						background: #dcfce7;
-					}
-
-					&.dark {
-						color: #374151;
-						background: #f3f4f6;
-					}
-				}
-
-				.sp-status-body {
-					display: grid;
-					gap: .2em;
-
-					.sp-status-title {
-						color: #111827;
-						font-weight: 700;
-					}
-
-					.sp-status-text {
-						color: #737373;
-						font-size: .88em;
-					}
-				}
-			}
-		}
-
-		.sp-integrations {
-			.sp-integrations-grid {
-				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
-				gap: .8em;
-
-				.sp-integration {
-					display: grid;
-					grid-template-columns: auto minmax(0, 1fr) auto;
-					align-items: center;
-					gap: .8em;
-					padding: 1em;
-					border: 1px solid #e5e7eb;
-					border-radius: 8px;
-					background: #fff;
-
-					.sp-integration-icon {
-						display: grid;
-						place-items: center;
-						width: 2.6em;
-						aspect-ratio: 1/1;
-						border-radius: 8px;
-						color: #2563eb;
-						background: #eff6ff;
-					}
-
-					.sp-integration-body {
-						display: grid;
-						gap: .25em;
-						min-width: 0;
-
-						.sp-integration-title {
-							color: #111827;
-							font-weight: 800;
-						}
-
-						.sp-integration-text {
-							color: #737373;
-							font-size: .86em;
-							line-height: 1.35;
-						}
-					}
-				}
-			}
 		}
 
 		.sp-admin {
@@ -401,12 +290,6 @@ const integrations = [
 		.page-blocks {
 			.sp-grid {
 				grid-template-columns: 1fr;
-			}
-
-			.sp-integrations {
-				.sp-integrations-grid {
-					grid-template-columns: 1fr;
-				}
 			}
 
 			.sp-admin {

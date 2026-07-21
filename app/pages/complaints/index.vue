@@ -222,7 +222,7 @@ async function fetchList(): Promise<ComplaintsPayload[] | void> {
 	loading.value = true;
 	const query = getFilters();
 	query['page'] = 1;
-	query['size'] = 10;
+	query['size'] = 50;
 
 	complaints.fetch(query)
 		.then(res => {

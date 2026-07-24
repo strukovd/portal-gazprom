@@ -78,7 +78,7 @@ import { portal, type UserPayload, type UserRoles } from '~/services/portal';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
-	layout: 'authorized'
+	layout: 'default'
 });
 
 const userStore = useUserStore();

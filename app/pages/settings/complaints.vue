@@ -90,7 +90,7 @@ import { complaints, type AssigneePayload, type ResponsibilityMatrix } from '~/s
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER'],
-	layout: 'authorized'
+	layout: 'default'
 });
 
 type ResponsibleUser = {

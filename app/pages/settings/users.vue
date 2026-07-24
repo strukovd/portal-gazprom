@@ -85,7 +85,7 @@ import { portal, type UserPayload, type UserRoles } from '~/services/portal';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN'],
-	layout: 'authorized'
+	layout: 'default'
 });
 
 const { $flags, $modal } = useNuxtApp();

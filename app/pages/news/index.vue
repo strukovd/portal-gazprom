@@ -128,7 +128,7 @@ import { formatDate, formatDateTime } from '~/utils/format';
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
-	layout: 'authorized'
+	layout: 'default'
 });
 
 type NewsTab = Extract<NewsCategory, 'DISCONNECTION' | 'GASIFICATION'> | undefined;

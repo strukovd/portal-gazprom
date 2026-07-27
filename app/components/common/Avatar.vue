@@ -7,33 +7,33 @@
 <script lang="ts" setup>
 const props = defineProps({
 	src: String,
-	name: { type: String, default: '' },
+	name: { type: [String, null], default: '' },
 	size: { type: String, default: '2em' }
 });
 
 
 const initials = computed(() => {
-	if(props.name) {
-		return props.name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase();
+	if(typeof props.name === 'string' && props.name.trim() !== '') {
+		return props.name.split(' ').filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase();
 	}
 	return '';
 });
 
 const backgroundColor = computed(() => {
+	const name = String(props.name).trim();
+	if(typeof props.name !== 'string' || !name) return '#2563ea';
+
 	const colors = ['#2563ea', '#17a34a', '#ee4444', '#d87706', '#06b1d8', '#f1569e', '#8a2be2'];
-	if(props.name) {
-		const charCode = props.name.charCodeAt(0);
-		return colors[charCode % colors.length];
-	}
-	return '#2563ea';
+	const charCode = name.charCodeAt(0);
+	return colors[charCode % colors.length];
 });
 </script>
 
 <style lang="scss">
 .base-avatar {
 	width:v-bind(size);
+	min-width:v-bind(size);
 	aspect-ratio:1/1;
-	// height:v-bind(size);
 	display: flex;
 	align-items: center;
 	justify-content: center;

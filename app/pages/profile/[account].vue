@@ -11,22 +11,23 @@
 		</BaseIsland>
 
 		<template v-else-if="accountData">
-		<section style="display:flex; gap:1em; align-items:center; margin-top:1em;">
-			<Avatar size="80px" :name="accountData.name || '?'"/>
-			<div>
-				<h2 style="margin:0; color:#171717;">{{ accountData.name || 'Абонент' }}</h2>
-				<div style="color:#737373;">
-					<span>Лицевой счет: </span>
-					<span>{{ accountData.account }}</span>
-					<span style="padding:0 .3em; user-select:none;">·</span>
-					<span style="color:#157f3d; font-weight:700;">{{ 'Подключен' }}</span>
+		<section class="profile-head">
+			<section class="ph-user">
+				<Avatar size="80px" :name="accountData.name || '?'"/>
+				<div>
+					<h2 style="margin:0; color:#171717;">{{ accountData.name || 'Абонент' }}</h2>
+					<div style="color:#737373;">
+						<span>Лицевой счет: </span>
+						<span>{{ accountData.account }}</span>
+						<span style="padding:0 .3em; user-select:none;">·</span>
+						<span style="color:#157f3d; font-weight:700;">{{ 'Подключен' }}</span>
+					</div>
 				</div>
-			</div>
-
-			<div style="margin-left:auto;"></div>
-
-			<BaseButton @click="showCreateReading" variant="primary">Принять показания</BaseButton>
-			<BaseButton variant="outlined" @click="showCreateComplaint">Новая жалоба</BaseButton>
+			</section>
+			<section class="buttons">
+				<BaseButton @click="showCreateReading" variant="primary">Принять показания</BaseButton>
+				<BaseButton variant="outlined" @click="showCreateComplaint">Новая жалоба</BaseButton>
+			</section>
 		</section>
 
 		<section class="statistics" style="display:flex; gap:1em; flex-wrap:wrap; margin-top:1em;" data-aos="zoom-in">
@@ -266,7 +267,7 @@ const readingsWithStatus = computed(() => {
 	let normalConsumptionSum = 0;
 	let normalConsumptionCount = 0;
 
-	return readings.map(reading => {
+	return readings.map((reading, index) => {
 		const consumption = Number(reading.consumption);
 		const averageConsumption = normalConsumptionCount
 			? normalConsumptionSum / normalConsumptionCount
@@ -280,7 +281,7 @@ const readingsWithStatus = computed(() => {
 
 		return {
 			...reading,
-			status: isAbnormal ? 'Аномалия' : 'Норма',
+			status: isAbnormal && index !== 0 ? 'Аномалия' : 'Норма',
 		};
 	});
 });
@@ -295,7 +296,7 @@ let timelineRequestId = 0;
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CONTROLLER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
-	layout: 'authorized'
+	layout: 'default'
 });
 
 const consumptionDiagram = computed(() => {
@@ -564,6 +565,28 @@ function checkAccountParam() {
 		color: #2563ea;
 	}
 
+	.profile-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1em;
+		margin-top: 1em;
+
+		.ph-user {
+			display: flex;
+			align-items: center;
+			gap: 1em;
+		}
+
+		.buttons {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: .5em;
+			margin-left: auto;
+		}
+	}
+
 	.tile {
 		flex:auto 1 1;
 		background:#e9effd;
@@ -746,6 +769,17 @@ function checkAccountParam() {
 			width: 100%;
 			min-height: 380px;
 			min-width:500px;
+		}
+	}
+
+	@media (max-width: 800px) {
+		.profile-head {
+			.buttons {
+				width: 100%;
+				margin-left: 0;
+				display: grid;
+				grid-template-columns: 1fr;
+			}
 		}
 	}
 }

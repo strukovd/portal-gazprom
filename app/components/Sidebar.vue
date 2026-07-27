@@ -53,109 +53,17 @@
 <script lang="ts" setup>
 import { version } from '../../package.json';
 import BaseIcon from './common/base/BaseIcon.vue';
-type SidebarLink = {
-	title?: string
-	link?: string
-	icon?: string
-	action?: () => void
-	disabled?: boolean
-	spacer?: boolean
-	class?: string
-	children?: SidebarLink[]
-}
-
+import type { NavigationLink } from '~/composables/useDefaultNavigation';
 
 const route = useRoute();
-const userStore = useUserStore();
-const links = ref<SidebarLink[]>([
-	{
-		title: 'Панель правления',
-		link: '/',
-		icon: 'mdi-view-dashboard'
-	},
-	{
-		title: 'Оперативные новости',
-		link: '/news',
-		icon: 'mdi-newspaper',
-		// children: [
-		// 	{
-		// 		title: 'Отключение газа',
-		// 		link: '/gas-off',
-		// 		icon: 'mdi-fire',
-		// 		disabled: true
-		// 	},
-		// 	{
-		// 		title: 'Газификация',
-		// 		link: '/gasification',
-		// 		icon: 'mdi-gas-burner',
-		// 		disabled: true
-		// 	},
-		// ]
-	},
-	{
-		title: 'Тарифы',
-		link: '/tariffs',
-		icon: 'mdi-currency-usd',
-	},
-	{
-		title: 'Офисы обслуживания',
-		link: '/offices',
-		icon: 'mdi-office-building',
-	},
-	{
-		spacer: true,
-		class: 'splitter',
-	},
-	{
-		title: 'Данные абонента',
-		link: '/profile',
-		icon: 'mdi-account',
-		// children: [
-		// 	{ title: 'Профиль', link: '/profile', icon: 'mdi-account' },
-		// 	{ title: 'Счётчики', link: '/counters', icon: 'mdi-counter' },
-		// ]
-	},
-	{
-		spacer: true,
-		class: 'splitter',
-	},
-	{
-		title: 'Жалобы',
-		link: '/complaints',
-		icon: 'mdi-alert-circle'
-	},
-	// {
-	// 	title: 'Ответственные лица',
-	// 	link: '/responsibles',
-	// 	icon: 'mdi-account-group'
-	// },
-	// {
-	// 	title: 'FAQ',
-	// 	link: '/faq',
-	// 	icon: 'mdi-help-circle-outline'
-	// },
-	{
-		spacer: true,
-		class: 'spacer',
-	},
-	{
-		title: 'Настройки',
-		link: '/settings',
-		icon: 'mdi-cog',
-	},
-	{
-		title: 'Выход',
-		action: userStore.logout,
-		icon: 'mdi-logout',
-	}
-]);
+const { links } = useDefaultNavigation();
 
-function isActiveLink(link: SidebarLink) {
+function isActiveLink(link: NavigationLink) {
 	if( link.link && route.path === link.link ) return true;
 	return Boolean(link.children?.some(isActiveLink));
 }
 
-function handleDisabledLink(link: SidebarLink, event: Event) {
+function handleDisabledLink(link: NavigationLink, event: Event) {
 	if( !link.disabled ) return;
 	event.preventDefault();
 }

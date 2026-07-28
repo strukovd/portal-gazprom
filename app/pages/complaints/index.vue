@@ -126,6 +126,8 @@
 					:rows="pageData.complaints"
 					:loading="loading"
 					@row:click="showComplaint"
+					pageable
+					@update:page="fetchList({ page: $event ?? 1 })"
 				>
 					<template #cell.id="{ value, row }">
 						<!-- <NuxtLink :to="`/complaints/${value}`"> -->
@@ -189,6 +191,8 @@ const form = reactive({
 	search: '',
 	status: '' as '' | ComplaintsQuery['status'],
 	period: null as Date[] | null,
+	size: 10,
+	page: 1
 });
 const pageData = reactive({
 	complaints: [] as ComplaintsPayload[],
@@ -218,15 +222,18 @@ async function init() {
 }
 
 
-async function fetchList(): Promise<ComplaintsPayload[] | void> {
+async function fetchList(params: { page?: number; size?: number } = {}): Promise<ComplaintsPayload[] | void> {
+	const { page = 1, size = 10 } = params;
 	loading.value = true;
 	const query = getFilters();
-	query['page'] = 1;
-	query['size'] = 50;
+	query['page'] = page;
+	query['size'] = size;
 
 	complaints.fetch(query)
 		.then(res => {
 			const items = res?.data || [];
+			form.page = parseInt(res.page);
+			form.size = parseInt(res.size);
 			pageData.complaints = items;
 		})
 		.finally(() => {

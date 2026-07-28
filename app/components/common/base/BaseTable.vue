@@ -1,58 +1,66 @@
 <template>
 	<div class="base-table-wrapper">
-		<table class="base-table">
-			<thead class="bt-thead">
-				<tr>
-					<th v-for="column in columns" :key="column.key"
-						:class="['base-table__cell', 'base-table__cell--head', column.headerClass]"
-						:style="{ width: column.width }"
-					>
-						<slot :name="`header.${column.key}`" :column="column" :label="column.label">
-							{{ column.label }}
-						</slot>
-					</th>
-				</tr>
-			</thead>
-
-			<tbody class="bt-tbody">
-				<!-- Загрузка -->
-				<tr v-if="loading">
-					<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
-						<slot name="loading">Загрузка...</slot>
-					</td>
-				</tr>
-				<!-- Нет данных -->
-				<tr v-else-if="!rows.length">
-					<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
-						<slot name="empty">Нет данных</slot>
-					</td>
-				</tr>
-				<!-- Есть данные (строки) -->
-				<tr v-else
-					v-for="(row, rowIndex) of rows"
-					:key="getRowKey(row, rowIndex)"
-					class="base-table-row"
-					@click="emit('row:click', row, rowIndex)"
-				>
-					<td v-for="column of columns" :key="column.key" :class="['base-table__cell', column.cellClass]">
-						<slot
-							:name="`cell.${column.key}`"
-							:row="row"
-							:value="getValue(row, column.key)"
-							:column="column"
-							:index="rowIndex"
-							:row-index="rowIndex"
+		<component
+			:is="pageable ? BasePageable : 'div'"
+			v-bind="pageableProps"
+			@update:page="changePage"
+		>
+			<table class="base-table">
+				<thead class="bt-thead">
+					<tr>
+						<th v-for="column in columns" :key="column.key"
+							:class="['base-table__cell', 'base-table__cell--head', column.headerClass]"
+							:style="{ width: column.width }"
 						>
-							{{ getValue(row, column.key) }}
-						</slot>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+							<slot :name="`header.${column.key}`" :column="column" :label="column.label">
+								{{ column.label }}
+							</slot>
+						</th>
+					</tr>
+				</thead>
+
+				<tbody class="bt-tbody">
+					<!-- Загрузка -->
+					<tr v-if="loading">
+						<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
+							<slot name="loading">Загрузка...</slot>
+						</td>
+					</tr>
+					<!-- Нет данных -->
+					<tr v-else-if="!rows.length">
+						<td class="base-table__cell base-table__cell--state" :colspan="columns.length">
+							<slot name="empty">Нет данных</slot>
+						</td>
+					</tr>
+					<!-- Есть данные (строки) -->
+					<tr v-else
+						v-for="(row, rowIndex) of rows"
+						:key="getRowKey(row, rowIndex)"
+						class="base-table-row"
+						@click="emit('row:click', row, rowIndex)"
+					>
+						<td v-for="column of columns" :key="column.key" :class="['base-table__cell', column.cellClass]">
+							<slot
+								:name="`cell.${column.key}`"
+								:row="row"
+								:value="getValue(row, column.key)"
+								:column="column"
+								:index="rowIndex"
+								:row-index="rowIndex"
+							>
+								{{ getValue(row, column.key) }}
+							</slot>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</component>
 	</div>
 </template>
 
 <script lang="ts" setup>
+import BasePageable from './BasePageable.vue';
+
 type TableColumn = {
 	key: string;
 	label: string;
@@ -68,13 +76,36 @@ const props = withDefaults(defineProps<{
 	rows: TableRow[];
 	loading?: boolean;
 	rowKey?: string | ((row: TableRow, index: number) => string | number);
+	pageable?: boolean;
+	page?: number;
+	limit?: number;
+	total?: number;
 }>(), {
 	loading: false,
 	rowKey: 'id',
+	pageable: false,
+	limit: 10,
 });
 const emit = defineEmits<{
 	'row:click': [row: TableRow, index: number];
+	'update:page': [page: number];
+	'page:change': [page: number];
 }>();
+const internalPage = ref(props.page ?? 1);
+
+const currentPage = computed(() => props.page ?? internalPage.value);
+const pageableProps = computed(() => props.pageable
+	? {
+		page: currentPage.value,
+		limit: props.limit,
+		total: props.total ?? props.rows.length,
+	}
+	: {}
+);
+
+// watch(() => props.page, (page) => {
+// 	if (page) internalPage.value = page;
+// });
 
 function getValue(row: TableRow, key: string): unknown {
 	// Поддержка вложенных ключей через точку, например "user.name"
@@ -99,6 +130,12 @@ function getRowKey(row: TableRow, index: number): string | number {
 	}
 
 	return index;
+}
+
+function changePage(page: number) {
+	internalPage.value = page;
+	emit('update:page', page); // для v-model
+	emit('page:change', page); // для @update:page
 }
 </script>
 

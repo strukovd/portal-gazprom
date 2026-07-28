@@ -4,8 +4,8 @@
 			<slot name="default"></slot>
 		</main>
 
-		<footer class="bp-footer">
-			<div class="bp-meta" v-if="total">
+		<footer v-if="total" class="bp-footer">
+			<div class="bp-meta">
 				<span>
 					Показано
 					<strong>{{ shownFrom }}</strong>–<strong>{{ shownTo }}</strong>
@@ -14,7 +14,7 @@
 				</span>
 			</div>
 
-			<div class="bp-pager" v-if="pagesCount">
+			<div class="bp-pager" v-if="pagesCount > 1">
 				<BaseButton
 					:disabled="isFirstPage"
 					prependIcon="mdi-menu-left"
@@ -67,10 +67,6 @@ export default defineComponent({
 	setup(props, { emit }) {
 		const pagesCount = computed(() => Math.max(1, Math.ceil(props.total / props.limit)));
 		const currentPage = ref(Math.min(Math.max(Number(props.page), 1), pagesCount.value));
-		// const currentPage = computed(() => {
-		// 	const p = Number(props.page) || 1;
-		// 	return Math.min(Math.max(p, 1), pagesCount.value);
-		// });
 		const isFirstPage = computed(() => currentPage.value <= 1);
 		const isLastPage = computed(() => currentPage.value >= pagesCount.value);
 		const shownFrom = computed(() => (props.total === 0 ? 0 : (currentPage.value - 1) * props.limit + 1));
@@ -151,15 +147,21 @@ export default defineComponent({
 			if(typeof p !== 'number') return;
 
 			const next = Math.min(Math.max(1, p), pagesCount.value);
-			if (next !== props.page) {
+			if (next !== currentPage.value) {
+				currentPage.value = next;
 				emit('update:page', next);
 				emit('change', next);
 			}
 		}
 
+		// Триггер коррекции подсвечиваемой тек. страницы (если родитель поменял страницу снаружи)
+		watch(() => props.page, (page) => {
+			currentPage.value = Math.min(Math.max(Number(page), 1), pagesCount.value);
+		});
+		// Триггер коррекции подсвечиваемой тек. страницы (если родитель поменял кол-во страниц снаружи)
 		watch(pagesCount, (n) => {
-			if (props.page > n) emit('update:page', n);
-			if (props.page < 1) emit('update:page', 1);
+			if (currentPage.value > n) goTo(n);
+			if (currentPage.value < 1) goTo(1);
 		});
 
 		return {
@@ -177,8 +179,26 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-	.base-pageable { display: flex; flex-direction: column; }
-	.bp-footer { display:flex; justify-content: space-between; align-items:center; gap:.75rem; margin-top:.75rem; }
-	.bp-meta { font-size:.85em; color:#808080; }
-	.bp-pager { display: flex; gap: .25rem; }
+.base-pageable {
+	display: flex;
+	flex-direction: column;
+
+	.bp-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: .75rem;
+		margin-top: .75rem;
+
+		.bp-meta {
+			color: #808080;
+			font-size: .85em;
+		}
+
+		.bp-pager {
+			display: flex;
+			gap: .25rem;
+		}
+	}
+}
 </style>

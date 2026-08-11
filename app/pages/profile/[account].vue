@@ -191,15 +191,16 @@
 						{ label: 'Расход', key: 'consumption' },
 						{ label: 'Источник', key: 'supplier.name' },
 						{ label: 'Статус', key: 'status' },
+						{ label: 'Действие', key: 'action' },
 					]" :rows="readingsWithStatus">
 						<template #cell.created="{ row, column }">{{ toLocaleDate( String(row[column.key]) ) }}</template>
 						<template #cell.status="{ row, column }">
-							<div v-if="column.key === 'status'" :style="{ color: row?.status === 'Аномалия' ? '#b81c1d' : '#157f3d', fontWeight: '700' }">
+							<div :style="{ color: row?.status === 'Аномалия' ? '#b81c1d' : '#157f3d', fontWeight: '700' }">
 								{{ row.status }}
 							</div>
-							<div v-else>
-								{{ row[column.key] }}
-							</div>
+						</template>
+						<template #cell.action="{ row }">
+							<BaseIcon @click="deleteReading(row.id as number)" v-if="isCurrentMonth(row.created)" name="mdi-delete" size="20" style="color:#7d7d7d; cursor:pointer;"/>
 						</template>
 					</BaseTable>
 					<InfoBox
@@ -230,7 +231,8 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
 import { complaints, type ComplaintsPayload, type TimelinePayload } from '~/services/complaints';
-import { formatDateTime, formatMonth, toLocaleDate } from '~/utils/format';
+import { readings } from '~/services/readings';
+import { formatDateTime, formatMonth, toLocaleDate, isCurrentMonth } from '~/utils/format';
 const route = useRoute();
 const { $modal, $flags } = useNuxtApp();
 const appStore = useAppStore();
@@ -502,6 +504,29 @@ async function fetchTimeline(account?: string | null) {
 		if (requestId === timelineRequestId) timelineLoading.value = false;
 	}
 }
+
+const deleteReading = async (readingId: string | number) => {
+	if (!readingId || !accountData.value) return;
+
+	const confirmed = await $modal.show('ConfirmModal', {
+		title: 'Удаление показания',
+		payload: {
+			title: 'Удаление показания',
+			description: 'Вы уверены, что хотите удалить это показание?',
+		}
+	})
+	if (!confirmed) return;
+
+	try {
+		await readings.delete(accountData.value.account, readingId);
+		accountStore.fetchAccountData();
+		$flags.success('Показание успешно удалено.', { title: 'Удаление показания' });
+	}
+	catch (error: any) {
+		const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось удалить показание.';
+		$flags.error(text, { title: 'Ошибка удаления' });
+	}
+};
 
 function timelineIcon(type: string) {
 	const value = String(type || '').toLowerCase();

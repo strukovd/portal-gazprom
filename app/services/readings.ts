@@ -42,7 +42,7 @@ export const readings = {
 			});
 	},
 
-	delete(account: string, id: string): Promise<unknown> {
+	delete(account: string, id: string | number): Promise<unknown> {
 		const { $fetchPortal } = useNuxtApp();
 
 		return $fetchPortal<ReadingsResponse>('/v1/portal/readings', {

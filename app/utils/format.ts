@@ -40,17 +40,27 @@ export function getMonthName(date: Date) {
 	return date.toLocaleString('default', { month: 'long' });
 }
 
-export function toISODate(date: Date | String) {
+export function toISODate(date: Date | string) {
 	if(typeof date === 'string') date = new Date(date);
 	return (date as Date).toLocaleDateString('fr-CA');
 }
 
-export function toLocaleDate(date: Date | String) {
+export function toLocaleDate(date: Date | string) {
 	if(typeof date === 'string') date = new Date(date);
 	return (date as Date).toLocaleDateString('ru-RU');
 }
 
+export function isCurrentMonth(date: unknown) {
+	if(typeof date === 'string') date = new Date(date);
 
+	if(date instanceof Date) {
+		const currentDate = new Date();
+		return date.getFullYear() === currentDate.getFullYear()
+			&& date.getMonth() === currentDate.getMonth();
+	}
+	else
+		return false;
+}
 
 function toDate(value: DateValue) {
 	if (!value) return null;

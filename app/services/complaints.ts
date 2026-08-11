@@ -33,6 +33,22 @@ export type ComplaintsResponse = {
 	size: string;
 	total: number;
 };
+export type CreateComplaintResponse = {
+	id: number,
+	account: string,
+	subject: string,
+	status: string,
+	urgencyLevel: string,
+	description: string,
+	userName: string,
+	createdByName: string,
+	contactNumber: string,
+	subscriberName: string,
+	created: string,
+	updated: string,
+	files: [],
+	issueId: number | null
+}
 export type ComplaintsPayload = {
 	id: number;
 	account: string;
@@ -149,10 +165,10 @@ export const complaints = {
 		});
 	},
 
-	create(body: ComplaintsBody): Promise<ComplaintsResponse> {
+	create(body: ComplaintsBody): Promise<CreateComplaintResponse> {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<ComplaintsResponse>('/v1/call-gas/complaints', {
+		return $fetchApi<CreateComplaintResponse>('/v1/call-gas/complaints', {
 			method: 'POST',
 			body
 		});

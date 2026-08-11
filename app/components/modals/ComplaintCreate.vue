@@ -104,7 +104,7 @@ async function submit() {
 	loading.value = true;
 
 	try {
-		await complaints.create({
+		const res = await complaints.create({
 			...form,
 			account: form.account.trim(),
 			description: form.description.trim(),
@@ -112,6 +112,10 @@ async function submit() {
 		});
 
 		useNuxtApp().$flags.success('Жалоба зарегистрирована');
+		if( !res.issueId ) {
+			useNuxtApp().$flags.error('Жалоба зарегистрирована, но задача в МФЦ не создана!', { title: 'Задача в МФЦ не создана!', timeout: 60000 });
+		}
+
 		close(true);
 	}
 	catch (error: any) {

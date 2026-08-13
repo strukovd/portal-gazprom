@@ -23,6 +23,7 @@ const props = defineProps({
 	border:1px solid #e5e5e5;
 	padding:1.2em;
 	border-radius:12px;
+	overflow: auto;
 	// margin-top:1em;
 
 	// border: 1px solid rgba(37, 99, 234, 0.12);

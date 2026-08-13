@@ -162,9 +162,7 @@
 							<div v-for="item of pageData.gasifiedRegions" :key="item.id" class="village">
 								<span>{{ item.name }}</span>
 
-								<div class="progress">
-									<i :style="{ width: getRegionPercent(item) + '%' }"></i>
-								</div>
+								<BaseProgressBar :percent="getRegionPercent(item)" />
 
 								<b>{{ getRegionPercent(item) }}%</b>
 							</div>
@@ -188,9 +186,7 @@
 							<div v-for="item of pageData.plannedGasificationRegions" :key="item.id" class="village">
 								<span>{{ item.name }}</span>
 
-								<div class="progress">
-									<i :style="{ width: getRegionPercent(item) + '%' }"></i>
-								</div>
+								<BaseProgressBar :percent="getRegionPercent(item)" />
 
 								<b>{{ getRegionPercent(item) }}%</b>
 							</div>
@@ -215,6 +211,7 @@ import { news } from '~/services/news';
 import { offices } from '~/services/offices';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
+import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 const { $fetchApi, $flags, $modal } = useNuxtApp();
 const userStore = useUserStore();
 const appStore = useAppStore();
@@ -734,35 +731,6 @@ function getComplaintStatusClass(status: string) {
 					font-weight: 500;
 				}
 
-				.progress {
-					height: 8px;
-					overflow: hidden;
-					border-radius: 999px;
-					background: #e5e7eb;
-
-					i {
-						display: block;
-						height: 100%;
-						border-radius: inherit;
-						background: #22c55e;
-					}
-				}
-
-				&:nth-child(2) {
-					.progress {
-						i {
-							background: #f59e0b;
-						}
-					}
-				}
-
-				&:nth-child(3) {
-					.progress {
-						i {
-							background: #2563eb;
-						}
-					}
-				}
 			}
 		}
 

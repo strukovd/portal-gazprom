@@ -1,6 +1,6 @@
 <template>
-	<section class="authorized-layout">
-		<header style="display:flex; align-items:center; gap:1em; padding:.5em 2em;">
+	<section class="default-mobile-layout">
+		<header class="dm-header">
 			<section class="logo" @click="openHome">
 				<img height="20px" src="/img/logo.svg" alt="Логотип" />
 				<h2>CallGas</h2>
@@ -14,10 +14,6 @@
 					@select="selectAccount"
 				/>
 			</section>
-			<!-- <section class="actions">
-				<BaseButton style="line-height:1.4em; text-align:center;" variant="light">Новая жалоба</BaseButton>
-				<BaseButton style="line-height:1.4em; text-align:center;" variant="outlined">Принять показания</BaseButton>
-			</section> -->
 			<div class="flex-spacer"></div>
 			<section ref="serviceTools" class="service-tools">
 				<button type="button" :class="['st-button', { active: notificationsOpen }]" title="Уведомления" @click="toggleNotifications">
@@ -48,12 +44,14 @@
 		</header>
 
 		<AccountLine/>
-		<main>
-			<Sidebar v-resizeble="`right`"/>
-			<section class="page-content">
+		<main class="dm-main">
+			<section class="dm-page-content">
 				<slot/>
 			</section>
 		</main>
+		<footer>
+			<BottomNavigation/>
+		</footer>
 	</section>
 </template>
 
@@ -62,16 +60,15 @@ import AccountSearch from '~/components/AccountSearch.vue';
 import AccountLine from '~/components/AccountLine.vue';
 import Avatar from '~/components/common/Avatar.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
-import Sidebar from '~/components/Sidebar.vue';
 import type { FindPayload } from '~/types/Facility';
 import NotificationHub from '~/components/common/NotificationHub.vue';
+import BottomNavigation from '~/components/BottomNavigation.vue';
 
 const s = useUserStore();
 const appStore = useAppStore();
 const accountStore = useAccountStore();
 const notificationStore = useNotificationStore();
 const route = useRoute();
-const { $flags } = useNuxtApp();
 const accountSearchInput = ref<any>(null);
 const accountSearch = ref('');
 const serviceTools = ref<HTMLElement | null>(null);
@@ -161,36 +158,47 @@ function onSearchShortcut(e: KeyboardEvent) {
 </script>
 
 <style lang="scss">
-.authorized-layout {
+.default-mobile-layout {
 	min-height: 100dvh;
+	width: 100%;
+	max-width: 100vw;
+	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
 
-	>header {
-		// занимает свою естественную высоту
+	.dm-header {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: .65rem;
 		flex: 0 0 auto;
+		padding: .65rem 1rem;
 		background-color: #f6f7fb;
 		border-bottom: 1px solid #e5e5e5;
 
 		.flex-spacer {
 			flex: 1 1 auto;
 		}
+
 		.logo {
 			display:flex;
 			align-items:center;
 			gap:.6em;
-			margin-right:2em;
 			cursor:pointer;
 		}
+
 		.search {
-			flex: auto 1 0;
-			max-width: 400px;
+			order: 5;
+			flex: 1 0 100%;
+			max-width: none;
 			position:relative;
 		}
+
 		.actions {
 			display:flex;
 			gap:.5em;
 		}
+
 		.service-tools {
 			display:flex;
 			gap:.35em;
@@ -247,24 +255,42 @@ function onSearchShortcut(e: KeyboardEvent) {
 			}
 
 		}
+
 		.user-box {
 			display:flex;
 			align-items:center;
 			gap:.5em;
+
+			.user-info {
+				display: none;
+			}
 		}
 	}
 
-	>main {
-		// забирает остаток экрана
+	.dm-main {
 		display: flex;
 		flex: 1 1 auto;
-		min-height: 0; // можно быть меньше высоты собственного контента, если layout требует, позволяет дочерним элементам корректно обрабатывать overflow
+		width: 100%;
+		max-width: 100vw;
+		overflow-x: hidden;
+		min-height: 0;
+		min-width: 0;
 
-		>.page-content {
+		.dm-page-content {
 			flex: auto 1 1;
-			// overflow-y: auto;
-			padding: 2em;
+			width: 100%;
+			max-width: 100%;
+			min-width: 0;
+			box-sizing: border-box;
+			overflow-x: auto;
+			padding: 1rem 1rem 6rem;
 		}
+	}
+
+	>footer {
+		width: 100%;
+		max-width: 100vw;
+		min-width: 0;
 	}
 }
 </style>

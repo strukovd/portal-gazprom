@@ -24,16 +24,6 @@ export const useDefaultNavigation = () => {
 			icon: 'mdi-newspaper',
 		},
 		{
-			title: 'Тарифы',
-			link: '/tariffs',
-			icon: 'mdi-currency-usd',
-		},
-		{
-			title: 'Офисы обслуживания',
-			link: '/offices',
-			icon: 'mdi-office-building',
-		},
-		{
 			spacer: true,
 			class: 'splitter',
 		},
@@ -45,6 +35,16 @@ export const useDefaultNavigation = () => {
 		{
 			spacer: true,
 			class: 'splitter',
+		},
+		{
+			title: 'Тарифы',
+			link: '/tariffs',
+			icon: 'mdi-currency-usd',
+		},
+		{
+			title: 'Офисы обслуживания',
+			link: '/offices',
+			icon: 'mdi-office-building',
 		},
 		{
 			title: 'Жалобы',

@@ -161,9 +161,7 @@
 						<template v-else>
 							<div v-for="item of pageData.gasifiedRegions" :key="item.id" class="village">
 								<span>{{ item.name }}</span>
-
-								<BaseProgressBar :percent="getRegionPercent(item)" />
-
+								<BaseProgressBar :percent="getRegionPercent(item)" :color="determineColor(getRegionPercent(item))" :height="'9px'"/>
 								<b>{{ getRegionPercent(item) }}%</b>
 							</div>
 						</template>
@@ -185,9 +183,7 @@
 						<template v-else>
 							<div v-for="item of pageData.plannedGasificationRegions" :key="item.id" class="village">
 								<span>{{ item.name }}</span>
-
-								<BaseProgressBar :percent="getRegionPercent(item)" />
-
+								<BaseProgressBar :percent="getRegionPercent(item)" :color="determineColor(getRegionPercent(item))" :height="'9px'"/>
 								<b>{{ getRegionPercent(item) }}%</b>
 							</div>
 						</template>
@@ -376,6 +372,12 @@ function getComplaintStatusClass(status: string) {
 			return '';
 	}
 }
+
+const determineColor = (value: number) => {
+	if (value <= 35) return '#2563eb';
+	if (value <= 70) return '#f59e0b';
+	return '#22c55e';
+};
 </script>
 
 <style lang="scss">

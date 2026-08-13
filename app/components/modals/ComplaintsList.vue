@@ -7,22 +7,30 @@
 			</section>
 
 			<section v-else class="cl-list">
-				<article v-for="complaint of complaints" :key="complaint.id" class="cl-complaint" @click="showComplaint(complaint)">
+				<article
+					v-for="item of complaintsView"
+					:key="item.complaint.id"
+					class="cl-complaint"
+					:style="{ '--cl-color': item.subject.color }"
+					@click="showComplaint(item.complaint)"
+				>
 					<div class="cl-icon">
-						<BaseIcon name="mdi-alert-box-outline" size="1.3em"/>
+						<BaseIcon :name="item.subject.icon" size="1.3em"/>
 					</div>
 
 					<div class="cl-body">
 						<div class="cl-title">
-							<span class="cl-key">#{{ complaint.id }}</span>
-							<span class="cl-status">{{ complaint.status || 'Без статуса' }}</span>
+							<div class="cl-heading">
+								<span class="cl-subject">{{ item.complaint.subject || 'Без темы' }}</span>
+								<span class="cl-key">#{{ item.complaint.id }}</span>
+							</div>
+							<span :class="['status', item.statusClass]">{{ item.complaint.status || 'Без статуса' }}</span>
 						</div>
-						<div class="cl-subject">{{ complaint.subject || 'Без темы' }}</div>
-						<div class="cl-description">{{ complaint.description || 'Описание не заполнено' }}</div>
+						<div class="cl-description">{{ item.complaint.description || 'Описание не заполнено' }}</div>
 						<div class="cl-meta">
-							<span>{{ complaint.userName || 'Исполнитель не назначен' }}</span>
-							<span>{{ toLocaleDate(complaint.created) || complaint.created || 'Дата не указана' }}</span>
-							<span v-if="complaint.sla">{{ complaint.sla }} дн.</span>
+							<span>{{ item.complaint.userName || 'Исполнитель не назначен' }}</span>
+							<span>{{ toLocaleDate(item.complaint.created) || item.complaint.created || 'Дата не указана' }}</span>
+							<span v-if="item.complaint.sla">{{ item.complaint.sla }} дн.</span>
 						</div>
 					</div>
 				</article>
@@ -49,6 +57,30 @@ const props = defineProps<{
 
 const { $modal } = useNuxtApp();
 const complaints = computed(() => props.payload?.complaints || []);
+const complaintsView = computed(() => complaints.value.map(complaint => ({
+	complaint,
+	subject: subjectView(complaint.subject),
+	statusClass: statusClass(complaint.status),
+})));
+
+function subjectView(subject = '') {
+	if (subject.includes('БСГ')) return { color: '#61a3ed', icon: 'mdi-gauge' };
+	if (subject.includes('сотрудника')) return { color: '#fb6868', icon: 'mdi-account-alert-outline' };
+	if (subject.includes('Тариф') || subject.includes('начисл') || subject.includes('Перерасчет')) return { color: '#f5ba5e', icon: 'mdi-cash-sync' };
+	if (subject.includes('квитанц')) return { color: '#83d1af', icon: 'mdi-receipt-text-outline' };
+	if (subject.includes('дорожное') || subject.includes('газопровод')) return { color: '#fb6868', icon: 'mdi-road-variant' };
+	if (subject.includes('услуг') || subject.includes('СМР') || subject.includes('ЭЧ')) return { color: '#61a3ed', icon: 'mdi-tools' };
+	if (subject.includes('Утечка') || subject.includes('Авария')) return { color: '#fb6868', icon: 'mdi-fire-alert' };
+	return { color: '#83d1af', icon: 'mdi-alert-box' };
+}
+
+function statusClass(status = '') {
+	if (status === 'Просрочено') return 'status-red';
+	if (status === 'Новая') return 'status-blue';
+	if (status === 'Закрыто') return 'status-green';
+	if (status === 'В работе') return 'status-yellow';
+	return 'status-grey';
+}
 
 function showComplaint(complaint: ComplaintsPayload) {
 	$modal.show('ComplaintDetails', {
@@ -82,20 +114,44 @@ function close() {
 
 		.cl-list {
 			display: grid;
-			gap: .8em;
 			max-height: 65vh;
 			overflow-y: auto;
-			padding-right: .2em;
+			padding: .1em .2em .1em 0;
 
 			.cl-complaint {
+				position: relative;
 				display: flex;
-				gap: .8em;
-				padding: 1em;
-				border: 1px solid #e5e7eb;
+				align-items: center;
+				gap: .75em;
+				padding: .75em .7em .75em 1.55em;
 				border-radius: 8px;
 				background: #fff;
 				cursor: pointer;
 				transition: opacity 200ms ease 0s, transform 200ms ease 0s;
+
+					&::before {
+						content: '';
+						position: absolute;
+						top: 0;
+						bottom: 0;
+						left: 2.5em;
+					width: .6em;
+					border: 1px solid #bcc4cd;
+					border-width: 0 1px;
+					background: #e2e8f0;
+				}
+
+				&:first-child {
+					&::before {
+						top: 50%;
+					}
+				}
+
+				&:last-child {
+					&::before {
+						bottom: 50%;
+					}
+				}
 
 				&:hover {
 					opacity: .86;
@@ -105,12 +161,15 @@ function close() {
 				.cl-icon {
 					display: grid;
 					place-items: center;
+					margin-right: .7em;
 					flex: 0 0 2.5em;
 					width: 2.5em;
 					height: 2.5em;
 					border-radius: 8px;
-					background: #fff1f2;
-					color: #dc2626;
+					color: #fff;
+					background: var(--cl-color);
+					box-shadow: 0 10px 20px color-mix(in srgb, var(--cl-color) 22%, transparent);
+					z-index: 1;
 				}
 
 				.cl-body {
@@ -125,30 +184,36 @@ function close() {
 						justify-content: space-between;
 						gap: .8em;
 
-						.cl-key {
-							color: #111827;
-							font-weight: 800;
+						.cl-heading {
+							display: flex;
+							align-items: baseline;
+							gap: .45em;
+							min-width: 0;
 						}
 
-						.cl-status {
-							padding: .25em .6em;
-							border-radius: 999px;
-							background: #f3f4f6;
-							color: #475569;
-							font-size: .78em;
-							font-weight: 700;
-							white-space: nowrap;
+						.cl-key {
+							color: #8f8f8f;
+							font-size: .7em;
+							position: relative;
+							top: -2px;
 						}
 					}
 
 					.cl-subject {
+						overflow: hidden;
 						color: #111827;
 						font-weight: 700;
+						white-space: nowrap;
+						text-overflow: ellipsis;
 					}
 
 					.cl-description {
+						display: -webkit-box;
+						overflow: hidden;
 						color: #374151;
 						line-height: 1.4;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 2;
 					}
 
 					.cl-meta {

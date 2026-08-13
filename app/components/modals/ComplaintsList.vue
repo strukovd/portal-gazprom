@@ -28,9 +28,9 @@
 						</div>
 						<div class="cl-description">{{ item.complaint.description || 'Описание не заполнено' }}</div>
 						<div class="cl-meta">
-							<span>{{ item.complaint.userName || 'Исполнитель не назначен' }}</span>
-							<span>{{ toLocaleDate(item.complaint.created) || item.complaint.created || 'Дата не указана' }}</span>
-							<span v-if="item.complaint.sla">{{ item.complaint.sla }} дн.</span>
+							<span class="cl-date"><BaseIcon name="mdi-calendar-month-outline" size="1em"/> {{ toLocaleDate(item.complaint.created) || item.complaint.created || 'Дата не указана' }}</span>
+							<span class="cl-responsible"><BaseIcon name="mdi-account" size="1em"/> {{ item.complaint.userName || 'Исполнитель не назначен' }}</span>
+							<span v-if="item.complaint.sla" class="cl-sla"><BaseIcon name="mdi-timer-outline" size="1em"/> {{ item.complaint.sla }} дн.</span>
 						</div>
 					</div>
 				</article>
@@ -210,10 +210,11 @@ function close() {
 					.cl-description {
 						display: -webkit-box;
 						overflow: hidden;
-						color: #374151;
+						color: #374151bb;
 						line-height: 1.4;
 						-webkit-box-orient: vertical;
 						-webkit-line-clamp: 2;
+						font-size: .9em;
 					}
 
 					.cl-meta {
@@ -222,6 +223,14 @@ function close() {
 						gap: .4em .8em;
 						color: #737373;
 						font-size: .86em;
+
+						.cl-responsible {}
+						.cl-date {
+							color: #dd2f18;
+						}
+						.cl-sla {
+							color: goldenrod;
+						}
 					}
 				}
 			}

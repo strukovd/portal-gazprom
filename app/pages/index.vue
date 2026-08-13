@@ -147,44 +147,54 @@
 				</section>
 			</section>
 
-			<section class="no-api" data-aos="fade-up">
+			<section data-aos="fade-up">
 				<BaseIsland title="Газифицированные населенные пункты" prependIcon="mdi-map-marker">
 					<div class="villages">
-						<div v-for="(item, index) of [
-							{ name: 'ж/м Арча-Бешик', percent: 85, },
-							{ name: 'ж/м Ак-Ордо', percent: 60, },
-							{ name: 'ж/м Кок-Жар', percent: 30, },
-							{ name: 'с. Кок-Жар', percent: 95, },
-						]" :key="index" class="village">
-							<span>{{ item.name }}</span>
-
-							<div class="progress">
-								<i :style="{ width: item.percent + '%' }"></i>
-							</div>
-
-							<b>{{ item.percent }}%</b>
+						<div v-if="regionsLoading" class="empty-state">
+							<BaseIcon name="mdi-loading" size="1.3em" />
+							<div class="title">Загрузка населенных пунктов...</div>
 						</div>
+						<div v-else-if="!pageData.gasifiedRegions.length" class="empty-state">
+							<BaseIcon name="mdi-map-marker-off-outline" size="1.3em" />
+							<div class="title">Нет данных</div>
+						</div>
+						<template v-else>
+							<div v-for="item of pageData.gasifiedRegions" :key="item.id" class="village">
+								<span>{{ item.name }}</span>
+
+								<div class="progress">
+									<i :style="{ width: getRegionPercent(item) + '%' }"></i>
+								</div>
+
+								<b>{{ getRegionPercent(item) }}%</b>
+							</div>
+						</template>
 					</div>
 				</BaseIsland>
 			</section>
 
-			<section class="no-api" data-aos="fade-up">
+			<section data-aos="fade-up">
 				<BaseIsland title="Планируемые для газификации населенные пункты" prependIcon="mdi-map-marker-outline">
 					<div class="villages">
-						<div v-for="(item, index) of [
-							{ name: 'ж/м Жаштык', percent: 85, },
-							{ name: 'с. Пригородное', percent: 60, },
-							{ name: 'ж/м Сон-кол', percent: 30, },
-							{ name: 'с. Тынтык', percent: 95, },
-						]" :key="index" class="village">
-							<span>{{ item.name }}</span>
-
-							<div class="progress">
-								<i :style="{ width: item.percent + '%' }"></i>
-							</div>
-
-							<b>{{ item.percent }}%</b>
+						<div v-if="regionsLoading" class="empty-state">
+							<BaseIcon name="mdi-loading" size="1.3em" />
+							<div class="title">Загрузка населенных пунктов...</div>
 						</div>
+						<div v-else-if="!pageData.plannedGasificationRegions.length" class="empty-state">
+							<BaseIcon name="mdi-map-marker-off-outline" size="1.3em" />
+							<div class="title">Нет данных</div>
+						</div>
+						<template v-else>
+							<div v-for="item of pageData.plannedGasificationRegions" :key="item.id" class="village">
+								<span>{{ item.name }}</span>
+
+								<div class="progress">
+									<i :style="{ width: getRegionPercent(item) + '%' }"></i>
+								</div>
+
+								<b>{{ getRegionPercent(item) }}%</b>
+							</div>
+						</template>
 					</div>
 				</BaseIsland>
 			</section>
@@ -205,9 +215,19 @@ import { news } from '~/services/news';
 import { offices } from '~/services/offices';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import { complaints, type ComplaintsPayload, type CountsResponse } from '~/services/complaints';
-const { $flags, $modal } = useNuxtApp();
+const { $fetchApi, $flags, $modal } = useNuxtApp();
 const userStore = useUserStore();
 const appStore = useAppStore();
+
+type IMapRegion = {
+	id: number;
+	name: string;
+	percent?: number | null;
+};
+
+type IMapRegionPage = {
+	payload?: IMapRegion[];
+};
 
 definePageMeta({
 	auth: true,
@@ -226,8 +246,11 @@ const pageData = reactive({
 	offices: [] as OfficesPayload[],
 	complaints: [] as ComplaintsPayload[],
 	complaintCounts: null as CountsResponse | null,
+	gasifiedRegions: [] as IMapRegion[],
+	plannedGasificationRegions: [] as IMapRegion[],
 });
 const complaintsLoading = ref(false);
+const regionsLoading = ref(false);
 
 
 const stats = computed(() => {
@@ -268,6 +291,7 @@ async function init() {
 	offices.fetch()
 		.then((res) => { if (res) pageData.offices = res; })
 	appStore.ensureTariffs();
+	fetchGasificationRegions();
 
 	complaintsLoading.value = true;
 	complaints.fetch({ page: 1, size: 3 })
@@ -288,6 +312,42 @@ async function init() {
 				$flags.error(text, { title: 'Ошибка статистики жалоб' });
 			})
 	}
+}
+
+async function fetchGasificationRegions() {
+	regionsLoading.value = true;
+	try {
+		const [gasified, planned] = await Promise.all([
+			fetchRegionsByTag(31),
+			fetchRegionsByTag(10),
+		]);
+		pageData.gasifiedRegions = gasified;
+		pageData.plannedGasificationRegions = planned;
+	} catch (error: any) {
+		const text = error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить населенные пункты.';
+		$flags.error(text, { title: 'Ошибка загрузки карты газификации' });
+	} finally {
+		regionsLoading.value = false;
+	}
+}
+
+async function fetchRegionsByTag(tagId: number) {
+	const res = await $fetchApi<IMapRegionPage>('/v1/imap/region', {
+		params: {
+			page: 1,
+			size: 5,
+			sort: 'percent,desc',
+			tags: tagId,
+		},
+	});
+
+	return res?.payload ?? [];
+}
+
+function getRegionPercent(item: IMapRegion) {
+	const value = Number(item.percent ?? 0);
+	if (!Number.isFinite(value)) return 0;
+	return Math.min(Math.max(Math.round(value), 0), 100);
 }
 
 function complaintDescription(item: ComplaintsPayload) {

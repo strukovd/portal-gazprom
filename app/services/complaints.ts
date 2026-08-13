@@ -19,12 +19,13 @@ export type ComplaintsBody = {
 	urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
 	description: string;
 	contactNumber?: string;
+	files?: File[];
 };
 export type ComplaintsPutBody = {
 	urgencyLevel: `Срочно` | `Очень срочно` | `Обычная`;
 	description: string;
 	contactNumber?: string;
-	files?: string[];
+	files?: File[];
 	status: string;
 };
 export type ComplaintsResponse = {
@@ -32,6 +33,14 @@ export type ComplaintsResponse = {
 	page: string;
 	size: string;
 	total: number;
+};
+export type ComplaintFilePayload = {
+	id: number;
+	originalName: string;
+	src: string;
+	mimeType: string;
+	size: number;
+	created: string;
 };
 export type CreateComplaintResponse = {
 	id: number,
@@ -46,7 +55,7 @@ export type CreateComplaintResponse = {
 	subscriberName: string,
 	created: string,
 	updated: string,
-	files: [],
+	files: ComplaintFilePayload[],
 	issueId: number | null
 }
 export type ComplaintsPayload = {
@@ -64,6 +73,7 @@ export type ComplaintsPayload = {
 	updated: string;
 	branchName: string;
 	sla: number;
+	files?: ComplaintFilePayload[];
 };
 type StatsPayload = {
 	total: number;
@@ -127,6 +137,22 @@ export type ResponsibilityMatrixUpdateResponse = {
 	validationErrors: string[];
 };
 
+function toFormData(body: ComplaintsBody | ComplaintsPutBody) {
+	const formData = new FormData();
+
+	Object.entries(body).forEach(([key, value]) => {
+		if (value === undefined || value === null) return;
+
+		if (key === 'files') {
+			(value as File[]).forEach(file => formData.append('files', file));
+			return;
+		}
+
+		formData.append(key, String(value));
+	});
+
+	return formData;
+}
 
 export const complaints = {
 	fetch(query: Partial<ComplaintsQuery> = {}): Promise<ComplaintsResponse> {
@@ -135,6 +161,14 @@ export const complaints = {
 		return $fetchApi<ComplaintsResponse>('/v1/call-gas/complaints', {
 			method: 'GET',
 			query
+		});
+	},
+
+	fetchById(id: number): Promise<ComplaintsPayload> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<ComplaintsPayload>(`/v1/call-gas/complaints/${id}`, {
+			method: 'GET'
 		});
 	},
 
@@ -170,7 +204,7 @@ export const complaints = {
 
 		return $fetchApi<CreateComplaintResponse>('/v1/call-gas/complaints', {
 			method: 'POST',
-			body
+			body: toFormData(body)
 		});
 	},
 
@@ -179,7 +213,7 @@ export const complaints = {
 
 		return $fetchApi<ComplaintsResponse>(`/v1/call-gas/complaints/${id}`, {
 			method: 'PUT',
-			body
+			body: toFormData(body)
 		});
 	},
 
@@ -188,6 +222,15 @@ export const complaints = {
 
 		return $fetchApi<ComplaintsResponse>(`/v1/call-gas/complaints/${id}`, {
 			method: 'DELETE'
+		});
+	},
+
+	fetchFile(filename: string): Promise<Blob> {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<Blob>(`/v1/call-gas/complaints/files/${encodeURIComponent(filename)}`, {
+			method: 'GET',
+			responseType: 'blob'
 		});
 	},
 

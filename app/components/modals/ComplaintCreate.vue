@@ -19,7 +19,7 @@
 			<section class="files">
 				<div class="field">
 					<label>Закрепленные файлы</label>
-					<BaseFileListPicker v-model="files" multiple emptyText="Файлы пока не отправляются в API"/>
+					<BaseFileListPicker v-model="files" multiple emptyText="Файлы не выбраны"/>
 				</div>
 			</section>
 
@@ -70,7 +70,7 @@ const urgencyTabs = [
 const accountStore = useAccountStore();
 const loading = ref(false);
 const customerName = ref('');
-const files = ref([]);
+const files = ref<File[]>([]);
 const message = reactive({
 	type: '' as MessageType,
 	title: '',
@@ -109,6 +109,7 @@ async function submit() {
 			account: form.account.trim(),
 			description: form.description.trim(),
 			contactNumber: form.contactNumber?.trim() || undefined,
+			files: files.value,
 		});
 
 		useNuxtApp().$flags.success('Жалоба зарегистрирована');

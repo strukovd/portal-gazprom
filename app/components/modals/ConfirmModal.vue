@@ -1,7 +1,7 @@
 <template>
 	<div class="confirm-modal">
 		<main v-if="payload" class="content">
-			<h2 v-if="payload.options?.title" class="title">{{ payload.options.title }}</h2>
+			<h2 v-if="payload?.title" class="title">{{ payload.title }}</h2>
 			<p v-if="payload.description" class="description">{{ payload.description }}</p>
 		</main>
 		<footer class="footer">

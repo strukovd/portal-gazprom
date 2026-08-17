@@ -93,7 +93,7 @@ export default defineComponent({
 			line-height: 1.4em;
 			font-weight: 500;
 			box-shadow: none;
-			padding: .4em .4em .4em .6em;
+			// padding: .4em .4em .4em .6em;
 
 
 			&:focus-within {
@@ -126,7 +126,7 @@ export default defineComponent({
 				box-sizing: border-box;
 				background: transparent;
 				// padding:.5em .7em;
-				padding: 0.4em .4em;
+				padding: .6em .6em;
 				border-style: none;
 				width: 100%;
 				height: 100%;
@@ -154,14 +154,11 @@ export default defineComponent({
 	&.disabled {
 		.text-box-section {
 			background: #f8fafc;
-			color: #94a3b8;
+			// color: #94a3b8;
 			border-color: #cbd5e1;
 
 			.append-icon, .prepend-icon {
 				color: #cbd5e1;
-			}
-			textarea {
-				pointer-events: none;
 			}
 		}
 	}

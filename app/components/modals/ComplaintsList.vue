@@ -63,14 +63,16 @@ const complaintsView = computed(() => complaints.value.map(complaint => ({
 	statusClass: statusClass(complaint.status),
 })));
 
-function subjectView(subject = '') {
-	if (subject.includes('БСГ')) return { color: '#61a3ed', icon: 'mdi-gauge' };
-	if (subject.includes('сотрудника')) return { color: '#fb6868', icon: 'mdi-account-alert-outline' };
-	if (subject.includes('Тариф') || subject.includes('начисл') || subject.includes('Перерасчет')) return { color: '#f5ba5e', icon: 'mdi-cash-sync' };
-	if (subject.includes('квитанц')) return { color: '#83d1af', icon: 'mdi-receipt-text-outline' };
-	if (subject.includes('дорожное') || subject.includes('газопровод')) return { color: '#fb6868', icon: 'mdi-road-variant' };
-	if (subject.includes('услуг') || subject.includes('СМР') || subject.includes('ЭЧ')) return { color: '#61a3ed', icon: 'mdi-tools' };
-	if (subject.includes('Утечка') || subject.includes('Авария')) return { color: '#fb6868', icon: 'mdi-fire-alert' };
+function subjectView(subject?: string) {
+	if(typeof subject === 'string') {
+		if (subject.includes('БСГ')) return { color: '#61a3ed', icon: 'mdi-gauge' };
+		if (subject.includes('сотрудника')) return { color: '#fb6868', icon: 'mdi-account-alert-outline' };
+		if (subject.includes('Тариф') || subject.includes('начисл') || subject.includes('Перерасчет')) return { color: '#f5ba5e', icon: 'mdi-cash-sync' };
+		if (subject.includes('квитанц')) return { color: '#83d1af', icon: 'mdi-receipt-text-outline' };
+		if (subject.includes('дорожное') || subject.includes('газопровод')) return { color: '#fb6868', icon: 'mdi-road-variant' };
+		if (subject.includes('услуг') || subject.includes('СМР') || subject.includes('ЭЧ')) return { color: '#61a3ed', icon: 'mdi-tools' };
+		if (subject.includes('Утечка') || subject.includes('Авария')) return { color: '#fb6868', icon: 'mdi-fire-alert' };
+	}
 	return { color: '#83d1af', icon: 'mdi-alert-box' };
 }
 

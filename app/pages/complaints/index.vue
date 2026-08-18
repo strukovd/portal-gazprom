@@ -123,11 +123,14 @@
 						{ key: 'sla', label: 'SLA' },
 						{ key: 'userName', label: 'Исполнитель' },
 					]"
-					:rows="pageData.complaints"
+					:rows="pageData.complaints.list"
 					:loading="loading"
 					@row:click="showComplaint"
 					pageable
-					@update:page="fetchList({ page: $event ?? 1 })"
+					@page:change="fetchList({ page: $event ?? 1 })"
+					:page="form.page"
+					:limit="form.size"
+					:total="pageData.complaints.total"
 				>
 					<template #cell.id="{ value, row }">
 						<!-- <NuxtLink :to="`/complaints/${value}`"> -->
@@ -195,9 +198,12 @@ const form = reactive({
 	page: 1
 });
 const pageData = reactive({
-	complaints: [] as ComplaintsPayload[],
+	complaints: {
+		list: [] as ComplaintsPayload[],
+		total: 0
+	},
 	stats: {} as StatsResponse,
-	counts: {} as CountsResponse
+	counts: {} as CountsResponse,
 });
 const loading = ref(false);
 
@@ -234,7 +240,8 @@ async function fetchList(params: { page?: number; size?: number } = {}): Promise
 			const items = res?.data || [];
 			form.page = parseInt(res.page);
 			form.size = parseInt(res.size);
-			pageData.complaints = items;
+			pageData.complaints.list = items;
+			pageData.complaints.total = res.total;
 		})
 		.finally(() => {
 			loading.value = false;

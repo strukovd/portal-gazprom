@@ -1,0 +1,1 @@
+.base-pageable{display:flex;flex-direction:column}.base-pageable .bp-footer{align-items:center;display:flex;gap:.75rem;justify-content:space-between;margin-top:.75rem}.base-pageable .bp-footer .bp-meta{color:gray;font-size:.85em}.base-pageable .bp-footer .bp-pager{display:flex;gap:.25rem}

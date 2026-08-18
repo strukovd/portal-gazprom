@@ -1,0 +1,1 @@
+.base-breadcrumb{color:#737373;font-size:.9rem;font-weight:300;padding:0}.base-breadcrumb,.base-breadcrumb li{align-items:center;display:flex}.base-breadcrumb li:not(:last-child):after{color:#a3a3a3;content:"/";margin:auto .7em;width:7px}.base-breadcrumb li:last-child{color:#404040;font-weight:700}.base-breadcrumb li a{color:#2065e6;text-decoration:none}

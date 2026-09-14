@@ -30,6 +30,7 @@ export default defineNuxtConfig({
 	modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts', 'nuxt-echarts', 'nuxt-aos'],
 	runtimeConfig: {
 		public: {
+			ARGV: process.argv,
 			API_TOKEN: process.env.NUXT_PUBLIC_API_TOKEN,
 			API_BASE_URL: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'https://api.gazprom.kg/api',
 			CALL_GAS_BASE_URL: process.env.NUXT_PUBLIC_CALL_GAS_BASE_URL ?? 'https://api.gazprom.kg/api',

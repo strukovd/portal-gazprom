@@ -1,5 +1,5 @@
 <template>
-	<section class="sidebar" :class="{ 'dev-mode': isDev }">
+	<section class="sidebar" :class="{ 'dev-mode': DEV_MODE }">
 		<ul class="links">
 			<li
 				v-for="link of links"
@@ -54,7 +54,7 @@
 import { version } from '../../package.json';
 import BaseIcon from './common/base/BaseIcon.vue';
 import type { NavigationLink } from '~/composables/useDefaultNavigation';
-const isDev = import.meta.dev;
+const DEV_MODE = useRuntimeConfig().public.ARGV.some(arg => arg.includes('.env.dev'));
 
 const route = useRoute();
 const { links } = useDefaultNavigation();
@@ -72,7 +72,6 @@ function handleDisabledLink(link: NavigationLink, event: Event) {
 
 <style lang="scss">
 .sidebar {
-	--sidebar-hover-bg: var(#124bc6, #12c673);
 	display: flex;
 	flex-direction: column;
 	background:#0e3896;

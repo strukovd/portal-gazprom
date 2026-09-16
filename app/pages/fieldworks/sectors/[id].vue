@@ -26,17 +26,17 @@
 					</div>
 					<div class="sp-summary-item">
 						<div class="sp-summary-label">Район</div>
-						<div class="sp-summary-value"><BaseIcon name="mdi-city-variant-outline" size="1em"/>{{ sector.district }}</div>
+						<div class="sp-summary-value"><BaseIcon name="mdi-city-variant-outline" size="1em"/>Не указано</div>
 					</div>
 					<div class="sp-summary-item">
 						<div class="sp-summary-label">Маршрутов</div>
-						<div class="sp-summary-value">{{ sector.routes?.length ?? 0 }}</div>
+						<div class="sp-summary-value">{{ sector?.routes.length ?? 0 }}</div>
 					</div>
 					<div class="sp-spacer"></div>
-					<div v-if="sector?.progress" class="sp-summary-item">
+					<div v-if="sector" class="sp-summary-item">
 						<div class="sp-summary-label">Прогресс</div>
-						<div class="sp-summary-value">{{ sector.progress.collected }} / {{ sector.progress.total }} ({{ toPercent(sector.progress.collected, sector.progress.total) }}%)</div>
-						<BaseProgressBar class="sp-progress-line" :percent="toPercent(sector.progress.collected, sector.progress.total)" height=".55em" color="#2563eb"/>
+						<div class="sp-summary-value">{{ sector.statistics.collectedReadings }} / {{ sector.statistics.collectedReadings + sector.statistics.remainingReadings }} ({{ toPercent(sector.statistics.collectedReadings, sector.statistics.collectedReadings + sector.statistics.remainingReadings) }}%)</div>
+						<BaseProgressBar class="sp-progress-line" :percent="toPercent(sector.statistics.collectedReadings, sector.statistics.collectedReadings + sector.statistics.remainingReadings)" height=".55em" color="#2563eb"/>
 					</div>
 				</template>
 			</BaseIsland>
@@ -54,24 +54,21 @@
 						</BaseIsland>
 					</template>
 					<template v-else>
-						<BaseIsland v-for="(route, index) of sector?.routes" :key="index" class="sp-route" @click="openRoute(route.id)">
+						<BaseIsland v-for="route of sector?.routes" :key="route.routeCode" class="sp-route" @click="openRoute(route.routeCode)">
 							<div class="sp-route-header">
-								<div class="sp-route-number"><BaseIcon name="mdi-transit-connection-variant" size="1.2em"/><span class="sp-route-id">{{ route.id }}</span></div>
-								<div class="sp-route-date">{{ toLocaleDate(route.date) }}</div>
+								<div class="sp-route-number"><BaseIcon name="mdi-transit-connection-variant" size="1.2em"/><span class="sp-route-id">{{ route.routeCode }}</span></div>
+								<div class="sp-route-date">Не указано</div>
 							</div>
-							<section class="sp-assignees">
-								<div v-for="assignee of route.assignees" class="sp-assignee"><Avatar :name="assignee.name" size="2em"/><span class="sp-assignee-name">{{ assignee.name }}</span></div>
-							</section>
 							<div class="sp-route-meta">
-								<span class="sp-route-meta-item"><BaseIcon name="mdi-account-group-outline" size="1em"/>{{ route.subscribers }} абонентов</span>
+								<span class="sp-route-meta-item"><BaseIcon name="mdi-account-group-outline" size="1em"/>{{ route.statistics.subscriberCount }} абонентов</span>
 								<span class="sp-route-meta-item"><BaseIcon name="mdi-map-marker-outline" size="1em"/>{{ route.streets.length }} улицы</span>
 							</div>
 							<div class="sp-streets">
-								<div v-for="street of route.streets" class="sp-street"><span>{{ street.street }}</span><span>{{ street.subscribers }} аб.</span></div>
+								<div v-for="street of route.streets" class="sp-street"><span>{{ street.street }}</span><span>{{ street.subscribers.length }} аб.</span></div>
 							</div>
 							<div class="sp-route-progress">
-								<div class="sp-route-progress-header"><span>Собрано: <span class="sp-route-progress-count">{{ route.progress.collected }} / {{ route.progress.total }}</span></span><span>{{ toPercent(route.progress.collected, route.progress.total) }}%</span></div>
-								<BaseProgressBar :percent="toPercent(route.progress.collected, route.progress.total)" height=".45em" color="#2563eb"/>
+								<div class="sp-route-progress-header"><span>Собрано: <span class="sp-route-progress-count">{{ route.statistics.collectedReadings }} / {{ route.statistics.subscriberCount }}</span></span><span>{{ toPercent(route.statistics.collectedReadings, route.statistics.subscriberCount) }}%</span></div>
+								<BaseProgressBar :percent="toPercent(route.statistics.collectedReadings, route.statistics.subscriberCount)" height=".45em" color="#2563eb"/>
 							</div>
 						</BaseIsland>
 					</template>
@@ -82,35 +79,21 @@
 </template>
 
 <script lang="ts" setup>
-import Avatar from '~/components/common/Avatar.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
-import { toLocaleDate } from '~/utils/format';
-
-type Sector = {
-	id: number;
-	district: string;
-	routes: {
-		id: string;
-		assignees: { id: number; name: string }[];
-		date: string;
-		subscribers?: number;
-		streets: { street: string; subscribers: number }[];
-		progress: { collected: number; total: number };
-	}[];
-	progress?: { collected: number; total: number };
-	status?: string;
-};
+import { useFieldworksStore } from '~/stores/FieldworksStore';
+import type { ControllerArea } from '~/types/Portal';
 
 const route = useRoute();
 const sectorId = computed(() => route.params.id);
 
 const loading = ref(true);
-const sector = ref<Sector>({} as Sector);
+const sector = ref<ControllerArea | null>(null);
+const fieldworksStore = useFieldworksStore();
 
 onMounted(async () => {
 	loading.value = true;
@@ -132,76 +115,9 @@ function toPercent(progress = 0, total = 0) {
 	return Math.min(Math.max(Math.round(percent), 0), 100);
 }
 
-async function fetchSector(): Promise<Sector> {
-	const sectorsStub: Sector = {
-		id: 1,
-		district: `Свердловский р-н`,
-		routes: [
-			{
-				id: `1100802`,
-				assignees: [{ id: 1, name: `Некрасова Наталия Михайловна` }],
-				date: new Date().toISOString(),
-				streets: [
-					{
-						street: `ул. ВИШНЕВАЯ`,
-						subscribers: 62
-					},
-					{
-						street: `ул. ТОКТОГУЛА`,
-						subscribers: 58
-					},
-					{
-						street: `мкр. КУЗНЕЦОВСКИй`,
-						subscribers: 52
-					},
-					{
-						street: `ул. КОРОЛЕВА`,
-						subscribers: 45
-					}
-				],
-				progress: { collected: 10, total: 21 },
-			},
-			{
-				id: `1100803`,
-				assignees: [{ id: 2, name: `Асанов Тимур Бакытбекович` }],
-				date: new Date().toISOString(),
-				streets: [
-					{
-						street: `мкр. АЛАМЕДИН-1`,
-						subscribers: 54
-					},
-					{
-						street: `ул. САДЫГАНОВА`,
-						subscribers: 41
-					},
-					{
-						street: `пер. ПИОНЕРСКИЙ`,
-						subscribers: 38
-					}
-				],
-				progress: { collected: 0, total: 12 },
-			}
-		],
-		// progress: { collected: 10, total: 33 }, // суммарый прогресс из routes
-		// status: `В работе`, // collected - новый, > 1 - в работе, = total - выполнено
-	};
-
-	// Общее количество абонентов
-	for (const route of sectorsStub.routes) {
-		route.subscribers = route.streets.reduce((acc, street) => {
-			acc += street.subscribers;
-			return acc;
-		}, 0);
-	}
-
-	// Вычисляем общий прогресс
-	sectorsStub.progress = sectorsStub.routes.reduce((acc, route) => {
-		acc.collected += route.progress.collected;
-		acc.total += route.progress.total;
-		return acc;
-	}, { collected: 0, total: 0 });
-
-	return new Promise(resolve => setTimeout(() => resolve(sectorsStub), 1000));
+async function fetchSector(): Promise<ControllerArea | null> {
+	const data = await fieldworksStore.fetchAreas();
+	return data?.areas.find(item => item.areaCode === String(sectorId.value)) ?? null;
 }
 </script>
 

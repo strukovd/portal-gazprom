@@ -43,43 +43,36 @@
 
 				<section class="sp-caption">
 					<span class="sp-caption-text">Участки</span>
-					<span class="sp-caption-date">25.05.2026</span>
+					<span class="sp-caption-date">Не указано</span>
 				</section>
 
 				<section class="sp-sectors">
-					<BaseIsland class="sp-sector" v-for="item of sectors" :key="item.id">
+					<BaseIsland class="sp-sector" v-for="item of sectors" :key="item.areaCode">
 						<header class="sp-sector-header">
 							<div class="sp-sector-title">
 								<div class="sp-title-line">
 									<BaseIcon name="mdi-layers-outline" size="1.1em"/>
-									<span class="sp-title-text">Участок №{{ item.id }}</span>
+									<span class="sp-title-text">Участок №{{ item.areaCode }}</span>
 								</div>
 								<div class="sp-area-line">
 									<BaseIcon name="mdi-city-variant-outline" size="1em"/>
-									<span class="sp-area-text">{{ item.district }}</span>
+									<span class="sp-area-text">Не указано</span>
 								</div>
 							</div>
-							<div class="sp-badge">{{ item.status }}</div>
+							<div class="sp-badge">{{ getAreaStatus(item) }}</div>
 						</header>
-
-						<div class="sp-assignees">
-							<div v-for="assignee of item.assignees" :key="assignee.id" class="sp-assignee">
-								<Avatar :name="assignee.name" size="2em"/>
-								<span class="sp-assignee-name">{{ assignee.name }}</span>
-							</div>
-						</div>
 
 						<div class="sp-progress">
 							<div class="sp-progress-header">
 								<span class="sp-progress-title">Общий прогресс</span>
-								<span class="sp-progress-count">{{ item.progress.collected }}/{{ item.progress.total }}</span>
+								<span class="sp-progress-count">{{ item.statistics.collectedReadings }}/{{ item.statistics.collectedReadings + item.statistics.remainingReadings }}</span>
 							</div>
-							<BaseProgressBar :percent="toPercent(item.progress.collected, item.progress.total)" height=".5em" color="#2563eb"/>
-							<div class="sp-progress-percent">{{ toPercent(item.progress.collected, item.progress.total) }}%</div>
+							<BaseProgressBar :percent="toPercent(item.statistics.collectedReadings, item.statistics.collectedReadings + item.statistics.remainingReadings)" height=".5em" color="#2563eb"/>
+							<div class="sp-progress-percent">{{ toPercent(item.statistics.collectedReadings, item.statistics.collectedReadings + item.statistics.remainingReadings) }}%</div>
 						</div>
 
 						<div class="sp-routes">
-							<span v-for="route of item.routes" :key="route.id" class="sp-route">{{ route.id }}</span>
+							<span v-for="route of item.routes" :key="route.routeCode" class="sp-route">{{ route.routeCode }}</span>
 						</div>
 
 						<div class="sp-totals">
@@ -88,16 +81,16 @@
 								<div class="sp-total-title">Маршрутов</div>
 							</div>
 							<div class="sp-total collected">
-								<div class="sp-total-value">{{ item.progress.collected }}</div>
+								<div class="sp-total-value">{{ item.statistics.collectedReadings }}</div>
 								<div class="sp-total-title">Собрано</div>
 							</div>
 							<div class="sp-total missing">
-								<div class="sp-total-value">{{ item.progress.total - item.progress.collected }}</div>
+								<div class="sp-total-value">{{ item.statistics.remainingReadings }}</div>
 								<div class="sp-total-title">Не собрано</div>
 							</div>
 						</div>
 
-						<BaseButton class="sp-route-button" prependIcon="mdi-transit-connection-variant" @click="openSector(item.id)">Маршруты участка</BaseButton>
+						<BaseButton class="sp-route-button" prependIcon="mdi-transit-connection-variant" @click="openSector(item.areaCode)">Маршруты участка</BaseButton>
 					</BaseIsland>
 				</section>
 			</template>
@@ -106,25 +99,18 @@
 </template>
 
 <script lang="ts" setup>
-import Avatar from '~/components/common/Avatar.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
-
-type Sector = {
-	id: number;
-	district: string;
-	status: 'Новый' | 'В работе' | 'Выполнено';
-	assignees: Array<{ id: number; name: string }>;
-	routes: Array<{ id: string; progress: { collected: number; total: number } }>;
-	progress: { collected: number; total: number };
-};
+import { useFieldworksStore } from '~/stores/FieldworksStore';
+import type { ControllerArea } from '~/types/Portal';
 
 const loading = ref(true);
-const sectors = ref<Sector[]>([]);
+const sectors = ref<ControllerArea[]>([]);
+const fieldworksStore = useFieldworksStore();
 
 onMounted(async () => {
 	loading.value = true;
@@ -133,20 +119,17 @@ onMounted(async () => {
 });
 
 const statsData = computed(() => {
-	const totalSectors = sectors.value.length;
-	const totalRoutes = sectors.value.reduce((acc, item) => acc + item.routes.length, 0);
-	const totalCollected = sectors.value.reduce((acc, item) => acc + item.progress.collected, 0);
-	const totalMissing = sectors.value.reduce((acc, item) => acc + (item.progress.total - item.progress.collected), 0);
+	const data = fieldworksStore.areasData?.statistics;
 
 	return [
-		{ id: 1, title: 'Участков', value: totalSectors, icon: 'mdi-layers-triple-outline', color: 'violet' },
-		{ id: 2, title: 'Маршрутов', value: totalRoutes, icon: 'mdi-transit-connection-variant', color: 'blue' },
-		{ id: 3, title: 'Собрано', value: totalCollected, icon: 'mdi-check-circle-outline', color: 'green' },
-		{ id: 4, title: 'Не собрано', value: totalMissing, icon: 'mdi-clock-outline', color: 'orange' },
+		{ id: 1, title: 'Участков', value: data?.areaCount ?? 0, icon: 'mdi-layers-triple-outline', color: 'violet' },
+		{ id: 2, title: 'Маршрутов', value: data?.routeCount ?? 0, icon: 'mdi-transit-connection-variant', color: 'blue' },
+		{ id: 3, title: 'Собрано', value: data?.totalCollectedReadings ?? 0, icon: 'mdi-check-circle-outline', color: 'green' },
+		{ id: 4, title: 'Не собрано', value: data?.totalRemainingReadings ?? 0, icon: 'mdi-clock-outline', color: 'orange' },
 	];
 });
 
-function openSector(id: number) {
+function openSector(id: string) {
 	navigateTo(`/fieldworks/sectors/${id}`);
 }
 
@@ -156,36 +139,16 @@ function toPercent(progress = 0, total = 0) {
 	return Math.min(Math.max(Math.round(percent), 0), 100);
 }
 
-async function fetchSectors(): Promise<Sector[]> {
-	const sectorsStub: Sector[] = [
-		{
-			id: 1,
-			district: `Свердловский р-н`,
-			assignees: [{ id: 1, name: `Некрасова Наталия Михайловна` }, { id: 2, name: `Асанов Тимур Бакытбекович` }],
-			routes: [{ id: `1100802`, progress: { collected: 10, total: 21 } }, { id: `1100803`, progress: { collected: 0, total: 12 } }],
-			// ниже поля можно вычислить на основе тех что выше.
-			progress: { collected: 10, total: 33 }, // суммарый прогресс из routes
-			status: `В работе`, // collected - новый, > 1 - в работе, = total - выполнено
-		},
-		{
-			id: 2,
-			district: `Октябрьский р-н`,
-			assignees: [{ id: 1, name: `Джумабеков Азат Сейитович` }, { id: 2, name: `Рысбекова Гульмира Абдукаримовна` }],
-			routes: [{ id: `1100804`, progress: { collected: 9, total: 9 } }, { id: `1100805`, progress: { collected: 10, total: 15 } }],
-			status: `В работе`,
-			progress: { collected: 19, total: 24 },
-		},
-		{
-			id: 3,
-			district: `Первомайский р-н`,
-			assignees: [{ id: 1, name: `Токтоматтов Санжар Элибекович` }],
-			routes: [{ id: `1100806`, progress: { collected: 0, total: 10 } }],
-			status: `Новый`,
-			progress: { collected: 0, total: 10 },
-		}
-	];
+function getAreaStatus(area: ControllerArea) {
+	const { collectedReadings, remainingReadings } = area.statistics;
+	if (!collectedReadings) return 'Новый';
+	if (!remainingReadings) return 'Выполнено';
+	return 'В работе';
+}
 
-	return new Promise(resolve => setTimeout(() => resolve(sectorsStub), 1000));
+async function fetchSectors(): Promise<ControllerArea[]> {
+	const data = await fieldworksStore.fetchAreas();
+	return data?.areas ?? [];
 }
 </script>
 

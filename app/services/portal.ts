@@ -1,3 +1,5 @@
+import type { ControllerAreasResponse } from '~/types/Portal';
+
 export type UserRoles = `ADMIN` | `CONTRACTOR` | `CONTROLLER` | `CALLCENTER` | `CALLCENTER_MANAGER` | `CALLCENTER_COMPLAINT_ASSIGNEE`;
 export type AuthBody = {
 	login: string;
@@ -159,4 +161,12 @@ export const portal = {
 			query
 		});
 	},
+
+	fetchAreas() {
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<ControllerAreasResponse>(`/v1/portal/controller/areas`, {
+			method: 'GET'
+		});
+	}
 };

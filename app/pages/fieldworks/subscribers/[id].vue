@@ -9,64 +9,63 @@
 				<BaseIsland class="sb-skeleton"><BaseSkeleton height="15em"/></BaseIsland>
 			</template>
 
-			<template v-else>
+			<template v-else-if="subscriber">
 				<BaseIsland class="sb-header">
 					<div class="sb-profile">
-						<Avatar :name="subscriber.name" size="3em"/>
+						<Avatar :name="subscriber.fullName" size="3em"/>
 						<div class="sb-profile-content">
-							<div class="sb-name">{{ subscriber.name }}</div>
-							<div class="sb-meta"><span class="sb-account">Л/с {{ subscriber.account }}</span><span class="sb-address"><BaseIcon name="mdi-map-marker-outline" size="1em"/>{{ subscriber.address }}</span></div>
+							<div class="sb-name">{{ subscriber.fullName || 'Не указано' }}</div>
+							<div class="sb-meta"><span class="sb-account">Л/с {{ subscriber.accountNo }}</span><span class="sb-address"><BaseIcon name="mdi-map-marker-outline" size="1em"/>{{ subscriber.addressText || 'Не указано' }}</span></div>
 						</div>
 					</div>
 					<div class="sb-contact">
-						<div :class="['sb-status', subscriber.readingSource]"><BaseIcon :name="readingStatus.icon" size="1em"/>{{ readingStatus.label }}</div>
-						<a class="sb-phone" :href="`tel:${subscriber.phone}`"><BaseIcon name="mdi-phone-outline" size="1em"/>{{ subscriber.phone }}</a>
+						<div :class="['sb-status', readingStatus.source]"><BaseIcon :name="readingStatus.icon" size="1em"/>{{ readingStatus.label }}</div>
+						<div class="sb-phone"><BaseIcon name="mdi-phone-outline" size="1em"/>Не указано</div>
 					</div>
 				</BaseIsland>
 
 				<section class="sb-details">
 					<BaseIsland class="sb-card">
 						<div class="sb-card-title"><BaseIcon name="mdi-gauge" size="1.35em"/>Данные счётчика</div>
-						<div class="sb-data"><span class="sb-label">Номер счётчика</span><span class="sb-value">{{ subscriber.meterNumber }}</span></div>
+						<div class="sb-data"><span class="sb-label">Номер счётчика</span><span class="sb-value">{{ subscriber.meterSerial || 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Модель</span><span class="sb-value">{{ subscriber.meterModel }}</span></div>
-						<div class="sb-data"><span class="sb-label">Мощность</span><span class="sb-value">{{ subscriber.power }}</span></div>
-						<div class="sb-data"><span class="sb-label">№ пломбы</span><span class="sb-value">{{ subscriber.sealNumber }}</span></div>
-						<div class="sb-data"><span class="sb-label">Знак</span><span class="sb-value">{{ subscriber.sign }}</span></div>
+						<div class="sb-data"><span class="sb-label">Мощность</span><span class="sb-value">Не указано</span></div>
+						<div class="sb-data"><span class="sb-label">№ пломбы</span><span class="sb-value">Не указано</span></div>
+						<div class="sb-data"><span class="sb-label">Знак</span><span class="sb-value">Не указано</span></div>
 					</BaseIsland>
 
 					<BaseIsland class="sb-card">
 						<div class="sb-card-title"><BaseIcon name="mdi-wallet-outline" size="1.35em"/>Финансы</div>
-						<div class="sb-data"><span class="sb-label">Последняя оплата</span><span class="sb-value">{{ subscriber.lastPayment }}</span></div>
-						<div class="sb-data"><span class="sb-label">Сальдо - Газ</span><span :class="['sb-value', subscriber.gasBalanceClass]">{{ subscriber.gasBalance }}</span></div>
-						<div class="sb-data"><span class="sb-label">Сальдо - Пеня</span><span :class="['sb-value', subscriber.penaltyBalanceClass]">{{ subscriber.penaltyBalance }}</span></div>
-						<div class="sb-data"><span class="sb-label">Пред. показание</span><span class="sb-value">{{ subscriber.previousReading }} м³</span></div>
-						<div v-if="subscriber.currentReading !== null" class="sb-data"><span class="sb-label">Тек. показание</span><span class="sb-value green">{{ subscriber.currentReading }} м³</span></div>
+						<div class="sb-data"><span class="sb-label">Последняя оплата</span><span class="sb-value">{{ subscriber.lastPayment || 'Не указано' }}</span></div>
+						<div class="sb-data"><span class="sb-label">Сальдо - Газ</span><span :class="['sb-value', { green: subscriber.debtGas && subscriber.debtGas < 0, red: subscriber.debtGas && subscriber.debtGas > 0 }]">{{ subscriber.debtGas ?? 'Не указано' }}</span></div>
+						<div class="sb-data"><span class="sb-label">Сальдо - Пеня</span><span :class="['sb-value', { red: subscriber.penalty && subscriber.penalty > 0 }]">{{ subscriber.penalty ?? 'Не указано' }}</span></div>
+						<div class="sb-data"><span class="sb-label">Пред. показание</span><span class="sb-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
 					</BaseIsland>
 				</section>
 
-				<BaseIsland :class="['sb-reading', subscriber.readingSource]">
+				<BaseIsland :class="['sb-reading', readingStatus.source]">
 					<div class="sb-reading-heading">
 						<div class="sb-reading-title"><BaseIcon :name="readingStatus.icon" size="1.35em"/>{{ readingStatus.heading }}</div>
 						<div class="sb-reading-description">{{ readingStatus.description }}</div>
 					</div>
 
-					<template v-if="subscriber.readingSource === 'subscriber'">
+					<template v-if="readingStatus.source === 'subscriber'">
 						<section class="sb-reading-values">
-							<div class="sb-reading-value"><span class="sb-label">Предыдущее</span><span class="sb-reading-number">{{ subscriber.previousReading }} м³</span></div>
-							<div class="sb-reading-value current"><span class="sb-label">Текущее</span><span class="sb-reading-number">{{ subscriber.currentReading }} м³</span></div>
-							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">{{ consumption }} м³</span></div>
+							<div class="sb-reading-value"><span class="sb-label">Предыдущее</span><span class="sb-reading-number">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
+							<div class="sb-reading-value current"><span class="sb-label">Текущее</span><span class="sb-reading-number">Не указано</span></div>
+							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">Не указано</span></div>
 						</section>
 						<InfoBox type="protect" title="Показание подтверждено абонентом" message="Изменение показания, переданного абонентом самостоятельно, недоступно для контроллёра."/>
 						<BaseButton class="sb-return" variant="outlined" @click="navigateTo(backLink)">Вернуться к реестру</BaseButton>
 					</template>
 
 					<template v-else>
-						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.previousReading }} м³</span></div>
-						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="subscriber.readingSource === 'controller'" label="Текущее показание, м³" placeholder="Введите значение" type="number"/>
-						<div v-if="subscriber.readingSource === 'controller'" class="sb-consumption"><span>Расход за период</span><span>{{ consumption }} м³</span></div>
+						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
+						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="readingStatus.source === 'controller'" label="Текущее показание, м³" placeholder="Введите значение" type="number"/>
+						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>Не указано</span></div>
 						<div class="sb-actions">
 							<BaseButton variant="outlined" @click="navigateTo(backLink)">Отмена</BaseButton>
-							<BaseButton :disabled="String(reading).trim() === ''" prependIcon="mdi-check-circle-outline" @click="acceptReading">Принять показание</BaseButton>
+							<BaseButton :disabled="String(reading).trim() === ''" prependIcon="mdi-check-circle-outline">Принять показание</BaseButton>
 						</div>
 					</template>
 				</BaseIsland>
@@ -83,26 +82,8 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-
-type Subscriber = {
-	account: string;
-	name: string;
-	address: string;
-	phone: string;
-	meterNumber: string;
-	meterModel: string;
-	power: string;
-	sealNumber: string;
-	sign: string;
-	lastPayment: string;
-	gasBalance: string;
-	gasBalanceClass: string;
-	penaltyBalance: string;
-	penaltyBalanceClass: string;
-	previousReading: number;
-	currentReading: number | null;
-	readingSource: 'none' | 'subscriber' | 'controller';
-};
+import { useFieldworksStore } from '~/stores/FieldworksStore';
+import type { ControllerSubscriber } from '~/types/Portal';
 
 const route = useRoute();
 const subscriberId = computed(() => String(route.params.id));
@@ -115,36 +96,26 @@ const backLink = computed(() => routeId.value
 
 const loading = ref(true);
 const reading = ref<string | number>('');
-const subscriber = ref<Subscriber>({} as Subscriber);
-const consumption = computed(() => subscriber.value.currentReading === null ? 0 : subscriber.value.currentReading - subscriber.value.previousReading);
+const subscriber = ref<ControllerSubscriber | null>(null);
+const fieldworksStore = useFieldworksStore();
 const readingStatus = computed(() => {
-	if (subscriber.value.readingSource === 'subscriber') return { label: 'Передано абонентом', heading: 'Показание передано абонентом', description: 'Редактирование контроллёром заблокировано', icon: 'mdi-shield-check-outline' };
-	if (subscriber.value.readingSource === 'controller') return { label: 'Принято', heading: 'Ввод текущего показания', description: 'Показание принято контроллёром', icon: 'mdi-check-circle-outline' };
-	return { label: 'Не принято', heading: 'Ввод текущего показания', description: 'Метод 1 - карточка абонента', icon: 'mdi-gauge' };
+	if (subscriber.value?.status === 'Передано абонентом') return { source: 'subscriber', label: 'Передано абонентом', heading: 'Показание передано абонентом', description: 'Редактирование контроллёром заблокировано', icon: 'mdi-shield-check-outline' };
+	if (subscriber.value?.status !== 'Не передано') return { source: 'controller', label: 'Принято', heading: 'Ввод текущего показания', description: 'Показание принято контроллёром', icon: 'mdi-check-circle-outline' };
+	return { source: 'none', label: 'Не принято', heading: 'Ввод текущего показания', description: 'Метод 1 - карточка абонента', icon: 'mdi-gauge' };
 });
 
 onMounted(async () => {
 	subscriber.value = await fetchSubscriber();
-	reading.value = subscriber.value.currentReading ?? '';
 	loading.value = false;
 });
 
-function acceptReading() {
-	const value = Number(reading.value);
-	if (!Number.isFinite(value)) return;
-
-	subscriber.value.currentReading = value;
-	subscriber.value.readingSource = 'controller';
-}
-
-async function fetchSubscriber(): Promise<Subscriber> {
-	const subscribers: Record<string, Subscriber> = {
-		'110100304': { account: '110100304', name: 'Сакихова Зульфия Турсуновна', address: 'ул. ВИШНЕВАЯ, д. 3', phone: '+996 558 558 778', meterNumber: '2504050918', meterModel: 'Чунчин G1.6', power: 'G1.6', sealNumber: '22184334', sign: '5', lastPayment: '24.06.2026', gasBalance: '-26,20 сом', gasBalanceClass: 'green', penaltyBalance: '—', penaltyBalanceClass: '', previousReading: 17, currentReading: 45, readingSource: 'subscriber' },
-		'110100568': { account: '110100568', name: 'Маванкуй Р И', address: 'ул. ВИШНЕВАЯ, д. 5', phone: '+996 700 555 666', meterNumber: '2504050245', meterModel: 'Чунчин G1.6', power: 'G1.6', sealNumber: '22184335', sign: '5', lastPayment: '—', gasBalance: '—', gasBalanceClass: '', penaltyBalance: '—', penaltyBalanceClass: '', previousReading: 1, currentReading: 12, readingSource: 'controller' },
-		default: { account: subscriberId.value, name: 'Токтосунов Марат', address: 'мкр. т. КУЛАТОВА, д. 12', phone: '+996 550 334 455', meterNumber: '1908045678', meterModel: 'ЛГБЭ-G4', power: 'G4', sealNumber: '44102345', sign: '5', lastPayment: '22.05.2026', gasBalance: '12 300 сом', gasBalanceClass: 'red', penaltyBalance: '180 сом', penaltyBalanceClass: 'red', previousReading: 1240, currentReading: null, readingSource: 'none' }
-	};
-
-	return new Promise(resolve => setTimeout(() => resolve(subscribers[subscriberId.value] ?? subscribers.default), 500));
+async function fetchSubscriber(): Promise<ControllerSubscriber | null> {
+	const data = await fieldworksStore.fetchAreas();
+	return data?.areas
+		.flatMap(area => area.routes)
+		.flatMap(route => route.streets)
+		.flatMap(street => street.subscribers)
+		.find(item => item.accountNo === subscriberId.value) ?? null;
 }
 </script>
 

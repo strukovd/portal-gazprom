@@ -65,7 +65,7 @@
 
 				<template v-for="street of curRoute.streets" :key="street.street">
 				<BaseIsland class="rp-street">
-					<header class="rp-street-header">
+					<header class="rp-street-header" @click="toggleStreet(street.street)">
 						<div class="rp-street-title"><BaseIcon name="mdi-map-marker-outline" size="1.2em"/>{{ street.street }}</div>
 						<div class="rp-street-count">{{ street.subscribers.length }} в выборке, всего: {{ street.subscribers.length }}</div>
 						<div class="rp-street-stats">
@@ -73,6 +73,9 @@
 							<span class="rp-street-stat blue" title="Сумма разностей потребления"><BaseIcon name="mdi-fire" size="1em"/>Не указано</span>
 							<span class="rp-street-stat orange" title="Не собрано показаний"><BaseIcon name="mdi-clock-outline" size="1em"/>{{ street.subscribers.filter(subscriber => subscriber.status === 'Не передано').length }}</span>
 						</div>
+						<button class="rp-street-toggle" type="button" :aria-expanded="!collapsedStreets[street.street]">
+							<BaseIcon :name="collapsedStreets[street.street] ? 'mdi-chevron-down' : 'mdi-chevron-up'" size="1.2em"/>
+						</button>
 					</header>
 					<BaseTable v-if="!collapsedStreets[street.street]" class="rp-street-table" :columns="subscriberColumns" :rows="street.subscribers" rowKey="accountNo">
 						<template #cell.subscriberId="{ index }">{{ index + 1 }}</template>
@@ -111,7 +114,7 @@
 						<template #cell.sealNumber>Не указано</template>
 						<template #cell.difference>Не указано</template>
 						<template #cell.phone>Не указано</template>
-						<template #cell.lastPayment="{ row }">{{ row.lastPayment || 'Не указано' }}</template>
+						<template #cell.lastPayment="{ row }">{{ toLocaleDate(row.lastPayment as string) || 'Не указано' }}</template>
 						<template #cell.penalty="{ row }">{{ row.penalty ?? 'Не указано' }}</template>
 						<template #cell.debtGas="{ row }">
 							<span :class="['rp-debt', getDebtClass(row.debtGas)]">{{ row.debtGas ?? 'Не указано' }}</span>
@@ -137,6 +140,7 @@ import InfoBox from '~/components/common/InfoBox.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import type { ControllerRoute } from '~/types/Portal';
+import { toLocaleDate } from '~/utils/format';
 
 const route = useRoute();
 const routeId = computed(() => route.params.id);
@@ -214,6 +218,10 @@ function startReading(subscriber: Record<string, unknown>) {
 function saveReading() {
 	if (!String(readingValue.value).trim()) return;
 	editingReading.value = null;
+}
+
+function toggleStreet(street: string) {
+	collapsedStreets.value[street] = !collapsedStreets.value[street];
 }
 
 function getDebtClass(debt: unknown) {
@@ -394,6 +402,8 @@ async function fetchRoute(): Promise<ControllerRoute | null> {
 			align-items: center;
 			gap: .8em;
 			padding: .85em 1.2em;
+			cursor: pointer;
+			
 
 			.rp-street-title {
 				display: flex;
@@ -439,6 +449,21 @@ async function fetchRoute(): Promise<ControllerRoute | null> {
 						color: #ea580c;
 						background: #fff7ed;
 					}
+				}
+			}
+
+			.rp-street-toggle {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: .25em;
+				border: 0;
+				color: #94a3b8;
+				background: transparent;
+				cursor: pointer;
+
+				&:hover {
+					color: #2563eb;
 				}
 			}
 		}

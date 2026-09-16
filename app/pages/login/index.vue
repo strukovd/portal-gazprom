@@ -55,8 +55,9 @@ async function signIn() {
 					case 'ADMIN':
 						navigateTo('/');
 						break;
-					case 'CALLCENTER':
 					case 'CONTROLLER':
+						navigateTo('/fieldworks/sectors');
+					case 'CALLCENTER':
 					case 'CALLCENTER_MANAGER':
 					case 'CALLCENTER_COMPLAINT_ASSIGNEE':
 						navigateTo('/');

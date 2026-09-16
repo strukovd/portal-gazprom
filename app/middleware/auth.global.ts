@@ -1,3 +1,5 @@
+
+import { determinePathByRole } from '@/utils/auth'
 export default defineNuxtRouteMiddleware((to, from) => {
 	// На сервере пропускаем (нет localStorage). Проверять будем на клиенте.
 	if (import.meta.server) return;
@@ -15,12 +17,13 @@ export default defineNuxtRouteMiddleware((to, from) => {
 			}, { replace: true })
 		}
 		else { // Если есть токен 🪙
-			const role = user.userData?.role;
+			const role = String(user.userData?.role);
 			if(ALLOWED_ROLES && ALLOWED_ROLES.length > 0) {
 				if(!ALLOWED_ROLES.includes(role)) { // Если пользователь не иммет доступа (роли) к странице
-					let page = '/403';
-					// let page = determinePathByRole(role);
-					// if(page === to.path) page = '/403'; // Анти-зацикливание
+					// let page = '/403';
+					let page = determinePathByRole(role);
+					if(page === to.path) page = '/403'; // Анти-зацикливание
+					console.warn(`Пользователю с ролью ${role} - доступ к странице ${to.path} запрещен, перенаправляю на ${page}`);
 					return navigateTo(page, { replace: true });
 				}
 			}
@@ -30,52 +33,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 	// Если уже авторизован и пришёл на /login — перекинуть на главную
 	if (to.path.replace(/\/$/, '') === '/login' && user.token) {
-		const role = user.userData?.role;
+		const role = String(user.userData?.role);
 		const page = determinePathByRole(role);
 		return navigateTo(page, { replace: true });
 	}
-
-
-
-
-	// 1) Если нужна авторизация, но её нет — на /login с возвратом после логина
-	// if (pageReqAuth && !user.token) {
-	// 	return navigateTo({
-	// 		path: '/login',
-	// 		query: { redirect: to.fullPath }
-	// 	}, { replace: true })
-	// }
-
-	// // 2) Если авторизован, но роль не подходит — на /403 или куда сочтёте
-	// if (pageReqAuth && allowedRoles && allowedRoles.length > 0) {
-	// 	console.log(user.userData?.role);
-
-	// 	if (!allowedRoles.includes(user.userData?.role)) {
-	// 	// return navigateTo('/403', { replace: true })
-	// 	}
-	// }
-
-	// // 3) Опционально: если уже авторизован и пришёл на /login — перекинуть на главную
-	// if (to.path === '/login' && user.token) {
-	// 	console.log(user);
-	// 	const role = user.userData?.role;
-	// 	return navigateTo('/', { replace: true });
-	// }
 })
 
-const determinePathByRole = (role: string): string => {
-	switch( String(role).toUpperCase() ) {
-		case 'CONTRACTOR':
-			return '/issues';
-		case 'ADMIN':
-			return '/';
-		case 'CALLCENTER_COMPLAINT_ASSIGNEE':
-		case 'CONTROLLER':
-		case 'CALLCENTER':
-			return '/';
-
-		// Если токен не ошибочный и role не определена, или role неизвестна и не соответствует никакой странице
-		default:
-			return '/403';
-	}
-}

@@ -86,26 +86,19 @@
 							</div>
 						</template>
 						<template #cell.status="{ row }">
-							<BaseTextBox
-								v-if="editingReading === row"
-								v-model="readingValue"
-								class="rp-reading-input"
-								type="number"
-								autofocus
-								button="OK"
-								@submit="saveReading"
-							/>
-							<div v-else-if="row.status === 'Передано абонентом'" class="rp-reading-button subscriber">
-								<BaseIcon name="mdi-shield-check-outline" size="1em"/>
-								{{ row.reading ?? 'Не указано' }}
-								<span class="rp-reading-note">абон.</span>
+							<div class="rp-reading-cell">
+								<div v-if="row.status === 'Передано абонентом'" class="rp-reading-button subscriber">
+									<BaseIcon name="mdi-shield-check-outline" size="1em"/>
+									{{ row.reading ?? 'Не указано' }}
+									<span class="rp-reading-note">абон.</span>
+								</div>
+								<BaseButton v-else-if="row.status !== 'Не передано'" class="rp-reading-button controller" variant="light" prependIcon="mdi-check-circle-outline" @click="startReading(row)">
+									{{ row.reading ?? 'Не указано' }}
+								</BaseButton>
+								<BaseButton v-else class="rp-reading-button empty" variant="secondary" prependIcon="mdi-pencil-outline" @click="startReading(row)">Ввести</BaseButton>
+
+								<RouteReading v-if="editingReading === row" :subscriber="row as ControllerSubscriber" @close="cancelReading" @saved="refreshRoute"/>
 							</div>
-							<BaseButton v-else-if="row.status !== 'Не передано'" class="rp-reading-button controller" variant="light" prependIcon="mdi-check-circle-outline" @click="startReading(row)">
-								{{ row.reading ?? 'Не указано' }}
-							</BaseButton>
-							<BaseButton v-else class="rp-reading-button empty" variant="secondary" prependIcon="mdi-pencil-outline" @click="startReading(row)">
-								Ввести
-							</BaseButton>
 						</template>
 						<template #cell.houseNo="{ row }">{{ row.houseNo || row.house || 'Не указано' }}</template>
 						<template #cell.reading="{ row }">{{ row.reading ?? 'Не указано' }}</template>
@@ -136,10 +129,11 @@ import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseTable from '~/components/common/base/BaseTable.vue';
+import RouteReading from '~/components/fieldworks/RouteReading.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { ControllerRoute } from '~/types/Portal';
+import type { ControllerRoute, ControllerSubscriber } from '~/types/Portal';
 import { toLocaleDate } from '~/utils/format';
 
 const route = useRoute();
@@ -183,7 +177,6 @@ const loading = ref(true);
 const curRoute = ref<ControllerRoute | null>(null);
 const fieldworksStore = useFieldworksStore();
 const editingReading = ref<Record<string, unknown> | null>(null);
-const readingValue = ref<string | number>('');
 const collapsedStreets = ref<Record<string, boolean>>({});
 
 const statsData = computed(() => [
@@ -212,12 +205,15 @@ function toPercent(collected = 0, total = 0) {
 
 function startReading(subscriber: Record<string, unknown>) {
 	editingReading.value = subscriber;
-	readingValue.value = typeof subscriber.reading === 'number' ? subscriber.reading : '';
 }
 
-function saveReading() {
-	if (!String(readingValue.value).trim()) return;
+function cancelReading() {
 	editingReading.value = null;
+}
+
+async function refreshRoute() {
+	editingReading.value = null;
+	curRoute.value = await fetchRoute(true);
 }
 
 function toggleStreet(street: string) {
@@ -229,8 +225,8 @@ function getDebtClass(debt: unknown) {
 	return debt < 0 ? 'positive' : debt > 0 ? 'overdue' : '';
 }
 
-async function fetchRoute(): Promise<ControllerRoute | null> {
-	const data = await fieldworksStore.fetchAreas();
+async function fetchRoute(force = false): Promise<ControllerRoute | null> {
+	const data = await fieldworksStore.fetchAreas(force);
 	return data?.areas
 		.flatMap(area => area.routes)
 		.find(item => item.routeCode === String(routeId.value)) ?? null;
@@ -535,7 +531,7 @@ async function fetchRoute(): Promise<ControllerRoute | null> {
 				justify-content: center;
 				width: 100%;
 				min-width: 7em;
-				padding: .45em .65em;
+				padding:.45em 2em;
 				font-size: .9em;
 				font-weight: 800;
 
@@ -543,6 +539,7 @@ async function fetchRoute(): Promise<ControllerRoute | null> {
 					border-color: #cbd5e1;
 					border-style: dashed;
 					color: #64748b;
+					opacity: .7;
 					background: #ffffff;
 				}
 
@@ -566,17 +563,9 @@ async function fetchRoute(): Promise<ControllerRoute | null> {
 				}
 			}
 
-			.rp-reading-input {
-				width: 100%;
+			.rp-reading-cell {
+				position: relative;
 				min-width: 7em;
-
-				.text-box-area {
-					padding: 0 .25em;
-
-					.base-button {
-						padding: .35em .55em;
-					}
-				}
 			}
 
 			.rp-difference {

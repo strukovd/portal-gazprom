@@ -234,7 +234,6 @@ async function fetchSector(): Promise<ControllerArea | null> {
 			.sp-route {
 				display: grid;
 				gap: 1.1em;
-				min-height: 15.3em;
 				padding: 1em;
 				cursor: pointer;
 				box-shadow: 0 3px 8px rgba(15, 23, 42, .08);

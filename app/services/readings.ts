@@ -33,13 +33,7 @@ export const readings = {
 		return $fetchPortal<ReadingsResponse>('/v1/portal/readings', {
 			method: 'POST',
 			body: { account, reading }
-		})
-			.then((resp) => {
-				return resp;
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при загрузке показаний:', error);
-			});
+		});
 	},
 
 	delete(account: string, id: string | number): Promise<unknown> {
@@ -48,12 +42,6 @@ export const readings = {
 		return $fetchPortal<ReadingsResponse>('/v1/portal/readings', {
 			method: 'DELETE',
 			body: { account, id }
-		})
-			.then((resp) => {
-				return resp.data;
-			})
-			.catch((error: any) => {
-				console.error('Ошибка при загрузке показаний:', error);
-			});
+		});
 	}
 };

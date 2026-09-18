@@ -6,8 +6,8 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 	const areasData = ref<ControllerAreasPayload | null>(null);
 	const loading = ref(false);
 
-	async function fetchAreas() {
-		if (areasData.value) return areasData.value;
+	async function fetchAreas(force = false) {
+		if (areasData.value && !force) return areasData.value;
 
 		loading.value = true;
 		try {

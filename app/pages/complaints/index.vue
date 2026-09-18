@@ -184,7 +184,7 @@ import { toLocaleDate } from '~/utils/format';
 import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
 	layout: 'default'
 });
 const userStore = useUserStore();

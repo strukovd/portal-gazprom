@@ -6,7 +6,7 @@
 
 		<main class="page-blocks">
 			<!-- Статистика -->
-			<section v-if="[`CALLCENTER`, `CONTROLLER`, `CALLCENTER_COMPLAINT_ASSIGNEE`].includes(userStore?.userData?.role ?? '')" class="statistics">
+			<section v-if="[`CALLCENTER`, `CALLCENTER_COMPLAINT_ASSIGNEE`].includes(userStore?.userData?.role ?? '')" class="statistics">
 				<template
 					v-for="(item, index) of [
 						{ bg: '#ef4444', 	color: '#ef4444', 		icon: 'mdi-alert-circle',				value: stats.openComplaints,	title: 'Открытых жалоб' },
@@ -224,7 +224,7 @@ type IMapRegionPage = {
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
 	layout: 'default'
 });
 

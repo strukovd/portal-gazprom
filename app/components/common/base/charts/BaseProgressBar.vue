@@ -1,6 +1,6 @@
 <template>
 	<div ref="progressLine" class="animated-progress-line">
-		<div class="track" :style="{ height: props.height }">
+		<div class="track" :style="{ height: props.height, background: props.bgColor }">
 			<div class="line" :style="{
 				width: `${displayPercent}%`,
 				background: props.color
@@ -13,6 +13,7 @@
 const props = defineProps({
 	percent: { type: Number, default: 0 },
 	color: String,
+	bgColor: String,
 	height: String,
 });
 

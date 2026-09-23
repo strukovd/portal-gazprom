@@ -1,5 +1,5 @@
 <template>
-	<BaseIsland class="route-reading">
+	<BaseIsland :class="['route-reading', { popover }]">
 		<div class="rr-heading">
 			<div class="rr-name">{{ subscriber.fullName || 'Не указано' }}</div>
 			<div class="rr-account">Л/с {{ subscriber.accountNo }}</div>
@@ -11,7 +11,7 @@
 
 		<BaseTextBox
 			v-model="reading"
-			:class="[`rr-reading-value`, { valid: hasReading && isValid }]"
+			:class="[`rr-reading-value`, { valid: hasReading && isValid, invalid: hasReading && !isValid }]"
 			label="Показание, м³"
 			:placeholder="`> ${previousReading ?? ''}`"
 			type="number"
@@ -36,10 +36,11 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import { readings } from '~/services/readings';
 import type { ControllerSubscriber } from '~/types/Portal';
-import BaseIcon from '../common/base/BaseIcon.vue';
+import BaseIcon from '~/components/common/base/BaseIcon.vue';
 
 const props = defineProps<{
 	subscriber: ControllerSubscriber;
+	popover?: boolean;
 }>();
 const emit = defineEmits<{
 	close: [];
@@ -74,15 +75,18 @@ async function save() {
 
 <style lang="scss">
 .route-reading {
-	position: absolute;
-	z-index: 200;
-	top: calc(100% + .75em);
-	left: 50%;
-	min-width: 20em;
+	min-width: min(20em, 100%);
 	padding: 1em;
-	transform: translateX(-50%);
 	box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
 	overflow: hidden;
+
+	&.popover {
+		position: absolute;
+		z-index: 200;
+		top: calc(100% + .75em);
+		left: 50%;
+		transform: translateX(-50%);
+	}
 
 	.rr-heading {
 		margin-bottom: .8em;
@@ -133,7 +137,7 @@ async function save() {
 			outline:none;
 			width: 100%;
 		}
-		&:not(.valid) .text-box-area {
+		&.invalid .text-box-area {
 			background-color: #FEF2F2;
 			color: #C10007;
 			outline:2px solid #FFA2A2;

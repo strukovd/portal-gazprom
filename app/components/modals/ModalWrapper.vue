@@ -102,13 +102,14 @@ watch(() => appStore.modals.length, (length) => {
 
 function onKeydown(e: KeyboardEvent) {
 	if( e.key === 'Escape' ) {
-		close(e);
+		close();
 	}
 }
 
-function close(e: Event) {
+function close() {
 	if( !visibleModal.value?.options?.nonCloseable ) {
-		appStore.modals.pop();
+		const modal = appStore.modals.pop();
+		modal?.resolve?.(false);
 	}
 }
 

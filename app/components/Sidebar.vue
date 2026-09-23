@@ -2,7 +2,7 @@
 	<section class="sidebar" :class="{ 'dev-mode': DEV_MODE }">
 		<ul class="links">
 			<li
-				v-for="link of links"
+				v-for="link of navigationLinks"
 				:key="link.link ?? link.title ?? link.class"
 				class="link"
 			>
@@ -57,7 +57,11 @@ import type { NavigationLink } from '~/composables/useDefaultNavigation';
 const DEV_MODE = useRuntimeConfig().public.ARGV.some(arg => arg.includes('.env.dev'));
 
 const route = useRoute();
-const { links } = useDefaultNavigation();
+const props = defineProps<{
+	links?: NavigationLink[];
+}>();
+const defaultNavigation = useDefaultNavigation();
+const navigationLinks = computed(() => props.links ?? defaultNavigation.links);
 
 function isActiveLink(link: NavigationLink) {
 	if( link.link && route.path === link.link ) return true;

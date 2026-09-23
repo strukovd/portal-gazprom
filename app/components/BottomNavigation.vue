@@ -1,6 +1,6 @@
 <template>
 	<section class="bottom-navigation">
-		<nav class="bn-bar">
+		<nav class="bn-bar" :style="{ '--bn-count': mainLinks.length + Number(Boolean(moreLinks.length)) }">
 			<template v-for="link of mainLinks" :key="link.link ?? link.title">
 				<button
 					v-if="link.action"
@@ -36,9 +36,12 @@ import type { NavigationLink } from '~/composables/useDefaultNavigation';
 
 const route = useRoute();
 const { $modal } = useNuxtApp();
-const { links } = useDefaultNavigation();
+const props = defineProps<{
+	links?: NavigationLink[];
+}>();
+const defaultNavigation = useDefaultNavigation();
 
-const navigationLinks = computed(() => links.filter(link => !link.spacer));
+const navigationLinks = computed(() => (props.links ?? defaultNavigation.links).filter(link => !link.spacer));
 const mainLinks = computed(() => navigationLinks.value.slice(0, 4));
 const moreLinks = computed(() => navigationLinks.value.slice(4));
 
@@ -80,7 +83,7 @@ function openMore() {
 
 	.bn-bar {
 		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--bn-count, 5), minmax(0, 1fr));
 		gap: .2rem;
 		margin: 0;
 		padding: .45rem .65rem calc(.45rem + env(safe-area-inset-bottom));

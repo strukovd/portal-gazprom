@@ -23,7 +23,6 @@
 </template>
 
 <script lang="ts" setup>
-const { $fetchPortal } = useNuxtApp();
 import { version } from '../../../package.json';
 import type { FetchError } from 'ofetch';
 import BaseButton from '~/components/common/base/BaseButton.vue';
@@ -31,7 +30,11 @@ import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
 import { useUserStore } from '~/stores/UserStore';
-import { type UserData } from '~/types/UserData';
+import type UserData from '~/types/UserData';
+definePageMeta({
+	layout: false
+});
+const { $fetchPortal } = useNuxtApp();
 
 const login = ref('');
 const password = ref('');

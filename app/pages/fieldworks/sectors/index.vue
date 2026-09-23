@@ -13,6 +13,6 @@ const { isDesktop } = useDevice();
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CONTROLLER'],
-	layout: 'fieldworks'
+	layout: 'controllers'
 });
 </script>

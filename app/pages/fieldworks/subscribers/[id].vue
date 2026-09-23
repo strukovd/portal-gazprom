@@ -10,5 +10,9 @@ import Mobile from './[id]Mobile.vue';
 
 const { isDesktop } = useDevice();
 
-definePageMeta({ auth: true, roles: ['ADMIN', 'CONTROLLER'], layout: 'fieldworks' });
+definePageMeta({
+	auth: true,
+	roles: ['ADMIN', 'CONTROLLER'],
+	layout: 'controllers'
+});
 </script>

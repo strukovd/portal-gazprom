@@ -1,0 +1,1 @@
+import{ag as o,r}from"#entry";import{p as n}from"./B5HmsD3X.js";const i=o("fieldworks",()=>{const e=r(null),a=r(!1);async function s(t=!1){if(e.value&&!t)return e.value;a.value=!0;try{const l=await n.fetchAreas();return e.value=l,e.value}finally{a.value=!1}}return{areasData:e,loading:a,fetchAreas:s}});export{i as u};

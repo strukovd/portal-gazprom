@@ -73,12 +73,15 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import { useLayout } from '~/composables/useLayout';
 import { portal, type UserPayload, type UserRoles } from '~/services/portal';
+
+const { layout } = useLayout();
 
 definePageMeta({
 	auth: true,
 	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
-	layout: 'default'
+	layout,
 });
 
 const userStore = useUserStore();

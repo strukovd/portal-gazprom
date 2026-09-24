@@ -51,7 +51,7 @@
 							<BaseIcon name="mdi-layers-outline" color="#7c3aed"/>
 							<b>Участок №{{ area.areaCode }}</b>
 						</div>
-						<span>{{ getAreaStatus(area) }}</span>
+						<span class="status">{{ getAreaStatus(area) }}</span>
 					</div>
 					<div class="sm-area-district"><BaseIcon name="mdi-city-variant-outline"/>Не указано</div>
 					<div class="sm-route-badges">

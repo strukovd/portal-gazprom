@@ -63,11 +63,11 @@
 				</div>
 				</BaseIsland>
 
-				<template v-for="street of curRoute.streets" :key="street.street">
+				<template v-for="street of filteredStreets" :key="street.street">
 				<BaseIsland class="rp-street">
 					<header class="rp-street-header" @click="toggleStreet(street.street)">
 						<div class="rp-street-title"><BaseIcon name="mdi-map-marker-outline" size="1.2em"/>{{ street.street }}</div>
-						<div class="rp-street-count">{{ street.subscribers.length }} в выборке, всего: {{ street.subscribers.length }}</div>
+						<div class="rp-street-count">{{ street.subscribers.length }} в выборке, всего: {{ street.totalSubscribers }}</div>
 						<div class="rp-street-stats">
 							<span class="rp-street-stat green" title="Собрано показаний"><BaseIcon name="mdi-check-circle-outline" size="1em"/>{{ street.subscribers.filter(subscriber => subscriber.status !== 'Не передано').length }}</span>
 							<span class="rp-street-stat blue" title="Сумма разностей потребления"><BaseIcon name="mdi-fire" size="1em"/>Не указано</span>
@@ -191,6 +191,24 @@ const readingFilters = computed(() => [
 	{ key: 'collected', value: 'Собрано', badge: curRoute.value?.statistics.collectedReadings ?? 0 },
 	{ key: 'missing', value: 'Не собрано', badge: (curRoute.value?.statistics.subscriberCount ?? 0) - (curRoute.value?.statistics.collectedReadings ?? 0) },
 ]);
+const filteredStreets = computed(() => {
+	const query = search.value.trim().toLowerCase();
+	if (!curRoute.value) return [];
+
+	return curRoute.value.streets.map(street => ({
+		...street,
+		totalSubscribers: street.subscribers.length,
+		subscribers: street.subscribers.filter(subscriber => !query || [
+			subscriber.fullName,
+			subscriber.accountNo,
+			subscriber.addressText,
+			subscriber.house,
+			subscriber.houseNo,
+			subscriber.meterModel,
+			subscriber.meterSerial,
+		].some(value => String(value ?? '').toLowerCase().includes(query))),
+	})).filter(street => street.subscribers.length);
+});
 
 onMounted(async () => {
 	loading.value = true;

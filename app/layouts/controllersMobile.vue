@@ -70,7 +70,7 @@ const userStore = useUserStore();
 	.cm-main {
 		flex: 1 1 auto;
 		min-width: 0;
-		padding-bottom: 5rem;
+		padding: 1rem 1rem 6rem;
 	}
 }
 </style>

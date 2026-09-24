@@ -13,7 +13,7 @@
 		</header>
 
 		<main class="cm-main"><slot/></main>
-		<footer class="cm-footer"><BottomNavigation :links="links"/></footer>
+		<footer class="cm-footer"><BottomNavigation/></footer>
 	</section>
 </template>
 
@@ -21,12 +21,6 @@
 import Avatar from '~/components/common/Avatar.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BottomNavigation from '~/components/BottomNavigation.vue';
-import type { NavigationLink } from '~/composables/useDefaultNavigation';
-
-defineProps<{
-	links: NavigationLink[];
-}>();
-
 const userStore = useUserStore();
 </script>
 

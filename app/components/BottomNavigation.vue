@@ -32,16 +32,13 @@
 
 <script lang="ts" setup>
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
-import type { NavigationLink } from '~/composables/useDefaultNavigation';
+import type { NavigationLink } from '~/composables/useNavigation';
 
 const route = useRoute();
 const { $modal } = useNuxtApp();
-const props = defineProps<{
-	links?: NavigationLink[];
-}>();
-const defaultNavigation = useDefaultNavigation();
+const { links } = useNavigation();
 
-const navigationLinks = computed(() => (props.links ?? defaultNavigation.links).filter(link => !link.spacer));
+const navigationLinks = computed(() => links.value.filter(link => !link.spacer));
 const mainLinks = computed(() => navigationLinks.value.slice(0, 4));
 const moreLinks = computed(() => navigationLinks.value.slice(4));
 

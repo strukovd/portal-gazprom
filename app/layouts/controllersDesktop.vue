@@ -19,7 +19,7 @@
 		</header>
 
 		<main class="cd-main">
-			<Sidebar v-resizeble="'right'" :links="links"/>
+			<Sidebar v-resizeble="'right'"/>
 			<section class="cd-content"><slot/></section>
 		</main>
 	</section>
@@ -29,12 +29,6 @@
 import Avatar from '~/components/common/Avatar.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import Sidebar from '~/components/Sidebar.vue';
-import type { NavigationLink } from '~/composables/useDefaultNavigation';
-
-defineProps<{
-	links: NavigationLink[];
-}>();
-
 const userStore = useUserStore();
 </script>
 

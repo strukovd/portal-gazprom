@@ -1,8 +1,8 @@
 <template>
-	<ControllersDesktop v-if="isDesktop" :links="links">
+	<ControllersDesktop v-if="isDesktop">
 		<slot/>
 	</ControllersDesktop>
-	<ControllersMobile v-else :links="links">
+	<ControllersMobile v-else>
 		<slot/>
 	</ControllersMobile>
 </template>
@@ -11,8 +11,6 @@
 import ControllersDesktop from './controllersDesktop.vue';
 import ControllersMobile from './controllersMobile.vue';
 import useDevice from '~/composables/useDevice';
-import { useControllerNavigation } from '~/composables/useControllerNavigation';
 
 const { isDesktop } = useDevice();
-const { links } = useControllerNavigation();
 </script>

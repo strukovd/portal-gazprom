@@ -28,7 +28,7 @@
 
 <script lang="ts" setup>
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
-import type { NavigationLink } from '~/composables/useDefaultNavigation';
+import type { NavigationLink } from '~/composables/useNavigation';
 
 const props = defineProps<{
 	payload?: {
@@ -38,8 +38,8 @@ const props = defineProps<{
 
 const route = useRoute();
 const appStore = useAppStore();
-const defaultNavigation = useDefaultNavigation();
-const navigationLinks = computed(() => props.payload?.links ?? defaultNavigation.links.filter(link => !link.spacer).slice(4));
+const { links } = useNavigation();
+const navigationLinks = computed(() => props.payload?.links ?? links.value.filter(link => !link.spacer).slice(4));
 
 function isActiveLink(link: NavigationLink) {
 	if( link.link && route.path === link.link ) return true;

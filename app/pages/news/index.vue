@@ -19,7 +19,7 @@
 					</template>
 
 					<section class="filters">
-						<BaseAutocomplete model-value="Все районы" :items="['Все районы', 'Ленинский район', 'Октябрьский район', 'Аламединский район']" prepend-icon="mdi-navigation-variant-outline"/>
+						<BaseAutocomplete model-value="Все районы" :items="[{key: 'All', value:'Все районы'}, {key:'Leninskiy', value:'Ленинский район'}, {key:'Ocktyabrskiy',value:'Октябрьский район'}, {key:'Alamedinskiy',value:'Аламединский район'}]" prepend-icon="mdi-navigation-variant-outline"/>
 						<BaseTextBox model-value="" type="date"/>
 						<BaseTextBox model-value="" placeholder="Улица..." prepend-icon="mdi-road-variant"/>
 						<BaseButton @click="loadNews">Найти</BaseButton>
@@ -127,7 +127,7 @@ import { formatDate, formatDateTime } from '~/utils/format';
 
 definePageMeta({
 	auth: true,
-	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CONTROLLER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
+	roles: ['ADMIN', 'CALLCENTER_MANAGER', 'CALLCENTER', 'CALLCENTER_COMPLAINT_ASSIGNEE'],
 	layout: 'default'
 });
 

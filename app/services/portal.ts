@@ -1,4 +1,4 @@
-import type { ControllerAreasResponse } from '~/types/Portal';
+import type { AdminControllersResponse, ControllerAreasResponse, RouteDetailsResponse } from '~/types/Portal';
 
 export type UserRoles = `ADMIN` | `CONTRACTOR` | `CONTROLLER` | `CALLCENTER` | `CALLCENTER_MANAGER` | `CALLCENTER_COMPLAINT_ASSIGNEE`;
 export type AuthBody = {
@@ -162,10 +162,26 @@ export const portal = {
 		});
 	},
 
-	fetchAreas() {
+	fetchAreas() { // Участки\сектора
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<ControllerAreasResponse>(`/v1/portal/controller/areas`, {
+			method: 'GET'
+		});
+	},
+
+	fetchAllAreas() { // Все участки\сектора (только админские роли)
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<AdminControllersResponse>(`/v1/portal/controller/areas/all`, {
+			method: 'GET'
+		});
+	},
+
+	fetchRouteByCode(code: string) { // Получение маршрута по коду (только админские роли)
+		const { $fetchApi } = useNuxtApp();
+
+		return $fetchApi<RouteDetailsResponse>(`/v1/portal/controller/routes/${code}`, {
 			method: 'GET'
 		});
 	}

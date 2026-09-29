@@ -36,7 +36,7 @@
 
 					<BaseIsland class="sb-card">
 						<div class="sb-card-title"><BaseIcon name="mdi-wallet-outline" size="1.35em"/>Финансы</div>
-						<div class="sb-data"><span class="sb-label">Последняя оплата</span><span class="sb-value">{{ subscriber.lastPayment || 'Не указано' }}</span></div>
+						<div class="sb-data"><span class="sb-label">Последняя оплата</span><span class="sb-value">{{ toLocaleDate(subscriber.lastPayment) || 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Сальдо - Газ</span><span :class="['sb-value', { green: subscriber.debtGas && subscriber.debtGas < 0, red: subscriber.debtGas && subscriber.debtGas > 0 }]">{{ subscriber.debtGas ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Сальдо - Пеня</span><span :class="['sb-value', { red: subscriber.penalty && subscriber.penalty > 0 }]">{{ subscriber.penalty ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Пред. показание</span><span class="sb-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
@@ -83,6 +83,7 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
+import { toLocaleDate } from '~/utils/format';
 import type { ControllerSubscriber } from '~/types/Portal';
 
 const route = useRoute();
@@ -90,7 +91,7 @@ const subscriberId = computed(() => String(route.params.id));
 const routeId = computed(() => typeof route.query.route === 'string' ? route.query.route : '');
 const sectorId = computed(() => typeof route.query.sector === 'string' ? route.query.sector : '');
 const backLink = computed(() => routeId.value
-	? { path: `/fieldworks/routes/${routeId.value}`, query: sectorId.value ? { sector: sectorId.value } : {} }
+	? { path: `/fieldworks/routes/${routeId.value}`, query: { ...(sectorId.value ? { sector: sectorId.value } : {}), ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) } }
 	: '/fieldworks/routes'
 );
 
@@ -110,10 +111,12 @@ onMounted(async () => {
 });
 
 async function fetchSubscriber(): Promise<ControllerSubscriber | null> {
-	const data = await fieldworksStore.fetchAreas();
-	return data?.areas
-		.flatMap(area => area.routes)
-		.flatMap(route => route.streets)
+	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
+	if (fieldworksStore.isAdmin && !routeId.value) return null;
+	const data = routeId.value ? await fieldworksStore.fetchRoute(routeId.value) : null;
+	if (fieldworksStore.isAdmin && !data) return null;
+	const streets = data?.streets ?? (await fieldworksStore.fetchAreas()).areas.flatMap(area => area.routes).flatMap(item => item.streets);
+	return streets
 		.flatMap(street => street.subscribers)
 		.find(item => item.accountNo === subscriberId.value) ?? null;
 }

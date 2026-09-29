@@ -24,6 +24,7 @@ export type ReadingPayload = {
 	};
 };
 
+// ---
 
 export type ControllerAreasResponse = ControllerAreasPayload;
 export type ControllerAreasPayload = {
@@ -88,4 +89,76 @@ export type ControllerSubscriber = Record<string, unknown> & {
 	penalty?: number;
 	lastPayment?: string;
 	status: string;
+};
+
+// ---
+
+export type AdminControllersResponse = AdminControllersPayload;
+export type AdminControllersPayload = {
+	controllers: AdminController[];
+	overallStatistics: {
+		collectedReadings: number;
+		remainingReadings: number;
+		collectionPercentage: number;
+	};
+	lastUpdated: string;
+};
+export type AdminController = {
+	controllerId: string;
+	controllerName: string;
+	controllerPosition: string;
+	areas: AdminControllerArea[];
+	statistics: {
+		areaCount: number;
+		routeCount: number;
+		totalSubscribers: number;
+		totalCollectedReadings: number;
+		collectedBySubscriber: number;
+		collectedByController: number;
+		totalRemainingReadings: number;
+		totalCollectionPercentage: number;
+	};
+};
+export type AdminControllerArea = {
+	areaCode: string;
+	routes: AdminControllerRoute[];
+	statistics: {
+		collectedReadings: number;
+		remainingReadings: number;
+		collectionPercentage: number;
+	};
+};
+export type AdminControllerRoute = {
+	routeCode: string;
+	streets: AdminControllerStreet[];
+	statistics: {
+		subscriberCount: number;
+		streetCount: number;
+		collectedReadings: number;
+		collectionPercentage: number;
+	};
+};
+export type AdminControllerStreet = {
+	street: string;
+	subscriberCount: number;
+};
+
+
+// ---
+
+
+export type RouteDetailsResponse = RouteDetailsPayload;
+export type RouteDetailsPayload = {
+	routeCode: string;
+	streets: RouteDetailsStreet[];
+	statistics: {
+		subscriberCount: number;
+		streetCount: number;
+		collectedReadings: number;
+		collectionPercentage: number;
+	};
+};
+export type RouteDetailsStreet = {
+	street: string;
+	subscribers: ControllerSubscriber[]; 
 };

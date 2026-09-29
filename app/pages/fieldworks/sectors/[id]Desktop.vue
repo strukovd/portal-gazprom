@@ -7,7 +7,7 @@
 			</section>
 
 			<BaseTabs :model-value="2" :items="[{ key: 1, value: 'Задачи на сегодня', icon: 'mdi-calendar-today' }, { key: 2, value: 'Отправка показаний', icon: 'mdi-gauge', badge: 38, }]"/>
-			<BaseBreadcrumbs :breadcrumbs="[{ title: 'Участки', link: '/fieldworks/sectors' }, { title: 'Участок №' + sectorId, disabled: true }]" />
+			<BaseBreadcrumbs :breadcrumbs="[{ title: 'Участки', link: sectorsLink }, { title: 'Участок №' + sectorId, disabled: true }]" />
 
 			<BaseIsland class="sp-summary">
 				<template v-if="loading">
@@ -64,7 +64,7 @@
 								<span class="sp-route-meta-item"><BaseIcon name="mdi-map-marker-outline" size="1em"/>{{ route.streets.length }} улицы</span>
 							</div>
 							<div class="sp-streets">
-								<div v-for="street of route.streets" class="sp-street"><span>{{ street.street }}</span><span>{{ street.subscribers.length }} аб.</span></div>
+								<div v-for="street of route.streets" :key="street.street" class="sp-street"><span>{{ street.street }}</span><span>{{ 'subscriberCount' in street ? street.subscriberCount : street.subscribers.length }} аб.</span></div>
 							</div>
 							<div class="sp-route-progress">
 								<div class="sp-route-progress-header"><span>Собрано: <span class="sp-route-progress-count">{{ route.statistics.collectedReadings }} / {{ route.statistics.subscriberCount }}</span></span><span>{{ toPercent(route.statistics.collectedReadings, route.statistics.subscriberCount) }}%</span></div>
@@ -86,18 +86,19 @@ import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { ControllerArea } from '~/types/Portal';
+import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
 
 const route = useRoute();
 const sectorId = computed(() => route.params.id);
 
 const loading = ref(true);
-const sector = ref<ControllerArea | null>(null);
+const sector = computed<ControllerArea | AdminControllerArea | null>(() => fieldworksStore.areas.find(item => item.areaCode === String(sectorId.value)) ?? null);
 const fieldworksStore = useFieldworksStore();
+const sectorsLink = computed(() => `/fieldworks/sectors${fieldworksStore.isAdmin && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : ''}`);
 
 onMounted(async () => {
 	loading.value = true;
-	sector.value = await fetchSector();
+	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	loading.value = false;
 });
 
@@ -105,7 +106,7 @@ onMounted(async () => {
 function openRoute(id: string) {
 	navigateTo({
 		path: `/fieldworks/routes/${id}`,
-		query: { sector: String(sectorId.value) },
+		query: { sector: String(sectorId.value), ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) },
 	});
 }
 
@@ -115,10 +116,6 @@ function toPercent(progress = 0, total = 0) {
 	return Math.min(Math.max(Math.round(percent), 0), 100);
 }
 
-async function fetchSector(): Promise<ControllerArea | null> {
-	const data = await fieldworksStore.fetchAreas();
-	return data?.areas.find(item => item.areaCode === String(sectorId.value)) ?? null;
-}
 </script>
 
 <style lang="scss">

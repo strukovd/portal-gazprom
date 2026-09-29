@@ -42,8 +42,10 @@
 			</section>
 		</section>
 
+		<OverallStatistics v-if="store.isAdmin && store.adminData" :statistics="store.adminData.overallStatistics" class="sm-overall"/>
+
 		<main class="sm-content">
-			<div class="sm-caption">Мои участки</div>
+			<div class="sm-caption">{{ store.isAdmin ? 'Участки контроллёра' : 'Мои участки' }}</div>
 			<section class="sm-list">
 				<BaseIsland v-for="area of areas" :key="area.areaCode" class="sm-area">
 					<div class="sm-area-heading">
@@ -61,7 +63,7 @@
 						<BaseProgressBar :percent="percent(area.statistics.collectedReadings, area.statistics.collectedReadings + area.statistics.remainingReadings)" height=".45em"/>
 						<b>{{ area.statistics.collectedReadings }}/{{ area.statistics.collectedReadings + area.statistics.remainingReadings }} ({{ percent(area.statistics.collectedReadings, area.statistics.collectedReadings + area.statistics.remainingReadings) }}%)</b>
 					</div>
-					<BaseButton prependIcon="mdi-transit-connection-variant" @click="navigateTo(`/fieldworks/sectors/${area.areaCode}`)">Маршруты участка</BaseButton>
+					<BaseButton prependIcon="mdi-transit-connection-variant" @click="openSector(area.areaCode)">Маршруты участка</BaseButton>
 				</BaseIsland>
 			</section>
 		</main>
@@ -74,23 +76,29 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
+import OverallStatistics from '~/components/fieldworks/OverallStatistics.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { ControllerArea } from '~/types/Portal';
+import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
 
 const store = useFieldworksStore();
-const areas = computed(() => store.areasData?.areas ?? []);
-const statistics = computed(() => store.areasData?.statistics ?? { areaCount: 0, routeCount: 0, totalSubscribers: 0, totalCollectedReadings: 0, totalRemainingReadings: 0, totalCollectionPercentage: 0 });
+const route = useRoute();
+const areas = computed(() => store.areas);
+const statistics = computed(() => store.statistics ?? { areaCount: 0, routeCount: 0, totalSubscribers: 0, totalCollectedReadings: 0, totalRemainingReadings: 0, totalCollectionPercentage: 0 });
 
-onMounted(() => store.fetchAreas());
+onMounted(() => store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined));
 
 function percent(collected: number, total: number) {
 	return total ? Math.round(collected / total * 100) : 0;
 }
 
-function getAreaStatus(area: ControllerArea) {
+function getAreaStatus(area: ControllerArea | AdminControllerArea) {
 	if (!area.statistics.collectedReadings) return 'Новый';
 	return area.statistics.remainingReadings ? 'В работе' : 'Выполнено';
 }
+function openSector(id: string) {
+	navigateTo({ path: `/fieldworks/sectors/${id}`, query: store.isAdmin ? { controller: store.selectedControllerId } : {} });
+}
+
 </script>
 
 <style lang="scss">
@@ -202,6 +210,10 @@ function getAreaStatus(area: ControllerArea) {
 				}
 			}
 		}
+	}
+
+	.sm-overall {
+		margin: 0 1em 1em;
 	}
 
 	.sm-content {

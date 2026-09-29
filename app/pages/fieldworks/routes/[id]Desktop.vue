@@ -81,7 +81,7 @@
 						<template #cell.subscriberId="{ index }">{{ index + 1 }}</template>
 						<template #cell.accountNo="{ row }">
 							<div class="rp-account">
-								<NuxtLink class="rp-account-link" :to="{ path: `/fieldworks/subscribers/${row.accountNo}`, query: { route: routeId, sector: sectorId } }">{{ row.accountNo }}</NuxtLink>
+								<NuxtLink class="rp-account-link" :to="{ path: `/fieldworks/subscribers/${row.accountNo}`, query: { route: routeId, sector: sectorId, ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) } }">{{ row.accountNo }}</NuxtLink>
 								<span v-if="row.status === 'Передано абонентом'" class="rp-account-badge">Абонент</span>
 							</div>
 						</template>
@@ -139,10 +139,11 @@ import { toLocaleDate } from '~/utils/format';
 const route = useRoute();
 const routeId = computed(() => route.params.id);
 const sectorId = computed(() => typeof route.query.sector === 'string' ? route.query.sector : '');
+const controllerQuery = computed(() => fieldworksStore.isAdmin && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : '');
 const breadcrumbs = computed(() => sectorId.value
 	? [
-		{ title: 'Участки', link: '/fieldworks/sectors' },
-		{ title: `Участок №${sectorId.value}`, link: `/fieldworks/sectors/${sectorId.value}` },
+		{ title: 'Участки', link: `/fieldworks/sectors${controllerQuery.value}` },
+		{ title: `Участок №${sectorId.value}`, link: `/fieldworks/sectors/${sectorId.value}${controllerQuery.value}` },
 		{ title: `Маршрут ${routeId.value}`, disabled: true },
 	]
 	: [
@@ -243,11 +244,9 @@ function getDebtClass(debt: unknown) {
 	return debt < 0 ? 'positive' : debt > 0 ? 'overdue' : '';
 }
 
-async function fetchRoute(force = false): Promise<ControllerRoute | null> {
-	const data = await fieldworksStore.fetchAreas(force);
-	return data?.areas
-		.flatMap(area => area.routes)
-		.find(item => item.routeCode === String(routeId.value)) ?? null;
+async function fetchRoute(force = false) {
+	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
+	return fieldworksStore.fetchRoute(String(routeId.value), force);
 }
 </script>
 

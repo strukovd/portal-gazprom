@@ -12,17 +12,28 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 
+import type { ControllerSubscriber } from '~/types/Portal';
 const route = useRoute();
 const subscriberId = String(route.params.id);
 const routeId = typeof route.query.route === 'string' ? route.query.route : '';
 const sectorId = typeof route.query.sector === 'string' ? route.query.sector : '';
 const store = useFieldworksStore();
 const { $modal } = useNuxtApp();
-const subscriber = computed(() => store.areasData?.areas.flatMap(area => area.routes).flatMap(item => item.streets).flatMap(item => item.subscribers).find(item => item.accountNo === subscriberId));
-const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: sectorId ? { sector: sectorId } : {} } : '/fieldworks/sectors');
+const subscriber = ref<ControllerSubscriber | null>(null);
+const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.isAdmin ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/sectors');
 
-onMounted(() => store.fetchAreas());
-async function openReading() { if (subscriber.value && await $modal.show('FieldworkReading', { payload: { subscriber: subscriber.value } })) store.fetchAreas(true); }
+onMounted(() => fetchSubscriber());
+
+async function fetchSubscriber(force = false) {
+	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
+	if (store.isAdmin && !routeId) return;
+	const data = routeId ? await store.fetchRoute(routeId, force) : null;
+	if (store.isAdmin && !data) return;
+	const streets = data?.streets ?? (await store.fetchAreas(force)).areas.flatMap(area => area.routes).flatMap(item => item.streets);
+	subscriber.value = streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId) ?? null;
+}
+
+async function openReading() { if (subscriber.value && await $modal.show('FieldworkReading', { payload: { subscriber: subscriber.value } })) await fetchSubscriber(true); }
 </script>
 
 <style lang="scss">

@@ -29,6 +29,8 @@
 			</template>
 
 			<template v-else>
+				<OverallStatistics v-if="fieldworksStore.isAdmin && fieldworksStore.adminData" :statistics="fieldworksStore.adminData.overallStatistics"/>
+				<div v-if="fieldworksStore.isAdmin" class="sp-caption">Выбранный контроллёр</div>
 				<section class="sp-stats">
 					<BaseIsland v-for="item of statsData" :key="item.id" class="sp-stat">
 						<div :class="['sp-stat-icon', item.color]">
@@ -105,21 +107,23 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
+import OverallStatistics from '~/components/fieldworks/OverallStatistics.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { ControllerArea } from '~/types/Portal';
+import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
 
 const loading = ref(true);
-const sectors = ref<ControllerArea[]>([]);
 const fieldworksStore = useFieldworksStore();
+const route = useRoute();
+const sectors = computed(() => fieldworksStore.areas);
 
 onMounted(async () => {
 	loading.value = true;
-	sectors.value = await fetchSectors();
+	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	loading.value = false;
 });
 
 const statsData = computed(() => {
-	const data = fieldworksStore.areasData?.statistics;
+	const data = fieldworksStore.statistics;
 
 	return [
 		{ id: 1, title: 'Участков', value: data?.areaCount ?? 0, icon: 'mdi-layers-triple-outline', color: 'violet' },
@@ -130,7 +134,7 @@ const statsData = computed(() => {
 });
 
 function openSector(id: string) {
-	navigateTo(`/fieldworks/sectors/${id}`);
+	navigateTo({ path: `/fieldworks/sectors/${id}`, query: fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {} });
 }
 
 function toPercent(progress = 0, total = 0) {
@@ -139,17 +143,13 @@ function toPercent(progress = 0, total = 0) {
 	return Math.min(Math.max(Math.round(percent), 0), 100);
 }
 
-function getAreaStatus(area: ControllerArea) {
+function getAreaStatus(area: ControllerArea | AdminControllerArea) {
 	const { collectedReadings, remainingReadings } = area.statistics;
 	if (!collectedReadings) return 'Новый';
 	if (!remainingReadings) return 'Выполнено';
 	return 'В работе';
 }
 
-async function fetchSectors(): Promise<ControllerArea[]> {
-	const data = await fieldworksStore.fetchAreas();
-	return data?.areas ?? [];
-}
 </script>
 
 <style lang="scss">

@@ -14,12 +14,13 @@
 			<BaseTextBox v-model="search" prependIcon="mdi-magnify" placeholder="Поиск по ФИО, Л/с, дому..."/>
 			<BaseTabs v-model="filter" :items="filters"/>
 			<section v-for="street of filteredStreets" :key="street.street" class="rm-street">
-				<div class="rm-street-title">
+				<button class="rm-street-title" type="button" :aria-expanded="!collapsedStreets[street.street]" @click="collapsedStreets[street.street] = !collapsedStreets[street.street]">
 					<BaseIcon name="mdi-map-marker-outline"/>
 					<span>{{ street.street }}</span>
 					<span class="rm-count">({{ street.subscribers.length }})</span>
-				</div>
-				<div class="rm-cards">
+					<BaseIcon class="rm-toggle" :name="collapsedStreets[street.street] ? 'mdi-chevron-down' : 'mdi-chevron-up'"/>
+				</button>
+				<div v-if="!collapsedStreets[street.street]" class="rm-cards">
 					<BaseIsland v-for="subscriber of street.subscribers" :key="subscriber.accountNo" class="rm-card">
 						<div class="rm-card-head">
 							<div>
@@ -28,6 +29,7 @@
 							</div>
 							<em class="rm-status">{{ subscriber.status }}</em>
 						</div>
+						<div class="rm-address"><BaseIcon name="mdi-map-marker-outline"/>{{ subscriber.addressText || 'Не указано' }}</div>
 						<div class="rm-model">{{ subscriber.meterModel || 'Не указано' }}</div>
 						<div class="rm-card-bottom">
 							<span>Пред.: <b>{{ subscriber.reading ?? 'Не указано' }} м³</b></span>
@@ -52,6 +54,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import type { ControllerSubscriber } from '~/types/Portal';
+import type { ControllerRoute, RouteDetailsPayload } from '~/types/Portal';
 
 const route = useRoute();
 const routeId = String(route.params.id);
@@ -60,7 +63,8 @@ const store = useFieldworksStore();
 const { $modal } = useNuxtApp();
 const search = ref('');
 const filter = ref('all');
-const currentRoute = computed(() => store.areasData?.areas.flatMap(area => area.routes).find(item => item.routeCode === routeId));
+const collapsedStreets = ref<Record<string, boolean>>({});
+const currentRoute = ref<ControllerRoute | RouteDetailsPayload | null>(null);
 const subscribers = computed(() => currentRoute.value?.statistics.subscriberCount ?? 0);
 const collected = computed(() => currentRoute.value?.statistics.collectedReadings ?? 0);
 const progress = computed(() => subscribers.value ? Math.round(collected.value / subscribers.value * 100) : 0);
@@ -80,16 +84,19 @@ const filteredStreets = computed(() => currentRoute.value?.streets.map(street =>
 		return matchesSearch && matchesFilter;
 	}),
 })).filter(street => street.subscribers.length) ?? []);
-const backLink = computed(() => sectorId ? `/fieldworks/sectors/${sectorId}` : '/fieldworks/sectors');
+const backLink = computed(() => ({ path: sectorId ? `/fieldworks/sectors/${sectorId}` : '/fieldworks/sectors', query: store.isAdmin ? { controller: store.selectedControllerId } : {} }));
 
-onMounted(() => store.fetchAreas());
+onMounted(async () => {
+	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
+	currentRoute.value = await store.fetchRoute(routeId);
+});
 
 function openSubscriber(account: string) {
-	navigateTo({ path: `/fieldworks/subscribers/${account}`, query: { route: routeId, sector: sectorId } });
+	navigateTo({ path: `/fieldworks/subscribers/${account}`, query: { route: routeId, sector: sectorId, ...(store.isAdmin ? { controller: store.selectedControllerId } : {}) } });
 }
 
 async function openReading(subscriber: ControllerSubscriber) {
-	if (await $modal.show('FieldworkReading', { payload: { subscriber } })) store.fetchAreas(true);
+	if (await $modal.show('FieldworkReading', { payload: { subscriber } })) currentRoute.value = await store.fetchRoute(routeId, true);
 }
 </script>
 
@@ -160,13 +167,23 @@ async function openReading(subscriber: ControllerSubscriber) {
 				display: flex;
 				align-items: center;
 				gap: .35em;
+				width: 100%;
+				padding: 0;
+				border: 0;
 				margin-bottom: .7em;
 				color: #1e3a8a;
 				font-size: .85rem;
 				font-weight: 800;
+				text-align: left;
+				background: transparent;
+				cursor: pointer;
 
 				.rm-count {
 					color: #94a3b8;
+				}
+
+				.rm-toggle {
+					margin-left: auto;
 				}
 			}
 
@@ -203,6 +220,15 @@ async function openReading(subscriber: ControllerSubscriber) {
 							background: #fff7ed;
 							border-radius: 1em;
 						}
+					}
+
+					.rm-address {
+						display: flex;
+						align-items: flex-start;
+						gap: .3em;
+						margin-top: .7em;
+						color: #64748b;
+						font-size: .78rem;
 					}
 
 					.rm-model {

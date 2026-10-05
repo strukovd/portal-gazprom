@@ -79,12 +79,14 @@ function handleDisabledLink(link: NavigationLink, event: Event) {
 	min-width: 18em;
 	max-width:50vw;
 	&.dev-mode {
-		background:#0e966a;
-		color:#f6e3a9;
-		.links .link .link-row {
-			&.active, &:hover {
-				background:#12c673;
-			}
+		&::before {
+			content: 'DEV-среда';
+			padding: .4em 1rem;
+			color: #713f12;
+			background: #fef08a;
+			font-size: .75rem;
+			font-weight: 700;
+			text-align: center;
 		}
 	}
 

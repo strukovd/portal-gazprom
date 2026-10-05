@@ -154,6 +154,8 @@ function getAreaStatus(area: ControllerArea | AdminControllerArea) {
 
 <style lang="scss">
 #sectors-page {
+	container-type: inline-size;
+
 	.page-blocks {
 		display: grid;
 		gap: 1.4em;
@@ -247,6 +249,13 @@ function getAreaStatus(area: ControllerArea | AdminControllerArea) {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 1em;
+		@container (max-width: 70rem) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		@container (max-width: 44rem) {
+			grid-template-columns: minmax(0, 1fr);
+		}
 
 		.sp-sector {
 			display: grid;

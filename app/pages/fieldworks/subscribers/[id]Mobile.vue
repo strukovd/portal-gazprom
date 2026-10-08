@@ -26,11 +26,9 @@ onMounted(() => fetchSubscriber());
 
 async function fetchSubscriber(force = false) {
 	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
-	if (store.isAdmin && !routeId) return;
-	const data = routeId ? await store.fetchRoute(routeId, force) : null;
-	if (store.isAdmin && !data) return;
-	const streets = data?.streets ?? (await store.fetchAreas(force)).areas.flatMap(area => area.routes).flatMap(item => item.streets);
-	subscriber.value = streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId) ?? null;
+	if (!routeId) return;
+	const data = await store.fetchRoute(routeId, force);
+	subscriber.value = data?.streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId) ?? null;
 }
 
 async function openReading() { if (subscriber.value && await $modal.show('FieldworkReading', { payload: { subscriber: subscriber.value } })) await fetchSubscriber(true); }

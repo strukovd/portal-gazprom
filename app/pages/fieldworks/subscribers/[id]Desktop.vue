@@ -112,11 +112,9 @@ onMounted(async () => {
 
 async function fetchSubscriber(): Promise<ControllerSubscriber | null> {
 	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
-	if (fieldworksStore.isAdmin && !routeId.value) return null;
-	const data = routeId.value ? await fieldworksStore.fetchRoute(routeId.value) : null;
-	if (fieldworksStore.isAdmin && !data) return null;
-	const streets = data?.streets ?? (await fieldworksStore.fetchAreas()).areas.flatMap(area => area.routes).flatMap(item => item.streets);
-	return streets
+	if (!routeId.value) return null;
+	const data = await fieldworksStore.fetchRoute(routeId.value);
+	return data?.streets
 		.flatMap(street => street.subscribers)
 		.find(item => item.accountNo === subscriberId.value) ?? null;
 }

@@ -1,6 +1,6 @@
 <template>
 	<div v-if="fieldworksStore.isAdmin" class="fieldworks-controller-select">
-		<BaseAutocomplete v-model="selectedControllerId" label="Контроллёр" placeholder="Выберите контроллёра" :items="controllers"/>
+		<HierarchyAutocomplete v-model="selectedController" placeholder="Выберите контроллёра или группу" :items="fieldworksStore.controllerGroups"/>
 	</div>
 
 	<SectorsDesktop v-if="isDesktop"/>
@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-import BaseAutocomplete from '~/components/common/base/BaseAutocomplete.vue';
+import HierarchyAutocomplete, { type HierarchySelection } from '~/components/common/HierarchyAutocomplete.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import useDevice from '~/composables/useDevice';
 import { useLayout } from '~/composables/useLayout';
@@ -18,15 +18,34 @@ import SectorsMobile from './indexMobile.vue';
 const { isDesktop } = useDevice();
 const { layout } = useLayout('controllers');
 const route = useRoute();
+const { $flags } = useNuxtApp();
 const fieldworksStore = useFieldworksStore();
-const controllers = computed(() => fieldworksStore.adminData?.controllers.map(item => ({ key: item.controllerId, value: item.controllerName || item.controllerId })) ?? []);
-const selectedControllerId = computed({
-	get: () => fieldworksStore.selectedControllerId ?? '',
-	set: (id: string | undefined) => {
-		if (!id || id === fieldworksStore.selectedControllerId) return;
-		fieldworksStore.selectedControllerId = id;
-		navigateTo({ query: { ...route.query, controller: id } }, { replace: true });
+if (typeof route.query.controller === 'string' && Number.isFinite(Number(route.query.controller))) {
+	fieldworksStore.controllerSelection = {
+		id: Number(route.query.controller),
+		mode: 'self',
+	};
+}
+const selectedController = computed({
+	get: () => fieldworksStore.controllerSelection,
+	set: (selection: HierarchySelection) => {
+		fieldworksStore.controllerSelection = selection;
+		const query = { ...route.query };
+		delete query.mode;
+		navigateTo({ query: { ...query, controller: selection ? String(selection.id) : undefined } }, { replace: true });
 	},
+});
+
+watch(() => route.query.controller, async id => {
+	fieldworksStore.controllerSelection = typeof id === 'string' && id.trim() && Number.isFinite(Number(id))
+		? { id: Number(id), mode: 'self' }
+		: null;
+	try {
+		await fieldworksStore.fetchForRole();
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.message || 'Не удалось загрузить участки контроллёра');
+	}
 });
 
 definePageMeta({
@@ -38,6 +57,10 @@ definePageMeta({
 
 <style lang="scss">
 .fieldworks-controller-select {
-	max-width: 24em;
+	margin:1em 1em;
+	// если экран широкий, то убрать отступ по бокам
+	@media (min-width: 1024px) {
+		margin:1em auto;
+	}
 }
 </style>

@@ -5,6 +5,14 @@ export type ReadingsResponse = {
 	limit: number;
 	totalPages: number;
 };
+
+export type ControllerGroup = {
+	id: number;
+	name: string;
+	groupName: string | null;
+	children: ControllerGroup[];
+};
+export type ControllerGroupsResponse = ControllerGroup[];
 export type ReadingsQuery = {
 	success?: boolean;
 	date?: string;
@@ -28,6 +36,18 @@ export type ReadingPayload = {
 
 export type ControllerAreasResponse = ControllerAreasPayload;
 export type ControllerAreasPayload = {
+	controllers: Controller[];
+	overallStatistics: {
+		collectedReadings: number;
+		remainingReadings: number;
+		collectionPercentage: number;
+	};
+	lastUpdated: string;
+};
+export type Controller = {
+	controllerId: string;
+	controllerName: string;
+	controllerPosition: string;
 	areas: ControllerArea[];
 	statistics: {
 		areaCount: number;
@@ -64,7 +84,7 @@ export type ControllerRoute = {
 
 export type ControllerStreet = {
 	street: string;
-	subscribers: ControllerSubscriber[];
+	subscriberCount: number;
 };
 
 export type ControllerSubscriber = Record<string, unknown> & {
@@ -93,55 +113,6 @@ export type ControllerSubscriber = Record<string, unknown> & {
 
 // ---
 
-export type AdminControllersResponse = AdminControllersPayload;
-export type AdminControllersPayload = {
-	controllers: AdminController[];
-	overallStatistics: {
-		collectedReadings: number;
-		remainingReadings: number;
-		collectionPercentage: number;
-	};
-	lastUpdated: string;
-};
-export type AdminController = {
-	controllerId: string;
-	controllerName: string;
-	controllerPosition: string;
-	areas: AdminControllerArea[];
-	statistics: {
-		areaCount: number;
-		routeCount: number;
-		totalSubscribers: number;
-		totalCollectedReadings: number;
-		collectedBySubscriber: number;
-		collectedByController: number;
-		totalRemainingReadings: number;
-		totalCollectionPercentage: number;
-	};
-};
-export type AdminControllerArea = {
-	areaCode: string;
-	routes: AdminControllerRoute[];
-	statistics: {
-		collectedReadings: number;
-		remainingReadings: number;
-		collectionPercentage: number;
-	};
-};
-export type AdminControllerRoute = {
-	routeCode: string;
-	streets: AdminControllerStreet[];
-	statistics: {
-		subscriberCount: number;
-		streetCount: number;
-		collectedReadings: number;
-		collectionPercentage: number;
-	};
-};
-export type AdminControllerStreet = {
-	street: string;
-	subscriberCount: number;
-};
 
 
 // ---
@@ -151,12 +122,7 @@ export type RouteDetailsResponse = RouteDetailsPayload;
 export type RouteDetailsPayload = {
 	routeCode: string;
 	streets: RouteDetailsStreet[];
-	statistics: {
-		subscriberCount: number;
-		streetCount: number;
-		collectedReadings: number;
-		collectionPercentage: number;
-	};
+	statistics: ControllerRoute['statistics'];
 };
 export type RouteDetailsStreet = {
 	street: string;

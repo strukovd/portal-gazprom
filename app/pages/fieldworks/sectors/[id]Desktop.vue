@@ -64,7 +64,7 @@
 								<span class="sp-route-meta-item"><BaseIcon name="mdi-map-marker-outline" size="1em"/>{{ route.streets.length }} улицы</span>
 							</div>
 							<div class="sp-streets">
-								<div v-for="street of route.streets" :key="street.street" class="sp-street"><span>{{ street.street }}</span><span>{{ 'subscriberCount' in street ? street.subscriberCount : street.subscribers.length }} аб.</span></div>
+								<div v-for="street of route.streets" :key="street.street" class="sp-street"><span>{{ street.street }}</span><span>{{ street.subscriberCount }} аб.</span></div>
 							</div>
 							<div class="sp-route-progress">
 								<div class="sp-route-progress-header"><span>Собрано: <span class="sp-route-progress-count">{{ route.statistics.collectedReadings }} / {{ route.statistics.subscriberCount }}</span></span><span>{{ toPercent(route.statistics.collectedReadings, route.statistics.subscriberCount) }}%</span></div>
@@ -86,13 +86,13 @@ import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
+import type { ControllerArea } from '~/types/Portal';
 
 const route = useRoute();
 const sectorId = computed(() => route.params.id);
 
 const loading = ref(true);
-const sector = computed<ControllerArea | AdminControllerArea | null>(() => fieldworksStore.areas.find(item => item.areaCode === String(sectorId.value)) ?? null);
+const sector = computed<ControllerArea | null>(() => fieldworksStore.areas.find(item => item.areaCode === String(sectorId.value)) ?? null);
 const fieldworksStore = useFieldworksStore();
 const sectorsLink = computed(() => `/fieldworks/sectors${fieldworksStore.isAdmin && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : ''}`);
 

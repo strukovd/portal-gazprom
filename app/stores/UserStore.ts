@@ -3,7 +3,7 @@ type UserData = {
 	id: number;
 	login: string;
 	role: 'ADMIN' | 'CALLCENTER' | 'CALLCENTER_MANAGER' | 'CONTRACTOR' | 'CONTROLLER' | 'CALLCENTER_COMPLAINT_ASSIGNEE';
-	userName: null,
+	userName: string | null,
 	contractorId: unknown,
 	officeId: unknown
 }

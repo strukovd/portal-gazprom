@@ -5,6 +5,25 @@
 			<BaseTextBox v-model="form.name" label="ФИО"/>
 			<BaseTextBox v-model="form.phone" label="Телефон" type="tel"/>
 			<BaseTextBox v-if="!isEditMode" v-model="form.password" label="Пароль" type="password"/>
+			<div v-else class="uem-placeholder" aria-hidden="true"></div>
+			<div class="uem-parent">
+				<BaseAutocomplete
+					v-model="parentUserSelection"
+					:items="parentUserItems"
+					label="Вышестоящий пользователь"
+					:placeholder="parentUsersLoading ? 'Загрузка пользователей...' : 'ФИО или логин'"
+					:loading="parentUsersLoading"
+					@change="form.parentUserId = $event"
+					@input="form.parentUserId = undefined"
+				/>
+				<BaseCheckbox v-model="onlyControllers" label="Только контроллеры"/>
+			</div>
+			<BaseAutocomplete
+				v-model="form.groupName"
+				emitValue
+				label="Название группы"
+				:items="[{ value:`Бишкекгаз` }, { value:`Чуйгаз` }, { value:`Ошгаз` }, { value:`Джалалабадгаз` }, { value:`Баткенгаз` }, { value:`Кара-балтинская ЭГС` }, { value:`Баткенская ЭГС` }, { value:`Кантская ЭГС` }, { value:`Ленинская ЭГС` }, { value:`Сокулукская ЭГС` }, { value:`Токмакская ЭГС` }, { value:`Карасуйская ЭГС` }]"
+			/>
 		</section>
 
 		<BaseAutocomplete autoselect v-model="form.role" :items="roleItems" label="Роль пользователя"/>
@@ -25,6 +44,7 @@
 
 <script lang="ts" setup>
 import BaseButton from '~/components/common/base/BaseButton.vue';
+import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import { portal, type UserBody, type UserPayload, type UserRoles } from '~/services/portal';
@@ -40,6 +60,12 @@ const { $flags } = useNuxtApp();
 const loading = ref(false);
 const passwordLoading = ref(false);
 const newPassword = ref('');
+// Ввод поискового текста сбрасывает ID в форме, сохраняя запрос в autocomplete.
+const parentUserSelection = ref(props.payload?.user?.parentUserId ?? undefined);
+const parentUsers = ref<UserPayload[]>([]);
+const parentUsersLoading = ref(false);
+const onlyControllers = ref(true);
+let parentUsersRequest = 0;
 const isEditMode = computed(() => Boolean(props.payload?.user?.id));
 const status = ref(props.payload?.user?.isActive === false ? 'blocked' : 'active');
 const form = reactive<UserBody>({
@@ -49,7 +75,51 @@ const form = reactive<UserBody>({
 	phone: props.payload?.user?.phone || '',
 	role: (props.payload?.user?.role as UserRoles) || 'CALLCENTER',
 	isActive: true,
+	parentUserId: props.payload?.user?.parentUserId ?? undefined,
+	groupName: props.payload?.user?.groupName || '',
 });
+
+const parentUserItems = computed(() => {
+	const selectedId = parentUserSelection.value;
+	const items = parentUsers.value
+		.filter(user => user.id !== props.payload?.user?.id && (!onlyControllers.value || user.role === 'CONTROLLER' || user.id === selectedId))
+		.map(user => ({ key: user.id, value: user.name ? `${user.name} (${user.login})` : user.login }));
+	if (selectedId != null && selectedId !== props.payload?.user?.id && !items.some(item => item.key === selectedId)) {
+		items.unshift({ key: selectedId, value: `Пользователь #${selectedId}` });
+	}
+	return [{ key: undefined, value: 'Не указан' }, ...items];
+});
+
+onMounted(fetchParentUsers);
+watch(onlyControllers, fetchParentUsers);
+
+async function fetchParentUsers() {
+	const request = ++parentUsersRequest;
+	const role: UserRoles | undefined = onlyControllers.value ? 'CONTROLLER' : undefined;
+	parentUsersLoading.value = true;
+	try {
+		const users: UserPayload[] = [];
+		let page = 1;
+		let totalPages = 1;
+		do {
+			const response = await portal.fetchUserList({ page, size: 100, ...(role ? { role } : {}) });
+			if (request !== parentUsersRequest) return;
+			users.push(...response.data);
+			totalPages = response.pagination.totalPages;
+			page++;
+		} while (page <= totalPages);
+		const selected = parentUsers.value.find(user => user.id === parentUserSelection.value);
+		if (selected && !users.some(user => user.id === selected.id)) users.unshift(selected);
+		parentUsers.value = users;
+	}
+	catch (error: any) {
+		if (request !== parentUsersRequest) return;
+		$flags.error(error?.data?.message || error?.message || 'Не удалось загрузить вышестоящих пользователей');
+	}
+	finally {
+		if (request === parentUsersRequest) parentUsersLoading.value = false;
+	}
+}
 
 const roleItems = [
 	{ key: 'ADMIN',							value: 'Администратор' },
@@ -73,6 +143,14 @@ async function saveUser() {
 		$flags.warn('Укажите пароль пользователя');
 		return;
 	}
+	if (parentUserSelection.value != null && form.parentUserId == null) {
+		$flags.warn('Выберите вышестоящего пользователя или вариант «Не указан»');
+		return;
+	}
+	if (isEditMode.value && form.parentUserId === props.payload?.user?.id) {
+		$flags.warn('Нельзя назначить пользователя вышестоящим самому себе');
+		return;
+	}
 
 	loading.value = true;
 	try {
@@ -82,6 +160,8 @@ async function saveUser() {
 				phone: form.phone,
 				role: form.role,
 				isActive: status.value === 'active',
+				...(form.parentUserId !== (props.payload.user.parentUserId ?? undefined) ? { parentUserId: form.parentUserId ?? null } : {}),
+				...(form.groupName?.trim() !== (props.payload.user.groupName ?? '') ? { groupName: form.groupName?.trim() ?? '' } : {}),
 			});
 			$flags.success('Пользователь сохранен');
 			close('updated');
@@ -90,6 +170,7 @@ async function saveUser() {
 
 		await portal.createUser({
 			...form,
+			groupName: form.groupName?.trim() || undefined,
 			isActive: status.value === 'active',
 		});
 		$flags.success('Пользователь создан');
@@ -156,6 +237,12 @@ function close(result: false | 'created' | 'updated' | 'deleted') {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: .9em;
 		margin: 0 0 1em 0;
+
+		.uem-parent {
+			display: grid;
+			align-content: start;
+			gap: .5em;
+		}
 	}
 
 	.uem-password {
@@ -182,6 +269,12 @@ function close(result: false | 'created' | 'updated' | 'deleted') {
 		.uem-form,
 		.uem-password {
 			grid-template-columns: 1fr;
+		}
+
+		.uem-form {
+			.uem-placeholder {
+				display: none;
+			}
 		}
 	}
 }

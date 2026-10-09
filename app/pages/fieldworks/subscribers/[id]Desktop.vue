@@ -61,11 +61,11 @@
 
 					<template v-else>
 						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
-						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="readingStatus.source === 'controller'" label="Текущее показание, м³" placeholder="Введите значение" type="number"/>
+						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="readingStatus.source === 'controller' || saving" :error="readingError" label="Текущее показание, м³" placeholder="Введите значение" type="number" @submit="saveReading"/>
 						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>Не указано</span></div>
 						<div class="sb-actions">
-							<BaseButton variant="outlined" @click="navigateTo(backLink)">Отмена</BaseButton>
-							<BaseButton :disabled="String(reading).trim() === ''" prependIcon="mdi-check-circle-outline">Принять показание</BaseButton>
+							<BaseButton variant="outlined" :disabled="saving" @click="navigateTo(backLink)">Отмена</BaseButton>
+							<BaseButton :disabled="!canSaveReading" :loading="saving" prependIcon="mdi-check-circle-outline" @click="saveReading">Принять показание</BaseButton>
 						</div>
 					</template>
 				</BaseIsland>
@@ -83,6 +83,7 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
+import { readings } from '~/services/readings';
 import { toLocaleDate } from '~/utils/format';
 import type { ControllerSubscriber } from '~/types/Portal';
 
@@ -96,6 +97,8 @@ const backLink = computed(() => routeId.value
 );
 
 const loading = ref(true);
+const saving = ref(false);
+const { $flags } = useNuxtApp();
 const reading = ref<string | number>('');
 const subscriber = ref<ControllerSubscriber | null>(null);
 const fieldworksStore = useFieldworksStore();
@@ -104,19 +107,46 @@ const readingStatus = computed(() => {
 	if (subscriber.value?.status !== 'Не передано') return { source: 'controller', label: 'Принято', heading: 'Ввод текущего показания', description: 'Показание принято контроллёром', icon: 'mdi-check-circle-outline' };
 	return { source: 'none', label: 'Не принято', heading: 'Ввод текущего показания', description: 'Метод 1 - карточка абонента', icon: 'mdi-gauge' };
 });
+const readingError = computed(() => {
+	if (String(reading.value).trim() === '') return '';
+	const value = Number(reading.value);
+	if (!Number.isFinite(value)) return 'Введите корректное показание';
+	return typeof subscriber.value?.reading === 'number' && value < subscriber.value.reading ? 'Не может быть меньше предыдущего' : '';
+});
+const canSaveReading = computed(() => Boolean(subscriber.value) && readingStatus.value.source === 'none' && String(reading.value).trim() !== '' && !readingError.value);
 
 onMounted(async () => {
 	subscriber.value = await fetchSubscriber();
 	loading.value = false;
 });
 
-async function fetchSubscriber(): Promise<ControllerSubscriber | null> {
+async function saveReading() {
+	if (!subscriber.value || !canSaveReading.value || saving.value) return;
+	saving.value = true;
+	try {
+		await readings.create(subscriber.value.accountNo, Number(reading.value));
+		reading.value = '';
+		$flags.success('Показание принято');
+		try {
+			subscriber.value = await fetchSubscriber(true);
+		}
+		catch {
+			$flags.error('Показание отправлено, но не удалось обновить данные абонента');
+		}
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось передать показание');
+	}
+	finally {
+		saving.value = false;
+	}
+}
+
+async function fetchSubscriber(force = false): Promise<ControllerSubscriber | null> {
 	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
-	if (fieldworksStore.isAdmin && !routeId.value) return null;
-	const data = routeId.value ? await fieldworksStore.fetchRoute(routeId.value) : null;
-	if (fieldworksStore.isAdmin && !data) return null;
-	const streets = data?.streets ?? (await fieldworksStore.fetchAreas()).areas.flatMap(area => area.routes).flatMap(item => item.streets);
-	return streets
+	if (!routeId.value) return null;
+	const data = await fieldworksStore.fetchRoute(routeId.value, force);
+	return data?.streets
 		.flatMap(street => street.subscribers)
 		.find(item => item.accountNo === subscriberId.value) ?? null;
 }

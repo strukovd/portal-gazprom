@@ -14,7 +14,7 @@ export const useNavigation = () => {
 	const links = computed<NavigationLink[]>(() => {
 		if (userStore.userData?.role === 'CONTROLLER') {
 			return [
-				{ title: 'Полевые работы', link: '/fieldworks/sectors', icon: 'mdi-map-marker-path' },
+				{ title: 'Полевые работы', link: '/fieldworks/sectors', icon: 'mdi-clipboard-edit' },
 				{ title: 'Настройки', link: '/settings', icon: 'mdi-cog' },
 				{ spacer: true, class: 'spacer' },
 				{ title: 'Выход', action: userStore.logout, icon: 'mdi-logout' },
@@ -30,6 +30,7 @@ export const useNavigation = () => {
 			{ title: 'Тарифы', link: '/tariffs', icon: 'mdi-currency-usd' },
 			{ title: 'Офисы обслуживания', link: '/offices', icon: 'mdi-office-building' },
 			{ title: 'Жалобы', link: '/complaints', icon: 'mdi-alert-circle' },
+			{ title: 'Полевые работы', link: '/fieldworks/sectors', icon: 'mdi-clipboard-edit' },
 			{ spacer: true, class: 'spacer' },
 			{ title: 'Настройки', link: '/settings', icon: 'mdi-cog' },
 			{ title: 'Выход', action: userStore.logout, icon: 'mdi-logout' },

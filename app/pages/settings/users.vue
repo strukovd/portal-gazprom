@@ -49,6 +49,14 @@
 						<div class="sup-role">{{ roleName(String(value)) }}</div>
 					</template>
 
+					<template #cell.groupName="{ value }">
+						<span :class="{ 'sup-muted': !value }">{{ value || 'Не указана' }}</span>
+					</template>
+
+					<template #cell.parentUserId="{ value }">
+						<span :class="{ 'sup-muted': !value }">{{ value ? userNames.get(Number(value)) || `Пользователь #${value}` : 'Не указан' }}</span>
+					</template>
+
 					<template #cell.isActive="{ value }">
 						<div :class="['status', value ? 'status-green' : 'status-red']" style="width:fit-content;">
 							{{ value ? 'Активен' : 'Заблокирован' }}
@@ -107,6 +115,8 @@ const columns = [
 	{ key: 'name', label: 'Пользователь' },
 	{ key: 'phone', label: 'Телефон' },
 	{ key: 'role', label: 'Роль' },
+	{ key: 'groupName', label: 'Группа' },
+	{ key: 'parentUserId', label: 'Вышестоящий пользователь' },
 	{ key: 'isActive', label: 'Статус', width: '9em' },
 	{ key: 'actions', label: '', width: '4em' },
 ];
@@ -127,6 +137,7 @@ const statusFilterItems = [
 	{ key: 'active', value: 'Активные' },
 	{ key: 'blocked', value: 'Заблокированные' },
 ];
+const userNames = computed(() => new Map(users.value.map(user => [user.id, user.name || user.login])));
 const filteredUsers = computed(() => {
 	const query = search.value.trim().toLowerCase();
 	return users.value.filter(user => {

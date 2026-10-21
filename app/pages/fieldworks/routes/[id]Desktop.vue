@@ -50,16 +50,10 @@
 				/>
 
 				<BaseIsland class="rp-filter">
-				<BaseTabs v-model="filter" :items="[
-					...readingFilters,
-				]"/>
+				<BaseTabs v-model="filter" :items="readingFilters"/>
 				<div class="rp-filter-controls">
 					<BaseTextBox v-model="search" prependIcon="mdi-magnify" placeholder="Поиск по абоненту, Л/с, адресу, модели, № счётчика..."/>
-					<BaseAutocomplete v-model="model" :items="[
-						{ key: 'all', value: 'Все' },
-						{ key: 'mechanical', value: 'Механические' },
-						{ key: 'smart', value: 'Умные' },
-					]" emitValue placeholder="Все"/>
+					<BaseAutocomplete v-model="model" :items="meterModels" placeholder="Все модели"/>
 				</div>
 				</BaseIsland>
 
@@ -192,6 +186,11 @@ const readingFilters = computed(() => [
 	{ key: 'collected', value: 'Собрано', badge: curRoute.value?.statistics.collectedReadings ?? 0 },
 	{ key: 'missing', value: 'Не собрано', badge: (curRoute.value?.statistics.subscriberCount ?? 0) - (curRoute.value?.statistics.collectedReadings ?? 0) },
 ]);
+const meterModels = computed(() => [
+	{ key: 'all', value: 'Все модели' },
+	...Array.from(new Set(curRoute.value?.streets.flatMap(street => street.subscribers.map(subscriber => subscriber.meterModel)).filter(Boolean) ?? []))
+		.map(value => ({ key: value, value })),
+]);
 const filteredStreets = computed(() => {
 	const query = search.value.trim().toLowerCase();
 	if (!curRoute.value) return [];
@@ -199,15 +198,22 @@ const filteredStreets = computed(() => {
 	return curRoute.value.streets.map(street => ({
 		...street,
 		totalSubscribers: street.subscribers.length,
-		subscribers: street.subscribers.filter(subscriber => !query || [
-			subscriber.fullName,
-			subscriber.accountNo,
-			subscriber.addressText,
-			subscriber.house,
-			subscriber.houseNo,
-			subscriber.meterModel,
-			subscriber.meterSerial,
-		].some(value => String(value ?? '').toLowerCase().includes(query))),
+		subscribers: street.subscribers.filter(subscriber => {
+			const matchesSearch = !query || [
+				subscriber.fullName,
+				subscriber.accountNo,
+				subscriber.addressText,
+				subscriber.house,
+				subscriber.houseNo,
+				subscriber.meterModel,
+				subscriber.meterSerial,
+			].some(value => String(value ?? '').toLowerCase().includes(query));
+			const matchesFilter = filter.value === 'all' || (filter.value === 'missing'
+				? subscriber.status === 'Не передано'
+				: subscriber.status !== 'Не передано');
+			const matchesModel = !model.value || model.value === 'all' || subscriber.meterModel === model.value;
+			return matchesSearch && matchesFilter && matchesModel;
+		}),
 	})).filter(street => street.subscribers.length);
 });
 

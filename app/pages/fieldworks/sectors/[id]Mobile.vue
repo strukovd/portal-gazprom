@@ -1,6 +1,6 @@
 <template>
 	<section id="sector-mobile-page">
-		<header class="ss-header"><button class="ss-back" @click="navigateTo({ path: '/fieldworks/sectors', query: store.isAdmin ? { controller: store.selectedControllerId } : {} })"><BaseIcon name="mdi-arrow-left"/></button><div><b>Участок №{{ area?.areaCode ?? sectorId }}</b><span>Не указано</span></div><div class="ss-total"><b>{{ collected }}/{{ total }}</b><span>собрано</span></div></header>
+		<header class="ss-header"><button class="ss-back" @click="navigateTo({ path: '/fieldworks/sectors', query: store.hasSubordinates ? { controller: store.selectedControllerId } : {} })"><BaseIcon name="mdi-arrow-left"/></button><div><b>Участок №{{ area?.areaCode ?? sectorId }}</b><span>Не указано</span></div><div class="ss-total"><b>{{ collected }}/{{ total }}</b><span>собрано</span></div></header>
 		<div class="ss-progress"><BaseProgressBar :percent="percent" height=".45em"/><span>{{ percent }}%</span></div>
 		<main class="ss-content"><div class="ss-caption">Маршруты участка</div><section class="ss-list"><BaseIsland v-for="route of area?.routes" :key="route.routeCode" class="ss-route" @click="openRoute(route.routeCode)"><div class="ss-route-heading"><div class="ss-route-icon"><BaseIcon name="mdi-transit-connection-variant"/></div><div><b>{{ route.routeCode }}</b><span>Не указано</span></div><em>{{ route.statistics.collectedReadings ? 'В работе' : 'Новый' }}</em></div><div class="ss-assignee">Не указано</div><div class="ss-meta"><span><BaseIcon name="mdi-account-group-outline"/>{{ route.statistics.subscriberCount }} аб.</span><span><BaseIcon name="mdi-map-marker-outline"/>{{ route.statistics.streetCount }} улиц</span><span><BaseIcon name="mdi-check-circle-outline"/>{{ route.statistics.collectedReadings }}/{{ route.statistics.subscriberCount }}</span></div><div class="ss-streets"><div v-for="street of route.streets" :key="street.street"><span>{{ street.street }}</span><span>{{ street.subscriberCount }} аб.</span></div></div><BaseProgressBar :percent="route.statistics.subscriberCount ? Math.round(route.statistics.collectedReadings / route.statistics.subscriberCount * 100) : 0" height=".4em"/></BaseIsland></section></main>
 	</section>
@@ -23,7 +23,7 @@ const percent = computed(() => total.value ? Math.round(collected.value / total.
 onMounted(() => store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined));
 
 function openRoute(id: string) {
-	navigateTo({ path: `/fieldworks/routes/${id}`, query: { sector: sectorId, ...(store.isAdmin ? { controller: store.selectedControllerId } : {}) } });
+	navigateTo({ path: `/fieldworks/routes/${id}`, query: { sector: sectorId, ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } });
 }
 </script>
 

@@ -84,7 +84,7 @@ const filteredStreets = computed(() => currentRoute.value?.streets.map(street =>
 		return matchesSearch && matchesFilter;
 	}),
 })).filter(street => street.subscribers.length) ?? []);
-const backLink = computed(() => ({ path: sectorId ? `/fieldworks/sectors/${sectorId}` : '/fieldworks/sectors', query: store.isAdmin ? { controller: store.selectedControllerId } : {} }));
+const backLink = computed(() => ({ path: sectorId ? `/fieldworks/sectors/${sectorId}` : '/fieldworks/sectors', query: store.hasSubordinates ? { controller: store.selectedControllerId } : {} }));
 
 onMounted(async () => {
 	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
@@ -92,7 +92,7 @@ onMounted(async () => {
 });
 
 function openSubscriber(account: string) {
-	navigateTo({ path: `/fieldworks/subscribers/${account}`, query: { route: routeId, sector: sectorId, ...(store.isAdmin ? { controller: store.selectedControllerId } : {}) } });
+	navigateTo({ path: `/fieldworks/subscribers/${account}`, query: { route: routeId, sector: sectorId, ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } });
 }
 
 async function openReading(subscriber: ControllerSubscriber) {

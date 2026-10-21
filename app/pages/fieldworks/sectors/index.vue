@@ -1,5 +1,5 @@
 <template>
-	<div v-if="fieldworksStore.isAdmin" class="fieldworks-controller-select">
+	<div v-if="fieldworksStore.hasSubordinates" class="fieldworks-controller-select">
 		<HierarchyAutocomplete v-model="selectedController" placeholder="Выберите контроллёра или группу" :items="fieldworksStore.controllerGroups"/>
 	</div>
 

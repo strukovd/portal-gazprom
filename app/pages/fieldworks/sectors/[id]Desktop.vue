@@ -94,7 +94,7 @@ const sectorId = computed(() => route.params.id);
 const loading = ref(true);
 const sector = computed<ControllerArea | null>(() => fieldworksStore.areas.find(item => item.areaCode === String(sectorId.value)) ?? null);
 const fieldworksStore = useFieldworksStore();
-const sectorsLink = computed(() => `/fieldworks/sectors${fieldworksStore.isAdmin && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : ''}`);
+const sectorsLink = computed(() => `/fieldworks/sectors${fieldworksStore.hasSubordinates && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : ''}`);
 
 onMounted(async () => {
 	loading.value = true;
@@ -106,7 +106,7 @@ onMounted(async () => {
 function openRoute(id: string) {
 	navigateTo({
 		path: `/fieldworks/routes/${id}`,
-		query: { sector: String(sectorId.value), ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) },
+		query: { sector: String(sectorId.value), ...(fieldworksStore.hasSubordinates ? { controller: fieldworksStore.selectedControllerId } : {}) },
 	});
 }
 

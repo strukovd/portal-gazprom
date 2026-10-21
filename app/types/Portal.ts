@@ -16,7 +16,7 @@ export type ControllerResponse<T> = {
 	success: boolean;
 	data: T;
 };
-export type ControllerGroupsResponse = ControllerResponse<ControllerGroup>;
+export type ControllerGroupsResponse = ControllerResponse<ControllerGroup | ControllerGroup[] | null>;
 export type ReadingsQuery = {
 	success?: boolean;
 	date?: string;

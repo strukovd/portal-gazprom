@@ -14,9 +14,24 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 	let pendingUserName: string | null = null;
 	let areasRequest: Promise<ControllerAreasPayload> | null = null;
 	let requestId = 0;
+	let sessionId = 0;
 	const routeDetails = ref<Record<string, RouteDetailsPayload>>({});
 	const loading = ref(false);
-	const isAdmin = computed(() => useUserStore().userData?.role === 'ADMIN');
+	watch(() => [useUserStore().userData?.id, useUserStore().token], () => {
+		sessionId++;
+		requestId++;
+		controllerGroups.value = [];
+		controllerSelection.value = null;
+		groupsLoaded = false;
+		groupsRequest = null;
+		areasData.value = null;
+		loadedUserName.value = null;
+		pendingUserName = null;
+		areasRequest = null;
+		routeDetails.value = {};
+		loading.value = false;
+	}, { flush: 'sync' });
+	const hasSubordinates = computed(() => controllerGroups.value.some(node => node.id !== useUserStore().userData?.id || node.children.length > 0));
 	const selectedUser = computed(() => {
 		const nodes = [...controllerGroups.value];
 		while (nodes.length) {
@@ -26,7 +41,7 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 		}
 		return null;
 	});
-	const userName = computed(() => isAdmin.value ? selectedUser.value?.name : useUserStore().userData?.userName);
+	const userName = computed(() => hasSubordinates.value ? selectedUser.value?.name : useUserStore().userData?.userName);
 	const currentData = computed(() => loadedUserName.value === userName.value ? areasData.value : null);
 	const areas = computed(() => currentData.value?.controllers.flatMap(controller => controller.areas) ?? []);
 	const statistics = computed(() => {
@@ -78,7 +93,7 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 	}
 
 	async function fetchForRole(controllerId?: string) {
-		if (!isAdmin.value) return fetchAreas();
+		const session = sessionId;
 		if (controllerId && Number.isFinite(Number(controllerId)) && controllerId !== selectedControllerId.value) {
 			controllerSelection.value = { id: Number(controllerId), mode: 'self' };
 		}
@@ -86,15 +101,23 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 			if (!groupsRequest) {
 				loading.value = true;
 				groupsRequest = portal.fetchControllerGroups().then(response => {
+					if (session !== sessionId) return;
 					if (!response.success) throw new Error('Не удалось загрузить список контроллёров');
-					controllerGroups.value = [response.data];
+					controllerGroups.value = Array.isArray(response.data) ? response.data : response.data ? [response.data] : [];
 					groupsLoaded = true;
 				}).finally(() => {
-					loading.value = false;
-					groupsRequest = null;
+					if (session === sessionId) {
+						loading.value = false;
+						groupsRequest = null;
+					}
 				});
 			}
 			await groupsRequest;
+		}
+		if (session !== sessionId) return;
+		if (!hasSubordinates.value) {
+			controllerSelection.value = null;
+			return fetchAreas();
 		}
 		if (selectedUser.value) return fetchAreas();
 		requestId++;
@@ -106,17 +129,20 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 	}
 
 	async function fetchRoute(code: string, force = false): Promise<RouteDetailsPayload | null> {
+		const session = sessionId;
 		await fetchForRole();
-		if (isAdmin.value && !selectedControllerId.value) return null;
+		if (session !== sessionId) return null;
+		if (hasSubordinates.value && !selectedControllerId.value) return null;
 		if (!areas.value.some(area => area.routes.some(route => route.routeCode === code))) return null;
-		const key = `${isAdmin.value ? selectedControllerId.value : useUserStore().userData?.id}:${code}`;
+		const key = `${hasSubordinates.value ? selectedControllerId.value : useUserStore().userData?.id}:${code}`;
 		if (!routeDetails.value[key] || force) {
 			const response = await portal.fetchRouteByCode(code);
+			if (session !== sessionId) return null;
 			if (!response.success) throw new Error('Не удалось загрузить маршрут');
 			routeDetails.value[key] = response.data;
 		}
 		return routeDetails.value[key];
 	}
 
-	return { areasData, controllerGroups, controllerSelection, selectedControllerId, areas, statistics, loading, isAdmin, fetchAreas, fetchForRole, fetchRoute };
+	return { areasData, controllerGroups, controllerSelection, selectedControllerId, areas, statistics, loading, hasSubordinates, fetchAreas, fetchForRole, fetchRoute };
 });

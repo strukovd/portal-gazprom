@@ -29,7 +29,7 @@
 			</template>
 
 			<template v-else>
-				<div v-if="fieldworksStore.isAdmin" class="sp-caption">Выбранный контроллёр</div>
+				<div v-if="fieldworksStore.hasSubordinates" class="sp-caption">Выбранный контроллёр</div>
 				<section class="sp-stats">
 					<BaseIsland v-for="item of statsData" :key="item.id" class="sp-stat">
 						<div :class="['sp-stat-icon', item.color]">
@@ -132,7 +132,7 @@ const statsData = computed(() => {
 });
 
 function openSector(id: string) {
-	navigateTo({ path: `/fieldworks/sectors/${id}`, query: fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {} });
+	navigateTo({ path: `/fieldworks/sectors/${id}`, query: fieldworksStore.hasSubordinates ? { controller: fieldworksStore.selectedControllerId } : {} });
 }
 
 function toPercent(progress = 0, total = 0) {

@@ -20,7 +20,7 @@ const sectorId = typeof route.query.sector === 'string' ? route.query.sector : '
 const store = useFieldworksStore();
 const { $modal } = useNuxtApp();
 const subscriber = ref<ControllerSubscriber | null>(null);
-const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.isAdmin ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/sectors');
+const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/sectors');
 
 onMounted(() => fetchSubscriber());
 

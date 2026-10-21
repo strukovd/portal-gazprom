@@ -75,7 +75,7 @@
 						<template #cell.subscriberId="{ index }">{{ index + 1 }}</template>
 						<template #cell.accountNo="{ row }">
 							<div class="rp-account">
-								<NuxtLink class="rp-account-link" :to="{ path: `/fieldworks/subscribers/${row.accountNo}`, query: { route: routeId, sector: sectorId, ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) } }">{{ row.accountNo }}</NuxtLink>
+								<NuxtLink class="rp-account-link" :to="{ path: `/fieldworks/subscribers/${row.accountNo}`, query: { route: routeId, sector: sectorId, ...(fieldworksStore.hasSubordinates ? { controller: fieldworksStore.selectedControllerId } : {}) } }">{{ row.accountNo }}</NuxtLink>
 								<span v-if="row.status === 'Передано абонентом'" class="rp-account-badge">Абонент</span>
 							</div>
 						</template>
@@ -133,7 +133,7 @@ import { toLocaleDate } from '~/utils/format';
 const route = useRoute();
 const routeId = computed(() => route.params.id);
 const sectorId = computed(() => typeof route.query.sector === 'string' ? route.query.sector : '');
-const controllerQuery = computed(() => fieldworksStore.isAdmin && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : '');
+const controllerQuery = computed(() => fieldworksStore.hasSubordinates && fieldworksStore.selectedControllerId ? `?controller=${encodeURIComponent(fieldworksStore.selectedControllerId)}` : '');
 const breadcrumbs = computed(() => sectorId.value
 	? [
 		{ title: 'Участки', link: `/fieldworks/sectors${controllerQuery.value}` },

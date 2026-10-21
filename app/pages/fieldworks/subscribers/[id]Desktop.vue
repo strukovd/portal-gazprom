@@ -92,7 +92,7 @@ const subscriberId = computed(() => String(route.params.id));
 const routeId = computed(() => typeof route.query.route === 'string' ? route.query.route : '');
 const sectorId = computed(() => typeof route.query.sector === 'string' ? route.query.sector : '');
 const backLink = computed(() => routeId.value
-	? { path: `/fieldworks/routes/${routeId.value}`, query: { ...(sectorId.value ? { sector: sectorId.value } : {}), ...(fieldworksStore.isAdmin ? { controller: fieldworksStore.selectedControllerId } : {}) } }
+	? { path: `/fieldworks/routes/${routeId.value}`, query: { ...(sectorId.value ? { sector: sectorId.value } : {}), ...(fieldworksStore.hasSubordinates ? { controller: fieldworksStore.selectedControllerId } : {}) } }
 	: '/fieldworks/routes'
 );
 

@@ -44,7 +44,7 @@
 
 
 		<main class="sm-content">
-			<div class="sm-caption">{{ store.isAdmin ? 'Участки контроллёра' : 'Мои участки' }}</div>
+			<div class="sm-caption">{{ store.hasSubordinates ? 'Участки контроллёра' : 'Мои участки' }}</div>
 			<section class="sm-list">
 				<BaseIsland v-for="area of areas" :key="area.areaCode" class="sm-area">
 					<div class="sm-area-heading">
@@ -94,7 +94,7 @@ function getAreaStatus(area: ControllerArea) {
 	return area.statistics.remainingReadings ? 'В работе' : 'Выполнено';
 }
 function openSector(id: string) {
-	navigateTo({ path: `/fieldworks/sectors/${id}`, query: store.isAdmin ? { controller: store.selectedControllerId } : {} });
+	navigateTo({ path: `/fieldworks/sectors/${id}`, query: store.hasSubordinates ? { controller: store.selectedControllerId } : {} });
 }
 
 </script>

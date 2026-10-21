@@ -54,7 +54,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import type { ControllerSubscriber } from '~/types/Portal';
-import type { ControllerRoute, RouteDetailsPayload } from '~/types/Portal';
+import type { RouteDetailsPayload } from '~/types/Portal';
 
 const route = useRoute();
 const routeId = String(route.params.id);
@@ -64,7 +64,7 @@ const { $modal } = useNuxtApp();
 const search = ref('');
 const filter = ref('all');
 const collapsedStreets = ref<Record<string, boolean>>({});
-const currentRoute = ref<ControllerRoute | RouteDetailsPayload | null>(null);
+const currentRoute = ref<RouteDetailsPayload | null>(null);
 const subscribers = computed(() => currentRoute.value?.statistics.subscriberCount ?? 0);
 const collected = computed(() => currentRoute.value?.statistics.collectedReadings ?? 0);
 const progress = computed(() => subscribers.value ? Math.round(collected.value / subscribers.value * 100) : 0);

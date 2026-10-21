@@ -133,7 +133,7 @@ import RouteReading from '~/components/fieldworks/RouteReading.vue';
 import InfoBox from '~/components/common/InfoBox.vue';
 import BaseBreadcrumbs from '~/components/common/base/BaseBreadcrumbs.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { ControllerRoute, ControllerSubscriber } from '~/types/Portal';
+import type { RouteDetailsPayload, ControllerSubscriber } from '~/types/Portal';
 import { toLocaleDate } from '~/utils/format';
 
 const route = useRoute();
@@ -175,7 +175,7 @@ const subscriberColumns = [
 ];
 
 const loading = ref(true);
-const curRoute = ref<ControllerRoute | null>(null);
+const curRoute = ref<RouteDetailsPayload | null>(null);
 const fieldworksStore = useFieldworksStore();
 const editingReading = ref<Record<string, unknown> | null>(null);
 const collapsedStreets = ref<Record<string, boolean>>({});

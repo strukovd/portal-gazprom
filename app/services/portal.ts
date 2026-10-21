@@ -1,4 +1,4 @@
-import type { AdminControllersResponse, ControllerAreasResponse, RouteDetailsResponse } from '~/types/Portal';
+import type { ControllerGroupsResponse, ControllerAreasResponse, RouteDetailsResponse } from '~/types/Portal';
 
 export type UserRoles = `ADMIN` | `CONTRACTOR` | `CONTROLLER` | `CALLCENTER` | `CALLCENTER_MANAGER` | `CALLCENTER_COMPLAINT_ASSIGNEE`;
 export type AuthBody = {
@@ -22,6 +22,8 @@ export type UserBody = {
 	phone: string;
 	role: UserRoles;
 	isActive: boolean;
+	parentUserId?: number | null;
+	groupName?: string;
 }
 export type UsersQuery = {
 	isActive: boolean;
@@ -34,6 +36,8 @@ export type UserPayload = {
 	login: string;
 	name?: string;
 	phone?: string;
+	parentUserId?: number | null;
+	groupName?: string | null;
 	role: UserRoles | string;
 	isActive: boolean;
 	contractorId: null;
@@ -161,27 +165,30 @@ export const portal = {
 			query
 		});
 	},
-
-	fetchAreas() { // Участки\сектора
+	
+	/** Список групп (контроллёров) */
+	fetchControllerGroups() {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<ControllerAreasResponse>(`/v1/portal/controller/areas`, {
+		return $fetchApi<ControllerGroupsResponse>('/v1/portal/controllers/groups', {
 			method: 'GET'
 		});
 	},
 
-	fetchAllAreas() { // Все участки\сектора (только админские роли)
+	/** Список маршрутов контроллёра */
+	fetchAreas(userName: string) { // Участки\сектора
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<AdminControllersResponse>(`/v1/portal/controller/areas/all`, {
+		return $fetchApi<ControllerAreasResponse>(`/v1/portal/controllers/areas`, {
+			query: { userName },
 			method: 'GET'
 		});
 	},
 
-	fetchRouteByCode(code: string) { // Получение маршрута по коду (только админские роли)
+	fetchRouteByCode(code: string) { // Детали маршрута с абонентами
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<RouteDetailsResponse>(`/v1/portal/controller/routes/${code}`, {
+		return $fetchApi<RouteDetailsResponse>(`/v1/portal/controllers/routes/${code}`, {
 			method: 'GET'
 		});
 	}

@@ -42,7 +42,6 @@
 			</section>
 		</section>
 
-		<OverallStatistics v-if="store.isAdmin && store.adminData" :statistics="store.adminData.overallStatistics" class="sm-overall"/>
 
 		<main class="sm-content">
 			<div class="sm-caption">{{ store.isAdmin ? 'Участки контроллёра' : 'Мои участки' }}</div>
@@ -76,9 +75,8 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
-import OverallStatistics from '~/components/fieldworks/OverallStatistics.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
+import type { ControllerArea } from '~/types/Portal';
 
 const store = useFieldworksStore();
 const route = useRoute();
@@ -91,7 +89,7 @@ function percent(collected: number, total: number) {
 	return total ? Math.round(collected / total * 100) : 0;
 }
 
-function getAreaStatus(area: ControllerArea | AdminControllerArea) {
+function getAreaStatus(area: ControllerArea) {
 	if (!area.statistics.collectedReadings) return 'Новый';
 	return area.statistics.remainingReadings ? 'В работе' : 'Выполнено';
 }
@@ -187,7 +185,7 @@ function openSector(id: string) {
 			box-shadow: 0 8px 20px rgba(15, 23, 42, .12);
 			border-radius: 1em;
 			overflow: hidden;
-			z-index:9999;
+			z-index:1;
 			background: #ffffff;
 			position: relative;
 			top: -1em;
@@ -210,10 +208,6 @@ function openSector(id: string) {
 				}
 			}
 		}
-	}
-
-	.sm-overall {
-		margin: 0 1em 1em;
 	}
 
 	.sm-content {

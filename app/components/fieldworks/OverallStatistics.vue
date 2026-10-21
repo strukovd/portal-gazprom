@@ -15,9 +15,7 @@
 <script lang="ts" setup>
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
-import type { AdminControllersPayload } from '~/types/Portal';
-
-defineProps<{ statistics: AdminControllersPayload['overallStatistics'] }>();
+defineProps<{ statistics: { collectedReadings: number; remainingReadings: number; collectionPercentage: number } }>();
 </script>
 
 <style lang="scss">

@@ -29,7 +29,6 @@
 			</template>
 
 			<template v-else>
-				<OverallStatistics v-if="fieldworksStore.isAdmin && fieldworksStore.adminData" :statistics="fieldworksStore.adminData.overallStatistics"/>
 				<div v-if="fieldworksStore.isAdmin" class="sp-caption">Выбранный контроллёр</div>
 				<section class="sp-stats">
 					<BaseIsland v-for="item of statsData" :key="item.id" class="sp-stat">
@@ -107,9 +106,8 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseProgressBar from '~/components/common/base/charts/BaseProgressBar.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import Incrementator from '~/components/common/Incrementator.vue';
-import OverallStatistics from '~/components/fieldworks/OverallStatistics.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
-import type { AdminControllerArea, ControllerArea } from '~/types/Portal';
+import type { ControllerArea } from '~/types/Portal';
 
 const loading = ref(true);
 const fieldworksStore = useFieldworksStore();
@@ -143,7 +141,7 @@ function toPercent(progress = 0, total = 0) {
 	return Math.min(Math.max(Math.round(percent), 0), 100);
 }
 
-function getAreaStatus(area: ControllerArea | AdminControllerArea) {
+function getAreaStatus(area: ControllerArea) {
 	const { collectedReadings, remainingReadings } = area.statistics;
 	if (!collectedReadings) return 'Новый';
 	if (!remainingReadings) return 'Выполнено';

@@ -1,10 +1,10 @@
 <template>
 	<div class="user-edit-modal">
 		<section class="uem-form">
-			<BaseTextBox v-model="form.login" label="Логин" :disabled="isEditMode"/>
-			<BaseTextBox v-model="form.name" label="ФИО"/>
-			<BaseTextBox v-model="form.phone" label="Телефон" type="tel"/>
-			<BaseTextBox v-if="!isEditMode" v-model="form.password" label="Пароль" type="password"/>
+			<BaseTextBox v-model="form.login" name="login" autocomplete="username" label="Логин" :disabled="isEditMode"/>
+			<BaseTextBox v-model="form.name" name="name" autocomplete="name" label="ФИО"/>
+			<BaseTextBox v-model="form.phone" name="phone" autocomplete="tel" label="Телефон" type="tel"/>
+			<BaseTextBox v-if="!isEditMode" v-model="form.password" name="password" autocomplete="new-password" label="Пароль" type="password"/>
 			<div v-else class="uem-placeholder" aria-hidden="true"></div>
 			<div class="uem-parent">
 				<BaseAutocomplete
@@ -30,7 +30,7 @@
 		<BaseTabs v-model="status" label="Статус" :items="statusItems"/>
 
 		<section v-if="isEditMode" class="uem-password">
-			<BaseTextBox v-model="newPassword" label="Новый пароль" type="password" placeholder="Введите новый пароль"/>
+			<BaseTextBox v-model="newPassword" name="newPassword" autocomplete="new-password" label="Новый пароль" type="password" placeholder="Введите новый пароль"/>
 			<BaseButton variant="secondary" prependIcon="mdi-lock-reset" :loading="passwordLoading" @click="setPassword">Установить пароль</BaseButton>
 		</section>
 

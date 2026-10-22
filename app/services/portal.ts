@@ -152,7 +152,7 @@ export const portal = {
 		const { $fetchApi } = useNuxtApp();
 
 		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}`, {
-			method: 'PUT',
+			method: 'PATCH',
 			body
 		});
 	},

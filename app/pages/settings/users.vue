@@ -185,6 +185,7 @@ async function showUserModal(row?: UserRow | Record<string, unknown>) {
 		payload: {
 			user,
 		},
+		nonCloseable: true,
 	});
 
 	if (result) fetchUsers();

@@ -31,7 +31,7 @@
 
 				<div class="text-box-area">
 					<BaseIcon v-if="prependIcon" class="prepend-icon" size="1.4em" :name="prependIcon"/>
-					<input ref="input" :disabled="disabled" :name="name" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
+					<input ref="input" :disabled="disabled" :name="name" :autocomplete="autocomplete" :type="type === 'password' ? (masked ? 'password' : 'text') : type" :placeholder="placeholder" :autofocus="autofocus" :value="valueProxy" @input="onInput"/>
 					<BaseIcon @click="toggleMask" v-if="type === 'password'" class="append-icon" size="1.4em" :name="masked ? 'mdi-eye-off' : 'mdi-eye'"/>
 					<BaseIcon v-else-if="appendIcon" class="append-icon" size="1.4em" :name="appendIcon"/>
 					<BaseButton v-if="button" :disabled="disabled" @click="onSubmit" variant="secondary">{{ button }}</BaseButton>
@@ -56,6 +56,7 @@ export default defineComponent({
 			type: [String, Number] as PropType<string | number | undefined>,
 		},
 		name: String,
+		autocomplete: String,
 		label: String,
 		prependIcon: String,
 		appendIcon: String,

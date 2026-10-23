@@ -36,7 +36,7 @@
 					:limit="pagination.size"
 					:total="pagination.total"
 					:columns="columns"
-					:rows="filteredUsers"
+					:rows="users"
 					:loading="loading"
 					rowKey="id"
 					@row:click="showUserModal"
@@ -103,6 +103,7 @@ const users = ref<UserRow[]>([]);
 const loading = ref(false);
 let usersRequest = 0;
 const search = ref('');
+const debouncedSearch = ref('');
 const roleFilter = ref<UserRoles | 'all'>('all');
 const statusFilter = ref<'all' | 'active' | 'blocked'>('all');
 const pagination = reactive({
@@ -139,15 +140,14 @@ const statusFilterItems = [
 	{ key: 'blocked', value: 'Заблокированные' },
 ];
 const userNames = computed(() => new Map(users.value.map(user => [user.id, user.name || user.login])));
-const filteredUsers = computed(() => {
-	const query = search.value.trim().toLowerCase();
-	return users.value.filter(user => {
-		const matchesSearch = !query || [user.name, user.login, user.phone].some(value => String(value || '').toLowerCase().includes(query));
-		return matchesSearch;
-	});
+watch(search, (value, _, onCleanup) => {
+	const timer = setTimeout(() => {
+		debouncedSearch.value = value.trim();
+	}, 500);
+	onCleanup(() => clearTimeout(timer));
 });
 
-watch([roleFilter, statusFilter], () => {
+watch([roleFilter, statusFilter, debouncedSearch], () => {
 	pagination.page = 1;
 	fetchUsers();
 });
@@ -164,6 +164,7 @@ async function fetchUsers() {
 			size: pagination.size,
 			...(roleFilter.value !== 'all' ? { role: roleFilter.value } : {}),
 			...(statusFilter.value !== 'all' ? { isActive: statusFilter.value === 'active' } : {}),
+			...(debouncedSearch.value ? { search: debouncedSearch.value } : {}),
 		});
 		if (request !== usersRequest) return;
 		const lastPage = Math.max(1, response.pagination?.totalPages ?? 1);

@@ -28,6 +28,7 @@ export type UserBody = {
 export type UsersQuery = {
 	isActive: boolean;
 	role: UserRoles;
+	search: string;
 	size: number;
 	page: number;
 }

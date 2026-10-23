@@ -31,11 +31,16 @@
 				</section>
 
 				<BaseTable
+					v-model:page="pagination.page"
+					pageable
+					:limit="pagination.size"
+					:total="pagination.total"
 					:columns="columns"
 					:rows="filteredUsers"
 					:loading="loading"
 					rowKey="id"
 					@row:click="showUserModal"
+					@page:change="fetchUsers"
 				>
 					<template #cell.name="{ row }">
 						<UserBadge style="width:fit-content;" :name="String(row.name || row.login)" :login="String(row.login)" prependIcon="mdi-account-outline"/>
@@ -69,11 +74,6 @@
 						</button>
 					</template>
 				</BaseTable>
-
-				<section class="sup-table-footer">
-					<div class="sup-total">Всего: {{ pagination.total }}</div>
-					<div class="sup-pages">Страница {{ pagination.page }} из {{ pagination.totalPages || 1 }}</div>
-				</section>
 			</BaseIsland>
 		</main>
 	</section>
@@ -101,6 +101,7 @@ type UserRow = UserPayload & Record<string, unknown>;
 
 const users = ref<UserRow[]>([]);
 const loading = ref(false);
+let usersRequest = 0;
 const search = ref('');
 const roleFilter = ref<UserRoles | 'all'>('all');
 const statusFilter = ref<'all' | 'active' | 'blocked'>('all');
@@ -154,6 +155,7 @@ watch([roleFilter, statusFilter], () => {
 onMounted(fetchUsers);
 
 async function fetchUsers() {
+	const request = ++usersRequest;
 	loading.value = true;
 
 	try {
@@ -163,18 +165,25 @@ async function fetchUsers() {
 			...(roleFilter.value !== 'all' ? { role: roleFilter.value } : {}),
 			...(statusFilter.value !== 'all' ? { isActive: statusFilter.value === 'active' } : {}),
 		});
+		if (request !== usersRequest) return;
+		const lastPage = Math.max(1, response.pagination?.totalPages ?? 1);
+		if (pagination.page > lastPage) {
+			pagination.page = lastPage;
+			return await fetchUsers();
+		}
 
 		users.value = (response.data || []) as UserRow[];
-		pagination.page = response.pagination?.page || pagination.page;
-		pagination.size = response.pagination?.size || pagination.size;
-		pagination.total = response.pagination?.total || users.value.length;
-		pagination.totalPages = response.pagination?.totalPages || 1;
+		pagination.page = response.pagination?.page ?? pagination.page;
+		pagination.size = response.pagination?.size ?? pagination.size;
+		pagination.total = response.pagination?.total ?? users.value.length;
+		pagination.totalPages = lastPage;
 	}
 	catch (error: any) {
+		if (request !== usersRequest) return;
 		$flags.error(error?.data?.message || error?.response?._data?.message || error?.message || 'Не удалось загрузить пользователей');
 	}
 	finally {
-		loading.value = false;
+		if (request === usersRequest) loading.value = false;
 	}
 }
 
@@ -268,16 +277,6 @@ function roleName(role: string) {
 				&:hover {
 					opacity: .8;
 				}
-			}
-
-			.sup-table-footer {
-				display: flex;
-				justify-content: space-between;
-				gap: 1em;
-				margin: 1em 0 0 0;
-				color: #737373;
-				font-size: .9em;
-				font-weight: 700;
 			}
 		}
 	}

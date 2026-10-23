@@ -40,6 +40,7 @@
 						<div class="sb-data"><span class="sb-label">Сальдо - Газ</span><span :class="['sb-value', { green: subscriber.debtGas && subscriber.debtGas < 0, red: subscriber.debtGas && subscriber.debtGas > 0 }]">{{ subscriber.debtGas ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Сальдо - Пеня</span><span :class="['sb-value', { red: subscriber.penalty && subscriber.penalty > 0 }]">{{ subscriber.penalty ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Пред. показание</span><span class="sb-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
+						<div class="sb-data"><span class="sb-label">Расход газа</span><span class="sb-value">{{ gasConsumption }}</span></div>
 					</BaseIsland>
 				</section>
 
@@ -53,7 +54,7 @@
 						<section class="sb-reading-values">
 							<div class="sb-reading-value"><span class="sb-label">Предыдущее</span><span class="sb-reading-number">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
 							<div class="sb-reading-value current"><span class="sb-label">Текущее</span><span class="sb-reading-number">Не указано</span></div>
-							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">Не указано</span></div>
+							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">{{ gasConsumption }}</span></div>
 						</section>
 						<InfoBox type="protect" title="Показание подтверждено абонентом" message="Изменение показания, переданного абонентом самостоятельно, недоступно для контроллёра."/>
 						<BaseButton class="sb-return" variant="outlined" @click="navigateTo(backLink)">Вернуться к реестру</BaseButton>
@@ -62,7 +63,7 @@
 					<template v-else>
 						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
 						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="readingStatus.source === 'controller' || saving" :error="readingError" label="Текущее показание, м³" placeholder="Введите значение" type="number" @submit="saveReading"/>
-						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>Не указано</span></div>
+						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>{{ gasConsumption }}</span></div>
 						<div class="sb-actions">
 							<BaseButton variant="outlined" :disabled="saving" @click="navigateTo(backLink)">Отмена</BaseButton>
 							<BaseButton :disabled="!canSaveReading" :loading="saving" prependIcon="mdi-check-circle-outline" @click="saveReading">Принять показание</BaseButton>
@@ -101,6 +102,9 @@ const saving = ref(false);
 const { $flags } = useNuxtApp();
 const reading = ref<string | number>('');
 const subscriber = ref<ControllerSubscriber | null>(null);
+const gasConsumption = computed(() => subscriber.value?.consumption == null
+	? 'Не указано'
+	: `${subscriber.value.consumption.toLocaleString('ru-RU', { maximumFractionDigits: 20 })} м³`);
 const fieldworksStore = useFieldworksStore();
 const readingStatus = computed(() => {
 	if (subscriber.value?.status === 'Передано абонентом') return { source: 'subscriber', label: 'Передано абонентом', heading: 'Показание передано абонентом', description: 'Редактирование контроллёром заблокировано', icon: 'mdi-shield-check-outline' };

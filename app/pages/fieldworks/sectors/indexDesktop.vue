@@ -3,7 +3,7 @@
 		<main class="page-blocks">
 			<template v-if="loading">
 				<section class="sp-stats">
-					<BaseIsland v-for="item of 4" :key="item" class="sp-stat sp-stat-skeleton">
+					<BaseIsland v-for="item of statsData" :key="item.id" class="sp-stat sp-stat-skeleton">
 						<BaseSkeleton width="3em" height="3em" borderRadius="50%"/>
 						<div class="sp-stat-info">
 							<BaseSkeleton width="2.2em" height="1.5em"/>
@@ -36,7 +36,7 @@
 							<BaseIcon :name="item.icon" size="1.35em"/>
 						</div>
 						<div class="sp-stat-info">
-							<div class="sp-stat-value"><Incrementator :value="item.value"/></div>
+							<div class="sp-stat-value"><template v-if="item.unit">{{ item.value.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) }} {{ item.unit }}</template><Incrementator v-else :value="item.value"/></div>
 							<div class="sp-stat-title">{{ item.title }}</div>
 						</div>
 					</BaseIsland>
@@ -89,6 +89,10 @@
 								<div class="sp-total-value">{{ item.statistics.remainingReadings }}</div>
 								<div class="sp-total-title">Не собрано</div>
 							</div>
+							<div class="sp-total consumption">
+								<div class="sp-total-value">{{ item.statistics.consumptionCount?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано' }} м³</div>
+								<div class="sp-total-title">Расход газа</div>
+							</div>
 						</div>
 
 						<BaseButton class="sp-route-button" prependIcon="mdi-transit-connection-variant" @click="openSector(item.areaCode)">Маршруты участка</BaseButton>
@@ -127,6 +131,7 @@ const statsData = computed(() => {
 		{ id: 1, title: 'Участков', value: data?.areaCount ?? 0, icon: 'mdi-layers-triple-outline', color: 'violet' },
 		{ id: 2, title: 'Маршрутов', value: data?.routeCount ?? 0, icon: 'mdi-transit-connection-variant', color: 'blue' },
 		{ id: 3, title: 'Собрано', value: data?.totalCollectedReadings ?? 0, icon: 'mdi-check-circle-outline', color: 'green' },
+		{ id: 5, title: 'Расход газа', value: data?.consumptionCount ?? 0, unit: 'м³', icon: 'mdi-fire', color: 'blue' },
 		{ id: 4, title: 'Не собрано', value: data?.totalRemainingReadings ?? 0, icon: 'mdi-clock-outline', color: 'orange' },
 	];
 });
@@ -162,7 +167,7 @@ function getAreaStatus(area: ControllerArea) {
 
 	.sp-stats {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12em), 1fr));
 		gap: 1em;
 
 		.sp-stat {
@@ -204,7 +209,9 @@ function getAreaStatus(area: ControllerArea) {
 			}
 
 			.sp-stat-info {
+				min-width: 0;
 				.sp-stat-value {
+					overflow-wrap: anywhere;
 					color: #020617;
 					font-size: 1.55rem;
 					font-weight: 900;
@@ -400,7 +407,7 @@ function getAreaStatus(area: ControllerArea) {
 
 			.sp-totals {
 				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
+				grid-template-columns: repeat(2, minmax(0, 1fr));
 				gap: .7em;
 
 				.sp-total {
@@ -409,6 +416,7 @@ function getAreaStatus(area: ControllerArea) {
 					text-align: center;
 
 					.sp-total-value {
+						overflow-wrap: anywhere;
 						color: #020617;
 						font-size: 1.05rem;
 						font-weight: 900;
@@ -420,7 +428,7 @@ function getAreaStatus(area: ControllerArea) {
 						font-weight: 700;
 					}
 
-					&.routes {
+					&.routes, &.consumption {
 						background: #f8fafc;
 
 						.sp-total-title {

@@ -99,7 +99,7 @@
 						<template #cell.sign>Не указано</template>
 						<template #cell.power>Не указано</template>
 						<template #cell.sealNumber>Не указано</template>
-						<template #cell.difference>Не указано</template>
+						<template #cell.difference="{ row }">{{ typeof row.consumption === 'number' ? row.consumption.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) : 'Не указано' }}</template>
 						<template #cell.phone>Не указано</template>
 						<template #cell.lastPayment="{ row }">{{ toLocaleDate(row.lastPayment as string) || 'Не указано' }}</template>
 						<template #cell.penalty="{ row }">{{ row.penalty ?? 'Не указано' }}</template>

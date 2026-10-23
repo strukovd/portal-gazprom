@@ -19,6 +19,10 @@
 					<span>{{ statistics.totalCollectionPercentage }}% выполнено</span>
 					<span>{{ statistics.totalRemainingReadings }} осталось</span>
 				</div>
+				<div class="sm-progress-foot">
+					<span>Расход газа</span>
+					<b>{{ statistics.consumptionCount?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано' }} м³</b>
+				</div>
 			</div>
 		</header>
 
@@ -62,6 +66,10 @@
 						<BaseProgressBar :percent="percent(area.statistics.collectedReadings, area.statistics.collectedReadings + area.statistics.remainingReadings)" height=".45em"/>
 						<b>{{ area.statistics.collectedReadings }}/{{ area.statistics.collectedReadings + area.statistics.remainingReadings }} ({{ percent(area.statistics.collectedReadings, area.statistics.collectedReadings + area.statistics.remainingReadings) }}%)</b>
 					</div>
+					<div class="sm-area-progress">
+						<span>Расход газа</span>
+						<b>{{ area.statistics.consumptionCount?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано' }} м³</b>
+					</div>
 					<BaseButton prependIcon="mdi-transit-connection-variant" @click="openSector(area.areaCode)">Маршруты участка</BaseButton>
 				</BaseIsland>
 			</section>
@@ -81,7 +89,7 @@ import type { ControllerArea } from '~/types/Portal';
 const store = useFieldworksStore();
 const route = useRoute();
 const areas = computed(() => store.areas);
-const statistics = computed(() => store.statistics ?? { areaCount: 0, routeCount: 0, totalSubscribers: 0, totalCollectedReadings: 0, totalRemainingReadings: 0, totalCollectionPercentage: 0 });
+const statistics = computed(() => store.statistics ?? { areaCount: 0, routeCount: 0, totalSubscribers: 0, totalCollectedReadings: 0, totalRemainingReadings: 0, totalCollectionPercentage: 0, consumptionCount: 0 });
 
 onMounted(() => store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined));
 

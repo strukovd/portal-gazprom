@@ -44,6 +44,7 @@ export type ControllerAreasPayload = {
 	overallStatistics: {
 		collectedReadings: number;
 		remainingReadings: number;
+		consumptionCount: number;
 		collectionPercentage: number;
 	};
 	lastUpdated: string;
@@ -62,6 +63,7 @@ export type Controller = {
 		collectedByController: number;
 		totalRemainingReadings: number;
 		totalCollectionPercentage: number;
+		consumptionCount: number;
 	};
 };
 
@@ -71,6 +73,7 @@ export type ControllerArea = {
 	statistics: {
 		collectedReadings: number;
 		remainingReadings: number;
+		consumptionCount: number;
 		collectionPercentage: number;
 	};
 };
@@ -82,6 +85,7 @@ export type ControllerRoute = {
 		subscriberCount: number;
 		streetCount: number;
 		collectedReadings: number;
+		consumptionCount: number;
 		collectionPercentage: number;
 	};
 };
@@ -108,6 +112,7 @@ export type ControllerSubscriber = Record<string, unknown> & {
 	routeCode: string;
 	meterSerial: string;
 	meterModel: string;
+	consumption: number;
 	reading?: number;
 	debtGas?: number;
 	penalty?: number;

@@ -58,6 +58,7 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 			...totals,
 			totalCollectedReadings: data.overallStatistics.collectedReadings,
 			totalRemainingReadings: data.overallStatistics.remainingReadings,
+			consumptionCount: data.overallStatistics.consumptionCount,
 			totalCollectionPercentage: data.overallStatistics.collectionPercentage,
 		};
 	});

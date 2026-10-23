@@ -142,7 +142,7 @@ export const portal = {
 	changePassword(id: number, body: { oldPassword: string; newPassword: string }) {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}`, {
+		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}/password`, {
 			method: 'PATCH',
 			body
 		});
@@ -151,8 +151,8 @@ export const portal = {
 	setPassword(id: number, body: { newPassword: string }) {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}`, {
-			method: 'PATCH',
+		return $fetchApi<{ success: boolean }>(`/v1/portal/users/${id}/password`, {
+			method: 'PUT',
 			body
 		});
 	},

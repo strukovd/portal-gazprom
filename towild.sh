@@ -1,7 +1,6 @@
 #!/bin/bash
 
-./version-up.sh
-
+CUR_VERSION=$(./version-up.sh "${1:-}")
 set -euo pipefail
 
 APP_NAME="v2"

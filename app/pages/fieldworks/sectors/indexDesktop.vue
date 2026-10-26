@@ -115,13 +115,21 @@ import type { ControllerArea } from '~/types/Portal';
 
 const loading = ref(true);
 const fieldworksStore = useFieldworksStore();
+const { $flags } = useNuxtApp();
 const route = useRoute();
 const sectors = computed(() => fieldworksStore.areas);
 
 onMounted(async () => {
 	loading.value = true;
-	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
-	loading.value = false;
+	try {
+		await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.message || 'Не удалось загрузить участки');
+	}
+	finally {
+		loading.value = false;
+	}
 });
 
 const statsData = computed(() => {

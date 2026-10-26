@@ -36,12 +36,19 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 		const nodes = [...controllerGroups.value];
 		while (nodes.length) {
 			const node = nodes.pop()!;
-			if (node.id === controllerSelection.value?.id) return node;
+			if (String(node.id) === String(controllerSelection.value?.id)) return node;
 			nodes.push(...node.children);
 		}
 		return null;
 	});
-	const userName = computed(() => hasSubordinates.value ? selectedUser.value?.name : useUserStore().userData?.userName);
+	const userName = computed(() => {
+		const user = useUserStore().userData;
+		if (!hasSubordinates.value) return user?.userName;
+		if (!controllerSelection.value || String(controllerSelection.value.id) === String(user?.id)) {
+			return selectedUser.value?.name || user?.userName;
+		}
+		return selectedUser.value?.name;
+	});
 	const currentData = computed(() => loadedUserName.value === userName.value ? areasData.value : null);
 	const areas = computed(() => currentData.value?.controllers.flatMap(controller => controller.areas) ?? []);
 	const statistics = computed(() => {
@@ -120,7 +127,11 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 			controllerSelection.value = null;
 			return fetchAreas();
 		}
-		if (selectedUser.value) return fetchAreas();
+		const user = useUserStore().userData;
+		if (!controllerSelection.value && user) {
+			controllerSelection.value = { id: Number(user.id), mode: 'self' };
+		}
+		if (userName.value) return fetchAreas();
 		requestId++;
 		areasData.value = null;
 		areasRequest = null;

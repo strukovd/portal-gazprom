@@ -72,6 +72,7 @@ import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import ReadingHistory from '~/components/fieldworks/ReadingHistory.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
+import { useUserStore } from '~/stores/UserStore';
 import { readings } from '~/services/readings';
 import { toLocaleDate } from '~/utils/format';
 import type { ControllerSubscriber } from '~/types/Portal';
@@ -97,11 +98,12 @@ const readingStatus = computed(() => {
 	if (subscriber.value?.status !== 'Не передано') return { source: 'controller', label: 'Принято', heading: 'Ввод текущего показания', description: 'Показание принято контроллёром', icon: 'mdi-check-circle-outline' };
 	return { source: 'none', label: 'Не принято', heading: 'Ввод текущего показания', description: 'Метод 1 - карточка абонента', icon: 'mdi-gauge' };
 });
+const allowLowerReading = computed(() => useUserStore().userData?.role === 'CONTROLLER');
 const readingError = computed(() => {
 	if (String(reading.value).trim() === '') return '';
 	const value = Number(reading.value);
-	if (!Number.isFinite(value)) return 'Введите корректное показание';
-	return typeof subscriber.value?.reading === 'number' && value < subscriber.value.reading ? 'Не может быть меньше предыдущего' : '';
+	if (!Number.isFinite(value) || value < 0) return 'Введите неотрицательное число';
+	return !allowLowerReading.value && typeof subscriber.value?.reading === 'number' && value < subscriber.value.reading ? 'Не может быть меньше предыдущего' : '';
 });
 const canSaveReading = computed(() => Boolean(subscriber.value) && String(reading.value).trim() !== '' && !readingError.value);
 

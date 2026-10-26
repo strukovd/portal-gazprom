@@ -2,7 +2,9 @@
 	<BaseIsland class="reading-history">
 		<div class="rh-heading">
 			<div class="rh-title"><BaseIcon name="mdi-history" size="1.25em"/>История показаний</div>
-			<BaseButton variant="secondary" prependIcon="mdi-refresh" :loading="loading" title="Обновить историю" aria-label="Обновить историю" @click="fetchHistory"/>
+			<div class="rh-tools">
+				<BaseButton variant="secondary" prependIcon="mdi-refresh" :loading="loading" title="Обновить историю" aria-label="Обновить историю" @click="fetchHistory"/>
+			</div>
 		</div>
 		<BaseSkeleton v-if="loading" height="10em"/>
 		<InfoBox v-else-if="error" type="error" title="История недоступна" :message="error"/>
@@ -25,6 +27,9 @@
 				<div class="rh-consumption">
 					<div class="rh-label">Расход</div>
 					<div class="rh-value">{{ item.consumption?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано' }} <span v-if="item.consumption != null" class="rh-unit">м³</span></div>
+				</div>
+				<div v-if="true" class="rh-actions">
+					<BaseButton class="rh-delete" variant="secondary" prependIcon="mdi-delete-outline" title="Удалить показание" aria-label="Удалить показание" @click="previewDeletion(item)"/>
 				</div>
 			</div>
 		</template>
@@ -50,10 +55,21 @@ const props = defineProps<{
 const items = ref<FacilityReading[]>([]);
 const loading = ref(false);
 const error = ref('');
+const { $modal } = useNuxtApp();
 let requestId = 0;
 
 watch(() => [props.account, props.refreshKey], fetchHistory, { immediate: true });
 onBeforeUnmount(() => { requestId++; });
+
+function previewDeletion(item: FacilityReading) {
+	$modal.show('ConfirmModal', {
+		title: 'Удаление показания',
+		payload: {
+			title: `Удалить показание ${item.reading?.toLocaleString('ru-RU')} м³?`,
+			description: `Л/с ${props.account}\nПока это только макет: удаление не выполняется.`,
+		},
+	});
+}
 
 async function fetchHistory() {
 	const request = ++requestId;
@@ -100,6 +116,8 @@ const months = computed(() => {
 			gap: .5em;
 			font-weight: 700;
 		}
+
+		.rh-tools { display: flex; flex-wrap: wrap; gap: .5em; }
 	}
 
 	.rh-month {
@@ -120,6 +138,17 @@ const months = computed(() => {
 		padding: .85em 0;
 		border-top: 1px solid #eef2f7;
 		font-size: .9rem;
+
+		&:has(.rh-actions) {
+			grid-template-columns: minmax(0, 1fr) 11em repeat(2, minmax(6em, auto)) 2.75rem;
+			grid-template-areas: 'author date reading consumption actions';
+		}
+
+		.rh-actions {
+			grid-area: actions;
+
+			.rh-delete { width: 2.75rem; height: 2.75rem; justify-content: center; padding: 0; }
+		}
 
 		.rh-date {
 			grid-area: date;
@@ -169,6 +198,11 @@ const months = computed(() => {
 		.rh-row {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 			grid-template-areas: 'author author' 'date date' 'reading consumption';
+
+			&:has(.rh-actions) {
+				grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2.75rem;
+				grid-template-areas: 'author author actions' 'date date date' 'reading consumption .';
+			}
 
 			.rh-reading { text-align: left; }
 		}

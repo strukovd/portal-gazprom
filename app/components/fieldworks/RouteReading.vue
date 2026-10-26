@@ -13,7 +13,7 @@
 			v-model="reading"
 			:class="[`rr-reading-value`, { valid: hasReading && isValid, invalid: hasReading && !isValid }]"
 			label="Показание, м³"
-			:placeholder="`> ${previousReading ?? ''}`"
+			:placeholder="allowLowerReading ? 'Введите значение' : `> ${previousReading ?? ''}`"
 			type="number"
 			autofocus
 			@submit="save"
@@ -37,6 +37,7 @@ import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import { readings } from '~/services/readings';
 import type { ControllerSubscriber } from '~/types/Portal';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
+import { useUserStore } from '~/stores/UserStore';
 
 const props = defineProps<{
 	subscriber: ControllerSubscriber;
@@ -52,8 +53,14 @@ const reading = ref<string | number>('');
 const loading = ref(false);
 const previousReading = computed(() => typeof props.subscriber.reading === 'number' ? props.subscriber.reading : null);
 const hasReading = computed(() => String(reading.value).trim() !== '');
-const isValid = computed(() => Number.isFinite(Number(reading.value)) && (previousReading.value === null || Number(reading.value) >= previousReading.value));
-const error = computed(() => hasReading.value && !isValid.value ? 'Не может быть меньше предыдущего' : '');
+const allowLowerReading = computed(() => useUserStore().userData?.role === 'CONTROLLER');
+const error = computed(() => {
+	if (!hasReading.value) return '';
+	const value = Number(reading.value);
+	if (!Number.isFinite(value) || value < 0) return 'Введите неотрицательное число';
+	return !allowLowerReading.value && previousReading.value !== null && value < previousReading.value ? 'Не может быть меньше предыдущего' : '';
+});
+const isValid = computed(() => !error.value);
 
 async function save() {
 	if (!hasReading.value || !isValid.value || loading.value) return;

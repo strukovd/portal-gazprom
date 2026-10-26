@@ -11,7 +11,7 @@
 	>
 		<BaseIcon v-if="loading" class="loading-icon" fill="currentColor" size="1.2em" name="mdi-loading"/>
 		<BaseIcon v-else-if="prependIcon" fill="currentColor" size="1.2em" :name="prependIcon"/>
-		<div class="button-text"><slot name="default"></slot></div>
+		<div v-if="$slots.default" class="button-text"><slot name="default"></slot></div>
 		<BaseIcon v-if="appendIcon" fill="currentColor" size="1.2em" :name="appendIcon"/>
 	</button>
 </template>
@@ -57,7 +57,7 @@ export default defineComponent({
 	// color: #0079C1;
 	border-radius: 7px;
 	box-shadow: none;
-	padding:.6em 1em .6em .8em;
+	padding:.6em .8em .6em .8em;
 	user-select: none;
 	transition:all 300ms ease 0s;
 	border-style: none;

@@ -1,8 +1,53 @@
 <template>
 	<section id="subscriber-mobile-page">
-		<header class="sbm-header"><button class="sbm-back" @click="navigateTo(backLink)"><BaseIcon name="mdi-arrow-left"/></button><div><b>{{ subscriber?.fullName || 'Не указано' }}</b><span>Л/с {{ subscriber?.accountNo ?? subscriberId }}</span></div><em>{{ subscriber?.status || 'Не указано' }}</em></header>
-		<div class="sbm-address"><BaseIcon name="mdi-map-marker-outline"/>{{ subscriber?.addressText || 'Не указано' }}</div>
-		<main v-if="subscriber" class="sbm-content"><section class="sbm-cards"><BaseIsland><h2><BaseIcon name="mdi-gauge"/>Данные счётчика</h2><div class="sbm-grid"><div><span>Номер</span><b>{{ subscriber.meterSerial || 'Не указано' }}</b></div><div><span>Модель</span><b>{{ subscriber.meterModel || 'Не указано' }}</b></div><div><span>Мощность</span><b>Не указано</b></div><div><span>№ пломбы</span><b>Не указано</b></div></div></BaseIsland><BaseIsland><h2><BaseIcon name="mdi-wallet-outline"/>Финансы</h2><div class="sbm-grid"><div><span>Сальдо - Газ</span><b>{{ subscriber.debtGas ?? 'Не указано' }}</b></div><div><span>Сальдо - Пеня</span><b>{{ subscriber.penalty ?? 'Не указано' }}</b></div><div><span>Последняя оплата</span><b>{{ subscriber.lastPayment || 'Не указано' }}</b></div><div><span>Предыдущее</span><b>{{ subscriber.reading ?? 'Не указано' }} м³</b></div><div><span>Расход газа</span><b>{{ subscriber.consumption == null ? 'Не указано' : `${subscriber.consumption.toLocaleString('ru-RU', { maximumFractionDigits: 20 })} м³` }}</b></div></div></BaseIsland></section><BaseIsland class="sbm-reading"><h2><BaseIcon name="mdi-gauge"/>Ввод текущего показания</h2><div class="sbm-previous"><span>Предыдущее</span><b>{{ subscriber.reading ?? 'Не указано' }} м³</b></div><BaseButton prependIcon="mdi-pencil-outline" @click="openReading">Ввести показание</BaseButton></BaseIsland></main>
+		<header class="sbm-header">
+			<button class="sbm-back" @click="navigateTo(backLink)">
+				<BaseIcon name="mdi-arrow-left" />
+			</button>
+			<div>
+				<b>{{ subscriber?.fullName || 'Не указано' }}</b>
+				<span>Л/с {{ subscriber?.accountNo ?? subscriberId }}</span>
+			</div>
+			<em>{{ subscriber?.status || 'Не указано' }}</em>
+		</header>
+		<div class="sbm-address">
+			<BaseIcon name="mdi-map-marker-outline" />{{ subscriber?.addressText || 'Не указано' }}
+		</div>
+		<main v-if="subscriber" class="sbm-content">
+			<section class="sbm-cards">
+				<BaseIsland>
+					<h2>
+						<BaseIcon name="mdi-gauge" />Данные счётчика
+					</h2>
+					<div class="sbm-grid">
+						<div><span>Номер</span><b>{{ subscriber.meterSerial || 'Не указано' }}</b></div>
+						<div><span>Модель</span><b>{{ subscriber.meterModel || 'Не указано' }}</b></div>
+						<div><span>Мощность</span><b>Не указано</b></div>
+						<div><span>№ пломбы</span><b>Не указано</b></div>
+					</div>
+				</BaseIsland>
+				<BaseIsland>
+					<h2>
+						<BaseIcon name="mdi-wallet-outline" />Финансы
+					</h2>
+					<div class="sbm-grid">
+						<div><span>Сальдо - Газ</span><b>{{ subscriber.debtGas ?? 'Не указано' }}</b></div>
+						<div><span>Сальдо - Пеня</span><b>{{ subscriber.penalty ?? 'Не указано' }}</b></div>
+						<div><span>Последняя оплата</span><b>{{ subscriber.lastPayment || 'Не указано' }}</b></div>
+						<div><span>Предыдущее</span><b>{{ subscriber.reading ?? 'Не указано' }} м³</b></div>
+					</div>
+				</BaseIsland>
+			</section>
+			<ReadingHistory :account="subscriber.accountNo" :refreshKey="historyVersion" />
+			<BaseIsland class="sbm-reading">
+				<h2>
+					<BaseIcon name="mdi-gauge" />Ввод текущего показания
+				</h2>
+				<div class="sbm-previous"><span>Предыдущее</span><b>{{ subscriber.reading ?? 'Не указано' }} м³</b>
+				</div>
+				<BaseButton prependIcon="mdi-pencil-outline" @click="openReading">Ввести показание</BaseButton>
+			</BaseIsland>
+		</main>
 	</section>
 </template>
 
@@ -10,6 +55,7 @@
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
+import ReadingHistory from '~/components/fieldworks/ReadingHistory.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 
 import type { ControllerSubscriber } from '~/types/Portal';
@@ -20,6 +66,7 @@ const sectorId = typeof route.query.sector === 'string' ? route.query.sector : '
 const store = useFieldworksStore();
 const { $modal } = useNuxtApp();
 const subscriber = ref<ControllerSubscriber | null>(null);
+const historyVersion = ref(0);
 const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/sectors');
 
 onMounted(() => fetchSubscriber());
@@ -31,7 +78,12 @@ async function fetchSubscriber(force = false) {
 	subscriber.value = data?.streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId) ?? null;
 }
 
-async function openReading() { if (subscriber.value && await $modal.show('FieldworkReading', { payload: { subscriber: subscriber.value } })) await fetchSubscriber(true); }
+async function openReading() {
+	if (subscriber.value && await $modal.show('FieldworkReading', { payload: { subscriber: subscriber.value } })) {
+		historyVersion.value++;
+		await fetchSubscriber(true);
+	}
+}
 </script>
 
 <style lang="scss">

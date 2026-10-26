@@ -1,5 +1,17 @@
 import type { PaymentsPayload } from "~/types/Payments";
 
+export type FacilityReading = Omit<AccountData['readings'][number], 'id' | 'removed'> & {
+	id: number | null;
+	removed: string | null;
+};
+export type FacilityReadingsResponse = {
+	data: FacilityReading[];
+	total: number;
+	page: number;
+	limit: number;
+	totalPages: number;
+};
+
 export type AccountData = {
 	account: string;
 	name: string;

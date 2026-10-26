@@ -40,9 +40,10 @@
 						<div class="sb-data"><span class="sb-label">Сальдо - Газ</span><span :class="['sb-value', { green: subscriber.debtGas && subscriber.debtGas < 0, red: subscriber.debtGas && subscriber.debtGas > 0 }]">{{ subscriber.debtGas ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Сальдо - Пеня</span><span :class="['sb-value', { red: subscriber.penalty && subscriber.penalty > 0 }]">{{ subscriber.penalty ?? 'Не указано' }}</span></div>
 						<div class="sb-data"><span class="sb-label">Пред. показание</span><span class="sb-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
-						<div class="sb-data"><span class="sb-label">Расход газа</span><span class="sb-value">{{ gasConsumption }}</span></div>
 					</BaseIsland>
 				</section>
+
+				<ReadingHistory :account="subscriber.accountNo" :refreshKey="historyVersion"/>
 
 				<BaseIsland :class="['sb-reading', readingStatus.source]">
 					<div class="sb-reading-heading">
@@ -50,14 +51,8 @@
 						<div class="sb-reading-description">{{ readingStatus.description }}</div>
 					</div>
 
-						<section v-if="readingStatus.source === 'subscriber'" class="sb-reading-values">
-							<div class="sb-reading-value"><span class="sb-label">Предыдущее</span><span class="sb-reading-number">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
-							<div class="sb-reading-value current"><span class="sb-label">Текущее</span><span class="sb-reading-number">Не указано</span></div>
-							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">{{ gasConsumption }}</span></div>
-						</section>
 						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
 						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="saving" :error="readingError" label="Текущее показание, м³" placeholder="Введите значение" type="number" @submit="saveReading"/>
-						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>{{ gasConsumption }}</span></div>
 						<div class="sb-actions">
 							<BaseButton variant="outlined" :disabled="saving" @click="navigateTo(backLink)">Отмена</BaseButton>
 							<BaseButton :disabled="!canSaveReading" :loading="saving" prependIcon="mdi-check-circle-outline" @click="saveReading">Принять показание</BaseButton>
@@ -75,6 +70,7 @@ import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
+import ReadingHistory from '~/components/fieldworks/ReadingHistory.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import { readings } from '~/services/readings';
 import { toLocaleDate } from '~/utils/format';
@@ -94,9 +90,7 @@ const saving = ref(false);
 const { $flags } = useNuxtApp();
 const reading = ref<string | number>('');
 const subscriber = ref<ControllerSubscriber | null>(null);
-const gasConsumption = computed(() => subscriber.value?.consumption == null
-	? 'Не указано'
-	: `${subscriber.value.consumption.toLocaleString('ru-RU', { maximumFractionDigits: 20 })} м³`);
+const historyVersion = ref(0);
 const fieldworksStore = useFieldworksStore();
 const readingStatus = computed(() => {
 	if (subscriber.value?.status === 'Передано абонентом') return { source: 'subscriber', label: 'Передано абонентом', heading: 'Ввод текущего показания', description: 'Показание передано абонентом', icon: 'mdi-shield-check-outline' };
@@ -121,6 +115,7 @@ async function saveReading() {
 	saving.value = true;
 	try {
 		await readings.create(subscriber.value.accountNo, Number(reading.value));
+		historyVersion.value++;
 		reading.value = '';
 		$flags.success('Показание принято');
 		try {
@@ -322,26 +317,6 @@ async function fetchSubscriber(force = false): Promise<ControllerSubscriber | nu
 
 		.sb-reading-input {
 			.text-box-area { border-color: #93c5fd; background: #f8fbff; }
-		}
-
-		.sb-consumption { display: flex; justify-content: space-between; gap: 1em; padding: .9em 1em; border-radius: 8px; color: #ffffff; background: #2563eb; font-weight: 800; }
-
-		.sb-reading-values {
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 1em;
-			.sb-reading-value {
-				display: grid;
-				justify-items: center;
-				gap: .45em;
-				padding: 1em;
-				border: 1px solid #e5e7eb;
-				border-radius: 10px;
-				background: #ffffff;
-				&.current { border-color: #7c3aed; color: #ffffff; background: #7c3aed; }
-				.sb-label { color: #94a3b8; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
-				.sb-reading-number { font-size: 1.25rem; font-weight: 900; }
-			}
 		}
 
 		.sb-actions { display: flex; justify-content: flex-end; gap: .75em; .base-button { min-width: 12em; justify-content: center; } }

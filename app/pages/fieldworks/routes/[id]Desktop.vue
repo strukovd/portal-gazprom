@@ -81,11 +81,11 @@
 						</template>
 						<template #cell.status="{ row }">
 							<div class="rp-reading-cell">
-								<div v-if="row.status === 'Передано абонентом'" class="rp-reading-button subscriber">
+								<BaseButton v-if="row.status === 'Передано абонентом'" class="rp-reading-button subscriber" variant="light" @click="startReading(row)">
 									<BaseIcon name="mdi-shield-check-outline" size="1em"/>
 									{{ row.reading ?? 'Не указано' }}
 									<span class="rp-reading-note">абон.</span>
-								</div>
+								</BaseButton>
 								<BaseButton v-else-if="row.status !== 'Не передано'" class="rp-reading-button controller" variant="light" prependIcon="mdi-check-circle-outline" @click="startReading(row)">
 									{{ row.reading ?? 'Не указано' }}
 								</BaseButton>

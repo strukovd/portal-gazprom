@@ -35,7 +35,7 @@
 							<span>Пред.: <b>{{ subscriber.reading ?? 'Не указано' }} м³</b></span>
 							<div class="rm-actions">
 								<BaseButton variant="light" prependIcon="mdi-account-outline" @click="openSubscriber(subscriber.accountNo)">Карточка</BaseButton>
-								<BaseButton v-if="subscriber.status === 'Не передано'" prependIcon="mdi-pencil-outline" @click="openReading(subscriber)">Ввести</BaseButton>
+								<BaseButton prependIcon="mdi-pencil-outline" @click="openReading(subscriber)">Ввести</BaseButton>
 							</div>
 						</div>
 					</BaseIsland>

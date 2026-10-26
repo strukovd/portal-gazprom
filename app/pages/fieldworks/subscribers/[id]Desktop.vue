@@ -50,25 +50,18 @@
 						<div class="sb-reading-description">{{ readingStatus.description }}</div>
 					</div>
 
-					<template v-if="readingStatus.source === 'subscriber'">
-						<section class="sb-reading-values">
+						<section v-if="readingStatus.source === 'subscriber'" class="sb-reading-values">
 							<div class="sb-reading-value"><span class="sb-label">Предыдущее</span><span class="sb-reading-number">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
 							<div class="sb-reading-value current"><span class="sb-label">Текущее</span><span class="sb-reading-number">Не указано</span></div>
 							<div class="sb-reading-value"><span class="sb-label">Расход</span><span class="sb-reading-number">{{ gasConsumption }}</span></div>
 						</section>
-						<InfoBox type="protect" title="Показание подтверждено абонентом" message="Изменение показания, переданного абонентом самостоятельно, недоступно для контроллёра."/>
-						<BaseButton class="sb-return" variant="outlined" @click="navigateTo(backLink)">Вернуться к реестру</BaseButton>
-					</template>
-
-					<template v-else>
 						<div class="sb-previous"><span class="sb-previous-label"><BaseIcon name="mdi-history" size="1em"/>Предыдущее показание</span><span class="sb-previous-value">{{ subscriber.reading ?? 'Не указано' }} м³</span></div>
-						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="readingStatus.source === 'controller' || saving" :error="readingError" label="Текущее показание, м³" placeholder="Введите значение" type="number" @submit="saveReading"/>
+						<BaseTextBox v-model="reading" class="sb-reading-input" :disabled="saving" :error="readingError" label="Текущее показание, м³" placeholder="Введите значение" type="number" @submit="saveReading"/>
 						<div v-if="readingStatus.source === 'controller'" class="sb-consumption"><span>Расход за период</span><span>{{ gasConsumption }}</span></div>
 						<div class="sb-actions">
 							<BaseButton variant="outlined" :disabled="saving" @click="navigateTo(backLink)">Отмена</BaseButton>
 							<BaseButton :disabled="!canSaveReading" :loading="saving" prependIcon="mdi-check-circle-outline" @click="saveReading">Принять показание</BaseButton>
 						</div>
-					</template>
 				</BaseIsland>
 			</template>
 		</main>
@@ -77,7 +70,6 @@
 
 <script lang="ts" setup>
 import Avatar from '~/components/common/Avatar.vue';
-import InfoBox from '~/components/common/InfoBox.vue';
 import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
@@ -107,7 +99,7 @@ const gasConsumption = computed(() => subscriber.value?.consumption == null
 	: `${subscriber.value.consumption.toLocaleString('ru-RU', { maximumFractionDigits: 20 })} м³`);
 const fieldworksStore = useFieldworksStore();
 const readingStatus = computed(() => {
-	if (subscriber.value?.status === 'Передано абонентом') return { source: 'subscriber', label: 'Передано абонентом', heading: 'Показание передано абонентом', description: 'Редактирование контроллёром заблокировано', icon: 'mdi-shield-check-outline' };
+	if (subscriber.value?.status === 'Передано абонентом') return { source: 'subscriber', label: 'Передано абонентом', heading: 'Ввод текущего показания', description: 'Показание передано абонентом', icon: 'mdi-shield-check-outline' };
 	if (subscriber.value?.status !== 'Не передано') return { source: 'controller', label: 'Принято', heading: 'Ввод текущего показания', description: 'Показание принято контроллёром', icon: 'mdi-check-circle-outline' };
 	return { source: 'none', label: 'Не принято', heading: 'Ввод текущего показания', description: 'Метод 1 - карточка абонента', icon: 'mdi-gauge' };
 });
@@ -117,7 +109,7 @@ const readingError = computed(() => {
 	if (!Number.isFinite(value)) return 'Введите корректное показание';
 	return typeof subscriber.value?.reading === 'number' && value < subscriber.value.reading ? 'Не может быть меньше предыдущего' : '';
 });
-const canSaveReading = computed(() => Boolean(subscriber.value) && readingStatus.value.source === 'none' && String(reading.value).trim() !== '' && !readingError.value);
+const canSaveReading = computed(() => Boolean(subscriber.value) && String(reading.value).trim() !== '' && !readingError.value);
 
 onMounted(async () => {
 	subscriber.value = await fetchSubscriber();
@@ -352,7 +344,6 @@ async function fetchSubscriber(force = false): Promise<ControllerSubscriber | nu
 			}
 		}
 
-		.sb-return { width: 100%; justify-content: center; }
 		.sb-actions { display: flex; justify-content: flex-end; gap: .75em; .base-button { min-width: 12em; justify-content: center; } }
 	}
 }

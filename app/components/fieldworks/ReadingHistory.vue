@@ -28,7 +28,7 @@
 					<div class="rh-label">Расход</div>
 					<div class="rh-value">{{ item.consumption?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано' }} <span v-if="item.consumption != null" class="rh-unit">м³</span></div>
 				</div>
-				<div v-if="true" class="rh-actions">
+				<div v-if="false" class="rh-actions">
 					<BaseButton class="rh-delete" variant="secondary" prependIcon="mdi-delete-outline" title="Удалить показание" aria-label="Удалить показание" @click="previewDeletion(item)"/>
 				</div>
 			</div>
@@ -77,7 +77,7 @@ async function fetchHistory() {
 	error.value = '';
 	loading.value = true;
 	try {
-		const response = await facility.fetchReadings({ account: props.account });
+		const response = await facility.fetchReadings({ account: props.account, includePortalUser: true });
 		if (request !== requestId) return;
 		items.value = response.data;
 	}

@@ -177,7 +177,7 @@ const collapsedStreets = ref<Record<string, boolean>>({});
 const statsData = computed(() => [
 	{ title: 'В выборке', value: curRoute.value?.statistics.subscriberCount ?? 0, icon: 'mdi-account-group-outline', color: 'gray' },
 	{ title: 'Собрано', value: curRoute.value?.statistics.collectedReadings ?? 0, icon: 'mdi-check-circle-outline', color: 'green' },
-	{ title: 'Расход газа', value: 'Не указано', icon: 'mdi-fire', color: 'blue' },
+	{ title: 'Расход газа', value: curRoute.value?.statistics.consumptionCount?.toLocaleString('ru-RU', { maximumFractionDigits: 20 }) ?? 'Не указано', unit: 'м³', icon: 'mdi-fire', color: 'blue' },
 	{ title: 'Не собрано', value: (curRoute.value?.statistics.subscriberCount ?? 0) - (curRoute.value?.statistics.collectedReadings ?? 0), icon: 'mdi-clock-outline', color: 'orange' },
 ]);
 

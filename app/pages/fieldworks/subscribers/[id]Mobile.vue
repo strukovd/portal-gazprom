@@ -13,7 +13,10 @@
 		<div class="sbm-address">
 			<BaseIcon name="mdi-map-marker-outline" />{{ subscriber?.addressText || 'Не указано' }}
 		</div>
-		<main v-if="subscriber" class="sbm-content">
+		<main class="sbm-content">
+			<BaseSkeleton v-if="loading" height="20em"/>
+			<InfoBox v-else-if="loadError" type="error" title="Не удалось загрузить абонента" :message="loadError"/>
+			<template v-else-if="subscriber">
 			<section class="sbm-cards">
 				<BaseIsland>
 					<h2>
@@ -47,6 +50,10 @@
 				</div>
 				<BaseButton prependIcon="mdi-pencil-outline" @click="openReading">Ввести показание</BaseButton>
 			</BaseIsland>
+			</template>
+			<template v-else>
+				<InfoBox type="error" title="Абонент не найден" :message="routeId ? `Л/с ${subscriberId} не найден в указанном маршруте.` : 'В ссылке не указан маршрут. Данные абонента доступны только в составе маршрута — откройте карточку из его списка абонентов.'"/>
+			</template>
 		</main>
 	</section>
 </template>
@@ -56,6 +63,8 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseIcon from '~/components/common/base/BaseIcon.vue';
 import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import ReadingHistory from '~/components/fieldworks/ReadingHistory.vue';
+import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
+import InfoBox from '~/components/common/InfoBox.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 
 import type { ControllerSubscriber } from '~/types/Portal';
@@ -66,14 +75,26 @@ const sectorId = typeof route.query.sector === 'string' ? route.query.sector : '
 const store = useFieldworksStore();
 const { $modal } = useNuxtApp();
 const subscriber = ref<ControllerSubscriber | null>(null);
+const loading = ref(true);
+const loadError = ref('');
 const historyVersion = ref(0);
-const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/sectors');
+const backLink = computed(() => routeId ? { path: `/fieldworks/routes/${routeId}`, query: { ...(sectorId ? { sector: sectorId } : {}), ...(store.hasSubordinates ? { controller: store.selectedControllerId } : {}) } } : '/fieldworks/routes');
 
-onMounted(() => fetchSubscriber());
+onMounted(async () => {
+	try {
+		await fetchSubscriber();
+	}
+	catch (error: any) {
+		loadError.value = error?.data?.message || error?.message || 'Ошибка загрузки данных';
+	}
+	finally {
+		loading.value = false;
+	}
+});
 
 async function fetchSubscriber(force = false) {
-	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	if (!routeId) return;
+	await store.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	const data = await store.fetchRoute(routeId, force);
 	subscriber.value = data?.streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId) ?? null;
 }

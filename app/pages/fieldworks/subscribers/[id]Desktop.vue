@@ -9,6 +9,7 @@
 				<BaseIsland class="sb-skeleton"><BaseSkeleton height="15em"/></BaseIsland>
 			</template>
 
+			<InfoBox v-else-if="loadError" type="error" title="Не удалось загрузить абонента" :message="loadError"/>
 			<template v-else-if="subscriber">
 				<BaseIsland class="sb-header">
 					<div class="sb-profile">
@@ -59,6 +60,9 @@
 						</div>
 				</BaseIsland>
 			</template>
+			<template v-else>
+				<InfoBox type="error" title="Абонент не найден" :message="routeId ? `Л/с ${subscriberId} не найден в указанном маршруте.` : 'В ссылке не указан маршрут. Данные абонента доступны только в составе маршрута — откройте карточку из его списка абонентов.'"/>
+			</template>
 		</main>
 	</section>
 </template>
@@ -71,6 +75,7 @@ import BaseIsland from '~/components/common/base/BaseIsland.vue';
 import BaseSkeleton from '~/components/common/base/BaseSkeleton.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
 import ReadingHistory from '~/components/fieldworks/ReadingHistory.vue';
+import InfoBox from '~/components/common/InfoBox.vue';
 import { useFieldworksStore } from '~/stores/FieldworksStore';
 import { useUserStore } from '~/stores/UserStore';
 import { readings } from '~/services/readings';
@@ -87,6 +92,7 @@ const backLink = computed(() => routeId.value
 );
 
 const loading = ref(true);
+const loadError = ref('');
 const saving = ref(false);
 const { $flags } = useNuxtApp();
 const reading = ref<string | number>('');
@@ -108,8 +114,15 @@ const readingError = computed(() => {
 const canSaveReading = computed(() => Boolean(subscriber.value) && String(reading.value).trim() !== '' && !readingError.value);
 
 onMounted(async () => {
-	subscriber.value = await fetchSubscriber();
-	loading.value = false;
+	try {
+		subscriber.value = await fetchSubscriber();
+	}
+	catch (error: any) {
+		loadError.value = error?.data?.message || error?.message || 'Ошибка загрузки данных';
+	}
+	finally {
+		loading.value = false;
+	}
 });
 
 async function saveReading() {
@@ -136,12 +149,10 @@ async function saveReading() {
 }
 
 async function fetchSubscriber(force = false): Promise<ControllerSubscriber | null> {
-	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	if (!routeId.value) return null;
+	await fieldworksStore.fetchForRole(typeof route.query.controller === 'string' ? route.query.controller : undefined);
 	const data = await fieldworksStore.fetchRoute(routeId.value, force);
-	return data?.streets
-		.flatMap(street => street.subscribers)
-		.find(item => item.accountNo === subscriberId.value) ?? null;
+	return data?.streets.flatMap(street => street.subscribers).find(item => item.accountNo === subscriberId.value) ?? null;
 }
 </script>
 

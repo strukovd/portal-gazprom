@@ -23,7 +23,8 @@ export type UserBody = {
 	role: UserRoles;
 	isActive: boolean;
 	parentUserId?: number | null;
-	groupName?: string;
+	position?: string;
+	subDivision?: string;
 }
 export type UsersQuery = {
 	isActive: boolean;
@@ -38,7 +39,8 @@ export type UserPayload = {
 	name?: string;
 	phone?: string;
 	parentUserId?: number | null;
-	groupName?: string | null;
+	position?: string | null;
+	subDivision?: UserSubDivision | null;
 	role: UserRoles | string;
 	isActive: boolean;
 	contractorId: null;
@@ -48,6 +50,16 @@ export type UserResponse = {
     success: true;
     data: UserPayload;
 }
+export type UserSubDivision = {
+	key: string;
+	name: string;
+	egsTitle: string;
+	division: { key: string; name: string };
+};
+export type UserOptionsResponse<T> = {
+	success: boolean;
+	data: T[];
+};
 export type UsersResponse = {
     success: true;
     data: UserPayload[];
@@ -87,6 +99,14 @@ export type IssueListResponse = {
 
 
 export const portal = {
+	fetchSubDivisions() {
+		const { $fetchApi } = useNuxtApp();
+		return $fetchApi<UserOptionsResponse<UserSubDivision>>('/v1/portal/options/subdivisions', { method: 'GET' });
+	},
+	fetchPositions() {
+		const { $fetchApi } = useNuxtApp();
+		return $fetchApi<UserOptionsResponse<string>>('/v1/portal/options/positions', { method: 'GET' });
+	},
 	auth(body: Partial<AuthBody> = {}): Promise<AuthResponse> {
 		const { $fetchApi } = useNuxtApp();
 
@@ -168,10 +188,10 @@ export const portal = {
 	},
 	
 	/** Список групп (контроллёров) */
-	fetchControllerGroups() {
+	fetchControllerPositions() {
 		const { $fetchApi } = useNuxtApp();
 
-		return $fetchApi<ControllerGroupsResponse>('/v1/portal/controllers/groups', {
+		return $fetchApi<ControllerGroupsResponse>('/v1/portal/controllers/positions', {
 			method: 'GET'
 		});
 	},

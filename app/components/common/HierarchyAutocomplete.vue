@@ -31,7 +31,7 @@ function filterNodes(
 
   return nodes.reduce<HierarchyOption[]>((result, node) => {
     const selfMatches = node.name?.toLowerCase().includes(query)
-      || node.groupName?.toLowerCase().includes(query)
+      || node.position?.toLowerCase().includes(query)
 
     // Совпадение пользователя или отдела сохраняет всё его поддерево.
     if (selfMatches) {
@@ -80,7 +80,7 @@ const displayValue = computed(() => {
     return search.value
   }
 
-  return selectedNode.value?.name || selectedNode.value?.groupName || ''
+  return selectedNode.value?.name || selectedNode.value?.position || ''
 })
 
 function open() {

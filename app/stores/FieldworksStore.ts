@@ -108,7 +108,7 @@ export const useFieldworksStore = defineStore('fieldworks', () => {
 		if (!groupsLoaded) {
 			if (!groupsRequest) {
 				loading.value = true;
-				groupsRequest = portal.fetchControllerGroups().then(response => {
+				groupsRequest = portal.fetchControllerPositions().then(response => {
 					if (session !== sessionId) return;
 					if (!response.success) throw new Error('Не удалось загрузить список контроллёров');
 					controllerGroups.value = Array.isArray(response.data) ? response.data : response.data ? [response.data] : [];

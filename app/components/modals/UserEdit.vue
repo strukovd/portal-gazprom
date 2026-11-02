@@ -19,11 +19,12 @@
 				<BaseCheckbox v-model="onlyControllers" label="Только контроллеры"/>
 			</div>
 			<BaseAutocomplete
-				v-model="form.groupName"
-				emitValue
-				label="Название группы"
-				:items="[{ value:`Бишкекгаз` }, { value:`Чуйгаз` }, { value:`Ошгаз` }, { value:`Джалалабадгаз` }, { value:`Баткенгаз` }, { value:`Кара-балтинская ЭГС` }, { value:`Баткенская ЭГС` }, { value:`Кантская ЭГС` }, { value:`Ленинская ЭГС` }, { value:`Сокулукская ЭГС` }, { value:`Токмакская ЭГС` }, { value:`Карасуйская ЭГС` }]"
+				v-model="form.subDivision"
+				label="Подразделение"
+				:items="subDivisionItems"
+				:loading="optionsLoading"
 			/>
+			<BaseAutocomplete v-model="form.position" label="Должность" :items="positionItems" :loading="optionsLoading"/>
 		</section>
 
 		<BaseAutocomplete autoselect v-model="form.role" :items="roleItems" label="Роль пользователя"/>
@@ -47,7 +48,7 @@ import BaseButton from '~/components/common/base/BaseButton.vue';
 import BaseCheckbox from '~/components/common/base/BaseCheckbox.vue';
 import BaseTabs from '~/components/common/base/BaseTabs.vue';
 import BaseTextBox from '~/components/common/base/BaseTextBox.vue';
-import { portal, type UserBody, type UserPayload, type UserRoles } from '~/services/portal';
+import { portal, type UserBody, type UserPayload, type UserRoles, type UserSubDivision } from '~/services/portal';
 import BaseAutocomplete from '../common/base/BaseAutocomplete.vue';
 
 const props = defineProps<{
@@ -65,6 +66,9 @@ const parentUserSelection = ref(props.payload?.user?.parentUserId ?? undefined);
 const parentUsers = ref<UserPayload[]>([]);
 const parentUsersLoading = ref(false);
 const onlyControllers = ref(true);
+const subDivisions = ref<UserSubDivision[]>([]);
+const positions = ref<string[]>([]);
+const optionsLoading = ref(false);
 let parentUsersRequest = 0;
 const isEditMode = computed(() => Boolean(props.payload?.user?.id));
 const status = ref(props.payload?.user?.isActive === false ? 'blocked' : 'active');
@@ -76,8 +80,17 @@ const form = reactive<UserBody>({
 	role: (props.payload?.user?.role as UserRoles) || 'CALLCENTER',
 	isActive: true,
 	parentUserId: props.payload?.user?.parentUserId ?? undefined,
-	groupName: props.payload?.user?.groupName || '',
+	position: props.payload?.user?.position ?? undefined,
+	subDivision: props.payload?.user?.subDivision?.key ?? undefined,
 });
+
+const subDivisionItems = computed(() => {
+	const items = subDivisions.value.map(item => ({ key: item.key, value: `${item.division?.name || item.egsTitle} — ${item.name}` }));
+	const current = props.payload?.user?.subDivision;
+	if (current && !items.some(item => item.key === current.key)) items.unshift({ key: current.key, value: current.name });
+	return items;
+});
+const positionItems = computed(() => Array.from(new Set([...(props.payload?.user?.position ? [props.payload.user.position] : []), ...positions.value])).map(value => ({ key: value, value })));
 
 const parentUserItems = computed(() => {
 	const selectedId = parentUserSelection.value;
@@ -91,7 +104,24 @@ const parentUserItems = computed(() => {
 });
 
 onMounted(fetchParentUsers);
+onMounted(fetchOptions);
 watch(onlyControllers, fetchParentUsers);
+
+async function fetchOptions() {
+	optionsLoading.value = true;
+	try {
+		const [subDivisionResponse, positionResponse] = await Promise.all([portal.fetchSubDivisions(), portal.fetchPositions()]);
+		if (!subDivisionResponse.success || !positionResponse.success) throw new Error('Не удалось загрузить подразделения и должности');
+		subDivisions.value = subDivisionResponse.data;
+		positions.value = positionResponse.data;
+	}
+	catch (error: any) {
+		$flags.error(error?.data?.message || error?.message || 'Не удалось загрузить подразделения и должности');
+	}
+	finally {
+		optionsLoading.value = false;
+	}
+}
 
 async function fetchParentUsers() {
 	const request = ++parentUsersRequest;
@@ -151,6 +181,10 @@ async function saveUser() {
 		$flags.warn('Нельзя назначить пользователя вышестоящим самому себе');
 		return;
 	}
+	if (isEditMode.value && ((!form.position && props.payload?.user?.position) || (!form.subDivision && props.payload?.user?.subDivision))) {
+		$flags.warn('Выберите должность и подразделение: API пока не поддерживает очистку сохранённых значений');
+		return;
+	}
 
 	loading.value = true;
 	try {
@@ -161,7 +195,8 @@ async function saveUser() {
 				role: form.role,
 				isActive: status.value === 'active',
 				...(form.parentUserId !== (props.payload.user.parentUserId ?? undefined) ? { parentUserId: form.parentUserId ?? null } : {}),
-				...(form.groupName?.trim() !== (props.payload.user.groupName ?? '') ? { groupName: form.groupName?.trim() ?? '' } : {}),
+				...(form.position !== (props.payload.user.position ?? undefined) ? { position: form.position } : {}),
+				...(form.subDivision !== (props.payload.user.subDivision?.key ?? undefined) ? { subDivision: form.subDivision } : {}),
 			});
 			$flags.success('Пользователь сохранен');
 			close('updated');
@@ -170,7 +205,6 @@ async function saveUser() {
 
 		await portal.createUser({
 			...form,
-			groupName: form.groupName?.trim() || undefined,
 			isActive: status.value === 'active',
 		});
 		$flags.success('Пользователь создан');

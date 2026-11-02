@@ -54,8 +54,11 @@
 						<div class="sup-role">{{ roleName(String(value)) }}</div>
 					</template>
 
-					<template #cell.groupName="{ value }">
+					<template #cell.position="{ value }">
 						<span :class="{ 'sup-muted': !value }">{{ value || 'Не указана' }}</span>
+					</template>
+					<template #cell.subDivision="{ value }">
+						<span :class="{ 'sup-muted': !value }">{{ value ? [value.division?.name || value.egsTitle, value.name].filter(Boolean).join(' — ') : 'Не указано' }}</span>
 					</template>
 
 					<template #cell.parentUserId="{ value }">
@@ -117,7 +120,8 @@ const columns = [
 	{ key: 'name', label: 'Пользователь' },
 	{ key: 'phone', label: 'Телефон' },
 	{ key: 'role', label: 'Роль' },
-	{ key: 'groupName', label: 'Группа' },
+	{ key: 'subDivision', label: 'Подразделение' },
+	{ key: 'position', label: 'Должность' },
 	{ key: 'parentUserId', label: 'Вышестоящий пользователь' },
 	{ key: 'isActive', label: 'Статус', width: '9em' },
 	{ key: 'actions', label: '', width: '4em' },

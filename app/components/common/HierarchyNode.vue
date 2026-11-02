@@ -49,7 +49,7 @@ function toggle() {
 
       <button class="hn-name" type="button" @click="emit('select', node)">
         <span class="hn-label">{{ node.name }}</span>
-        <span v-if="node.groupName" class="hn-group-name">{{ node.groupName }}</span>
+        <span v-if="node.position" class="hn-group-name">{{ node.position }}</span>
       </button>
     </div>
 

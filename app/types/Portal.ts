@@ -9,7 +9,7 @@ export type ReadingsResponse = {
 export type ControllerGroup = {
 	id: number;
 	name: string;
-	groupName: string | null;
+	position?: string | null;
 	children: ControllerGroup[];
 };
 export type ControllerResponse<T> = {

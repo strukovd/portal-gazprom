@@ -257,18 +257,10 @@ const stats = computed(() => {
 	};
 });
 
-const ulValueWithTaxes = computed(() => {
-	if (!appStore.tariffs) return null;
-
-	return Math.round((appStore.tariffs.ulValue + appStore.tariffs.ulNds + appStore.tariffs.ulNsp) * 100) / 100;
-});
-
-const dashboardTariffs = computed(() => [
-	{ title: 'Население', value: appStore.tariffs ? `${appStore.tariffs.fizValue} сом/м³` : '-' },
-	{ title: 'Население (Майлы-Суу)', value: appStore.tariffs ? `${appStore.tariffs.fizValue} сом/м³` : '-' },
-	{ title: 'Юр. лица без налогов', value: appStore.tariffs ? `${appStore.tariffs.ulValue} сом/м³` : '-' },
-	{ title: 'Юр. лица с НДС-12% и НСП-8%', value: ulValueWithTaxes.value !== null ? `${ulValueWithTaxes.value} сом/м³` : '-' },
-]);
+const dashboardTariffs = computed(() => (appStore.tariffs?.items ?? []).flatMap(item => [
+	{ title: item.type, value: `${item.value} сом/м³` },
+	...(item.type === 'Юр. лица' && item.nds != null && item.nsp != null ? [{ title: 'Юр. лица с НДС и НСП', value: `${Math.round((item.value + item.nds + item.nsp) * 100) / 100} сом/м³` }] : []),
+]));
 
 
 onMounted(() => { init(); });

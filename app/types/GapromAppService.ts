@@ -23,19 +23,3 @@ export type OfficesPayload = {
 
 
 
-export type TariffPayload = {
-	id: number;
-	fizValue: number;
-	fizNds: number;
-	fizNsp: number;
-	ulValue: number;
-	ulNds: number;
-	ulNsp: number;
-	exchangeRate: number;
-	showExchangeRate: boolean;
-	clientQty: number;
-	areaQty: number;
-	mainGasPipelineLength: number;
-	streetNetworkLength: number;
-	created: string;
-}

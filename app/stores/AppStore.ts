@@ -2,7 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia';
 import type { FlagsModel } from '~/plugins/flag';
 import type { ModalModel } from '~/plugins/modal';
 import { tariffs as tariffsService } from '~/services/tariffs';
-import type { TariffPayload } from '~/types/GapromAppService';
+import type { TariffPayload } from '~/types/Tariffs';
 
 type Invoice = {
 	amount: string;
@@ -39,9 +39,8 @@ export const useAppStore = defineStore('app', {
 			if( !account ) return null;
 			if( !this.tariffs ) return null;
 
-			return '56789'.includes(String(account).charAt(0))
-				? this.tariffs.ulValue
-				: this.tariffs.fizValue;
+			const type = '56789'.includes(String(account).charAt(0)) ? 'Юр. лица' : 'Население';
+			return this.tariffs.items.find(item => item.type === type)?.value ?? null;
 		},
 		async ensureTariffs() {
 			if (this.tariffs) return this.tariffs;

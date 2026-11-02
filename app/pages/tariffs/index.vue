@@ -47,26 +47,12 @@ definePageMeta({
 });
 
 const appStore = useAppStore();
-const tariffs = computed(() => [
-	{
-		title: 'Население',
-		price: appStore.tariffs?.fizValue ?? '-',
-		accent: 'blue',
-		description: `Текущий тариф для населения — ${appStore.tariffs?.fizValue ?? '-'} сом/м³.`,
-	},
-	{
-		title: 'Население, г. Майлы-Суу',
-		price: appStore.tariffs?.fizValue ?? '-',
-		accent: 'blue',
-		description: `Текущий тариф для жителей г. Майлы-Суу — ${appStore.tariffs?.fizValue ?? '-'} сом/м³.`,
-	},
-	{
-		title: 'Юридические лица без налогов',
-		price: appStore.tariffs?.ulValue ?? '-',
-		accent: 'orange',
-		description: `Стоимость указана без учета налогов — ${appStore.tariffs?.ulValue ?? '-'} сом/м³.`,
-	},
-]);
+const tariffs = computed(() => (appStore.tariffs?.items ?? []).map(item => ({
+	title: item.type,
+	price: item.value,
+	accent: item.type === 'Юр. лица' ? 'orange' : 'blue',
+	description: `НДС: ${item.nds == null ? 'не указано' : `${item.nds} сом/м³`}. НСП: ${item.nsp == null ? 'не указано' : `${item.nsp} сом/м³`}.`,
+})));
 
 onMounted(() => {
 	appStore.ensureTariffs();
